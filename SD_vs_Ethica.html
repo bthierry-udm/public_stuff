@@ -24194,10 +24194,11 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">######## Reload all data required in analyses below #######</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 4m</span>
+<span class="c1">######## Reload all data required in analyses below #######</span>
 <span class="c1">#</span>
 <span class="c1"># Cross-correlation (3rd version)</span>
 <span class="n">cc_results3</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;SELECT case left(iid::text, 1)</span>
@@ -24211,6 +24212,11 @@ Buffer 500m:
 <span class="s2">    cccoeff_intersect, cccoeff_binary_intersect, histo_intersect_size_x, histo_intersect_size_y, histo_intersect_size_x * histo_intersect_size_y histo_interact_ncells</span>
 <span class="s2">    FROM analyses.cross_corr_sd_eth3</span>
 <span class="s2">    where cccoeff is not null&quot;&quot;&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="p">)</span>
+<span class="n">udsty</span> <span class="o">=</span> <span class="n">cc_results3</span><span class="p">[[</span><span class="s1">&#39;city&#39;</span><span class="p">,</span> <span class="s1">&#39;epoch&#39;</span><span class="p">,</span> <span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;cellsize&#39;</span><span class="p">,</span> <span class="s1">&#39;n_trk_sd&#39;</span><span class="p">,</span> <span class="s1">&#39;n_trk_eth&#39;</span><span class="p">,</span> <span class="s1">&#39;histo_ncells&#39;</span><span class="p">,</span> <span class="s1">&#39;cccoeff&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">aoi</span><span class="o">=</span><span class="s1">&#39;union&#39;</span><span class="p">,</span> <span class="n">histo_type</span><span class="o">=</span><span class="s1">&#39;density&#39;</span><span class="p">)</span>
+<span class="n">ubin</span> <span class="o">=</span> <span class="n">cc_results3</span><span class="p">[[</span><span class="s1">&#39;city&#39;</span><span class="p">,</span> <span class="s1">&#39;epoch&#39;</span><span class="p">,</span> <span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;cellsize&#39;</span><span class="p">,</span> <span class="s1">&#39;n_trk_sd&#39;</span><span class="p">,</span> <span class="s1">&#39;n_trk_eth&#39;</span><span class="p">,</span> <span class="s1">&#39;histo_ncells&#39;</span><span class="p">,</span> <span class="s1">&#39;cccoeff_binary&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;cccoeff_binary&#39;</span><span class="p">:</span> <span class="s1">&#39;cccoeff&#39;</span><span class="p">})</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">aoi</span><span class="o">=</span><span class="s1">&#39;union&#39;</span><span class="p">,</span> <span class="n">histo_type</span><span class="o">=</span><span class="s1">&#39;binary&#39;</span><span class="p">)</span>
+<span class="n">idsty</span> <span class="o">=</span> <span class="n">cc_results3</span><span class="p">[[</span><span class="s1">&#39;city&#39;</span><span class="p">,</span> <span class="s1">&#39;epoch&#39;</span><span class="p">,</span> <span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;cellsize&#39;</span><span class="p">,</span> <span class="s1">&#39;n_trk_sd&#39;</span><span class="p">,</span> <span class="s1">&#39;n_trk_eth&#39;</span><span class="p">,</span> <span class="s1">&#39;histo_interact_ncells&#39;</span><span class="p">,</span> <span class="s1">&#39;cccoeff_intersect&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;cccoeff_intersect&#39;</span><span class="p">:</span> <span class="s1">&#39;cccoeff&#39;</span><span class="p">,</span> <span class="s1">&#39;histo_interact_ncells&#39;</span><span class="p">:</span> <span class="s1">&#39;histo_ncells&#39;</span><span class="p">})</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">aoi</span><span class="o">=</span><span class="s1">&#39;intersect&#39;</span><span class="p">,</span> <span class="n">histo_type</span><span class="o">=</span><span class="s1">&#39;density&#39;</span><span class="p">)</span>
+<span class="n">ibin</span> <span class="o">=</span> <span class="n">cc_results3</span><span class="p">[[</span><span class="s1">&#39;city&#39;</span><span class="p">,</span> <span class="s1">&#39;epoch&#39;</span><span class="p">,</span> <span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;cellsize&#39;</span><span class="p">,</span> <span class="s1">&#39;n_trk_sd&#39;</span><span class="p">,</span> <span class="s1">&#39;n_trk_eth&#39;</span><span class="p">,</span> <span class="s1">&#39;histo_interact_ncells&#39;</span><span class="p">,</span> <span class="s1">&#39;cccoeff_binary_intersect&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;cccoeff_binary_intersect&#39;</span><span class="p">:</span> <span class="s1">&#39;cccoeff&#39;</span><span class="p">,</span> <span class="s1">&#39;histo_interact_ncells&#39;</span><span class="p">:</span> <span class="s1">&#39;histo_ncells&#39;</span><span class="p">})</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">aoi</span><span class="o">=</span><span class="s1">&#39;intersect&#39;</span><span class="p">,</span> <span class="n">histo_type</span><span class="o">=</span><span class="s1">&#39;binary&#39;</span><span class="p">)</span>
+<span class="n">cc_results3_pivot</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">udsty</span><span class="p">,</span> <span class="n">ubin</span><span class="p">,</span> <span class="n">idsty</span><span class="p">,</span> <span class="n">ibin</span><span class="p">])</span>
 
 <span class="c1"># DTW using fastdtw</span>
 <span class="n">dtw_cmp_algo</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;SELECT case left(iid, 1)</span>
@@ -24273,6 +24279,10 @@ Buffer 500m:
 <span class="s2">        ,ST_Area(ST_Union(eth.geom, sd.geom)::geography) / 1000000 union_area</span>
 <span class="s2">    from analyses.cvx_hull_eth eth</span>
 <span class="s2">    join analyses.cvx_hull_sd sd using(iid);&quot;&quot;&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="p">)</span>
+<span class="n">cvx_stats</span><span class="p">[</span><span class="s1">&#39;pct_overlap_eth&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">cvx_stats</span><span class="o">.</span><span class="n">overlap_area</span> <span class="o">/</span> <span class="n">cvx_stats</span><span class="o">.</span><span class="n">cvx_eth_area</span> <span class="o">*</span> <span class="mf">100.</span><span class="p">,</span> <span class="mf">100.</span><span class="p">)</span>
+<span class="n">cvx_stats</span><span class="p">[</span><span class="s1">&#39;pct_overlap_sd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">cvx_stats</span><span class="o">.</span><span class="n">overlap_area</span> <span class="o">/</span> <span class="n">cvx_stats</span><span class="o">.</span><span class="n">cvx_sd_area</span> <span class="o">*</span> <span class="mf">100.</span><span class="p">,</span> <span class="mf">100.</span><span class="p">)</span>
+<span class="n">cvx_stats</span><span class="p">[</span><span class="s1">&#39;pct_overlap&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">cvx_stats</span><span class="o">.</span><span class="n">overlap_area</span> <span class="o">/</span> <span class="n">cvx_stats</span><span class="o">.</span><span class="n">union_area</span> <span class="o">*</span> <span class="mf">100.</span><span class="p">,</span> <span class="mf">100.</span><span class="p">)</span>
+<span class="n">cvx_stats</span><span class="p">[</span><span class="s1">&#39;duration_days&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cvx_stats</span><span class="o">.</span><span class="n">survey_duration</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">/</span> <span class="mi">24</span> <span class="o">/</span> <span class="mi">3600</span>
 
 <span class="c1"># Ellipse (not bounded)</span>
 <span class="n">elps_stats</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
@@ -24287,6 +24297,9 @@ Buffer 500m:
 <span class="s2">        ,case when sd.std_x / sd.std_y &gt; 1 then sd.std_y / sd.std_x else sd.std_x / sd.std_y end sd_ratio</span>
 <span class="s2">    from analyses.ellipse_eth eth</span>
 <span class="s2">    join analyses.ellipse_sd sd using(iid, ellipse_type);&quot;&quot;&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="p">)</span>
+<span class="n">elps_stats</span><span class="p">[</span><span class="s1">&#39;pct_overlap_eth&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">elps_stats</span><span class="o">.</span><span class="n">overlap_area</span> <span class="o">/</span> <span class="n">elps_stats</span><span class="o">.</span><span class="n">ellipse_eth_area</span> <span class="o">*</span> <span class="mf">100.</span>
+<span class="n">elps_stats</span><span class="p">[</span><span class="s1">&#39;pct_overlap_sd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">elps_stats</span><span class="o">.</span><span class="n">overlap_area</span> <span class="o">/</span> <span class="n">elps_stats</span><span class="o">.</span><span class="n">ellipse_sd_area</span> <span class="o">*</span> <span class="mf">100.</span>
+<span class="n">elps_stats</span><span class="p">[</span><span class="s1">&#39;pct_overlap&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">elps_stats</span><span class="o">.</span><span class="n">overlap_area</span> <span class="o">/</span> <span class="n">elps_stats</span><span class="o">.</span><span class="n">union_area</span> <span class="o">*</span> <span class="mf">100.</span>
 
 <span class="c1"># Buffer around fix (not bounded)</span>
 <span class="n">buf_stats</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
@@ -24529,7 +24542,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Using version 3 of CC computing, the Union of density histograms (~ cccoeff)</span>
@@ -24559,7 +24572,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[4]:</div>
+    <div class="prompt output_prompt">Out[14]:</div>
 
 
 
@@ -24908,7 +24921,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="prompt input_prompt">In&nbsp;[21]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Get participants stats</span>
@@ -24971,7 +24984,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[11]:</div>
+    <div class="prompt output_prompt">Out[21]:</div>
 
 
 
@@ -25058,12 +25071,12 @@ Buffer 500m:
       <td>9.36</td>
       <td>9 days 08:31:53</td>
       <td>144.40</td>
-      <td>292.84</td>
-      <td>79.55</td>
-      <td>357.69</td>
-      <td>55.09</td>
-      <td>27.16</td>
-      <td>22.24</td>
+      <td>292.58</td>
+      <td>79.30</td>
+      <td>357.68</td>
+      <td>54.92</td>
+      <td>27.10</td>
+      <td>22.17</td>
       <td>9.36</td>
     </tr>
     <tr>
@@ -25082,8 +25095,8 @@ Buffer 500m:
       <td>9.43</td>
       <td>9 days 10:14:57</td>
       <td>130.71</td>
-      <td>94.94</td>
-      <td>71.47</td>
+      <td>94.93</td>
+      <td>71.46</td>
       <td>154.19</td>
       <td>54.67</td>
       <td>75.28</td>
@@ -25106,12 +25119,12 @@ Buffer 500m:
       <td>9.00</td>
       <td>9 days 00:05:12</td>
       <td>67.37</td>
-      <td>65.35</td>
-      <td>42.03</td>
-      <td>90.68</td>
-      <td>62.39</td>
-      <td>64.32</td>
-      <td>46.35</td>
+      <td>66.68</td>
+      <td>43.36</td>
+      <td>90.69</td>
+      <td>64.35</td>
+      <td>65.03</td>
+      <td>47.81</td>
       <td>9.00</td>
     </tr>
     <tr>
@@ -25178,12 +25191,12 @@ Buffer 500m:
       <td>10.10</td>
       <td>10 days 02:27:21</td>
       <td>60.79</td>
-      <td>60.24</td>
-      <td>55.53</td>
-      <td>65.51</td>
-      <td>91.34</td>
-      <td>92.17</td>
-      <td>84.77</td>
+      <td>60.43</td>
+      <td>55.60</td>
+      <td>65.62</td>
+      <td>91.46</td>
+      <td>92.01</td>
+      <td>84.73</td>
       <td>10.10</td>
     </tr>
     <tr>
@@ -25250,11 +25263,11 @@ Buffer 500m:
       <td>10.08</td>
       <td>10 days 01:49:27</td>
       <td>6.46</td>
-      <td>68.38</td>
+      <td>68.34</td>
       <td>6.27</td>
-      <td>68.56</td>
+      <td>68.52</td>
       <td>97.15</td>
-      <td>9.17</td>
+      <td>9.18</td>
       <td>9.15</td>
       <td>10.08</td>
     </tr>
@@ -25274,8 +25287,8 @@ Buffer 500m:
       <td>7.13</td>
       <td>7 days 03:08:12</td>
       <td>294.59</td>
-      <td>276.81</td>
-      <td>219.85</td>
+      <td>276.80</td>
+      <td>219.84</td>
       <td>351.55</td>
       <td>74.63</td>
       <td>79.42</td>
@@ -25303,7 +25316,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Build age row</span>
@@ -25433,7 +25446,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[10]:</div>
+    <div class="prompt output_prompt">Out[16]:</div>
 
 
 
@@ -25708,7 +25721,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="prompt input_prompt">In&nbsp;[22]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Display CC coeff of 2D point density histogram for all epochsand spatial scales, using union as processing extent</span>
@@ -25755,7 +25768,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="prompt input_prompt">In&nbsp;[23]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Build DTW stat table, split by city</span>
@@ -25781,7 +25794,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[12]:</div>
+    <div class="prompt output_prompt">Out[23]:</div>
 
 
 
@@ -25888,7 +25901,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[46]:</div>
+<div class="prompt input_prompt">In&nbsp;[24]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">cvx_tab</span> <span class="o">=</span> <span class="n">pid_stats</span><span class="p">[[</span><span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="s1">&#39;cvx_eth_area&#39;</span><span class="p">,</span> <span class="s1">&#39;cvx_sd_area&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap_eth&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap_sd&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap&#39;</span><span class="p">]]</span>
@@ -25909,7 +25922,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[46]:</div>
+    <div class="prompt output_prompt">Out[24]:</div>
 
 
 
@@ -26263,7 +26276,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[18]:</div>
+<div class="prompt input_prompt">In&nbsp;[25]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">scatterplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">pid_stats</span><span class="p">[</span><span class="n">pid_stats</span><span class="o">.</span><span class="n">city_id</span> <span class="o">==</span> <span class="s1">&#39;TOTAL&#39;</span><span class="p">],</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;cvx_eth_area&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;cvx_sd_area&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s1">&#39;pct_overlap&#39;</span><span class="p">,</span> <span class="n">sizes</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
@@ -26330,7 +26343,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[20]:</div>
+<div class="prompt input_prompt">In&nbsp;[26]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">sde</span> <span class="o">=</span> <span class="s1">&#39;2SD&#39;</span>
@@ -26352,7 +26365,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[20]:</div>
+    <div class="prompt output_prompt">Out[26]:</div>
 
 
 
@@ -26851,7 +26864,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[49]:</div>
+<div class="prompt input_prompt">In&nbsp;[27]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">scatterplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">pid_stats</span><span class="p">[</span><span class="n">pid_stats</span><span class="o">.</span><span class="n">city_id</span> <span class="o">==</span> <span class="s1">&#39;TOTAL&#39;</span><span class="p">],</span> <span class="n">x</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_ellipse_eth_area&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_ellipse_sd_area&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_pct_overlap&#39;</span><span class="p">,</span> <span class="n">sizes</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
@@ -27000,7 +27013,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[68]:</div>
+<div class="prompt input_prompt">In&nbsp;[28]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">radius</span> <span class="o">=</span> <span class="s1">&#39;500&#39;</span>
@@ -27022,7 +27035,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[68]:</div>
+    <div class="prompt output_prompt">Out[28]:</div>
 
 
 
@@ -27376,7 +27389,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[71]:</div>
+<div class="prompt input_prompt">In&nbsp;[29]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">scatterplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">pid_stats</span><span class="p">[</span><span class="n">pid_stats</span><span class="o">.</span><span class="n">city_id</span> <span class="o">==</span> <span class="s1">&#39;TOTAL&#39;</span><span class="p">],</span> <span class="n">x</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">_buf_eth_area&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">_buf_sd_area&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s1">&#39;pct_overlap&#39;</span><span class="p">,</span> <span class="n">sizes</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
@@ -27443,7 +27456,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[72]:</div>
+<div class="prompt input_prompt">In&nbsp;[30]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">radius</span> <span class="o">=</span> <span class="s1">&#39;500&#39;</span>
@@ -27465,7 +27478,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[72]:</div>
+    <div class="prompt output_prompt">Out[30]:</div>
 
 
 
@@ -27525,11 +27538,11 @@ Buffer 500m:
       <td>59.00</td>
       <td>59.00</td>
       <td>0.00</td>
-      <td>57.00</td>
-      <td>57.00</td>
+      <td>58.00</td>
+      <td>58.00</td>
       <td>0.00</td>
-      <td>72.00</td>
-      <td>72.00</td>
+      <td>71.00</td>
+      <td>71.00</td>
       <td>0.00</td>
       <td>338.00</td>
       <td>338.00</td>
@@ -27538,37 +27551,37 @@ Buffer 500m:
     <tr>
       <th>mean</th>
       <td>85.32</td>
-      <td>102.45</td>
+      <td>103.16</td>
       <td>NaN</td>
       <td>44.36</td>
-      <td>47.66</td>
+      <td>48.34</td>
       <td>NaN</td>
-      <td>82.13</td>
-      <td>89.32</td>
+      <td>80.73</td>
+      <td>90.40</td>
       <td>NaN</td>
-      <td>75.27</td>
-      <td>89.09</td>
+      <td>76.32</td>
+      <td>93.98</td>
       <td>NaN</td>
       <td>75.49</td>
-      <td>87.83</td>
+      <td>89.47</td>
       <td>NaN</td>
     </tr>
     <tr>
       <th>std</th>
       <td>88.66</td>
-      <td>109.62</td>
+      <td>109.28</td>
       <td>NaN</td>
       <td>87.82</td>
-      <td>94.35</td>
+      <td>94.20</td>
       <td>NaN</td>
-      <td>87.17</td>
-      <td>97.81</td>
+      <td>87.06</td>
+      <td>97.53</td>
       <td>NaN</td>
-      <td>85.61</td>
-      <td>111.85</td>
+      <td>85.76</td>
+      <td>118.44</td>
       <td>NaN</td>
       <td>88.49</td>
-      <td>107.00</td>
+      <td>108.23</td>
       <td>NaN</td>
     </tr>
     <tr>
@@ -27577,70 +27590,70 @@ Buffer 500m:
       <td>1.60</td>
       <td>NaN</td>
       <td>4.14</td>
-      <td>2.23</td>
+      <td>6.42</td>
       <td>NaN</td>
-      <td>11.22</td>
-      <td>8.37</td>
+      <td>0.86</td>
+      <td>5.02</td>
       <td>NaN</td>
-      <td>0.79</td>
-      <td>0.82</td>
+      <td>0.86</td>
+      <td>4.57</td>
       <td>NaN</td>
-      <td>0.79</td>
-      <td>0.82</td>
+      <td>0.81</td>
+      <td>1.60</td>
       <td>NaN</td>
     </tr>
     <tr>
       <th>25%</th>
       <td>25.05</td>
-      <td>28.56</td>
+      <td>28.69</td>
       <td>NaN</td>
       <td>17.37</td>
-      <td>19.53</td>
+      <td>19.74</td>
       <td>NaN</td>
-      <td>34.49</td>
-      <td>35.13</td>
+      <td>30.77</td>
+      <td>35.79</td>
       <td>NaN</td>
-      <td>14.25</td>
-      <td>24.63</td>
+      <td>14.66</td>
+      <td>26.78</td>
       <td>NaN</td>
       <td>21.53</td>
-      <td>24.76</td>
+      <td>26.31</td>
       <td>NaN</td>
     </tr>
     <tr>
       <th>50%</th>
       <td>52.36</td>
-      <td>60.21</td>
+      <td>60.18</td>
       <td>NaN</td>
       <td>26.19</td>
-      <td>25.23</td>
+      <td>26.37</td>
       <td>NaN</td>
-      <td>54.41</td>
-      <td>60.36</td>
+      <td>54.30</td>
+      <td>60.99</td>
       <td>NaN</td>
-      <td>47.35</td>
-      <td>58.82</td>
+      <td>50.64</td>
+      <td>60.43</td>
       <td>NaN</td>
       <td>46.25</td>
-      <td>49.84</td>
+      <td>52.12</td>
       <td>NaN</td>
     </tr>
     <tr>
       <th>75%</th>
       <td>118.73</td>
-      <td>136.73</td>
+      <td>138.26</td>
       <td>NaN</td>
       <td>42.65</td>
-      <td>43.35</td>
+      <td>46.38</td>
       <td>NaN</td>
-      <td>81.59</td>
-      <td>94.24</td>
+      <td>81.40</td>
+      <td>91.67</td>
       <td>NaN</td>
-      <td>95.21</td>
-      <td>102.49</td>
+      <td>96.09</td>
+      <td>105.19</td>
       <td>NaN</td>
       <td>93.41</td>
-      <td>104.04</td>
+      <td>105.77</td>
       <td>NaN</td>
     </tr>
     <tr>
@@ -27649,16 +27662,16 @@ Buffer 500m:
       <td>558.60</td>
       <td>NaN</td>
       <td>651.71</td>
-      <td>699.12</td>
+      <td>699.10</td>
       <td>NaN</td>
       <td>443.20</td>
-      <td>517.25</td>
+      <td>517.07</td>
       <td>NaN</td>
       <td>368.13</td>
-      <td>750.45</td>
+      <td>751.90</td>
       <td>NaN</td>
       <td>651.71</td>
-      <td>750.45</td>
+      <td>751.90</td>
       <td>NaN</td>
     </tr>
     <tr>
@@ -27670,64 +27683,64 @@ Buffer 500m:
       <td>59.00</td>
       <td>59.00</td>
       <td>59.00</td>
-      <td>57.00</td>
-      <td>57.00</td>
-      <td>57.00</td>
-      <td>72.00</td>
-      <td>72.00</td>
-      <td>72.00</td>
+      <td>58.00</td>
+      <td>58.00</td>
+      <td>58.00</td>
+      <td>71.00</td>
+      <td>71.00</td>
+      <td>71.00</td>
       <td>338.00</td>
       <td>338.00</td>
       <td>338.00</td>
     </tr>
     <tr>
       <th>mean</th>
-      <td>76.04</td>
-      <td>73.88</td>
-      <td>57.70</td>
-      <td>82.42</td>
-      <td>78.16</td>
-      <td>67.21</td>
-      <td>79.10</td>
-      <td>76.34</td>
-      <td>62.79</td>
-      <td>78.44</td>
-      <td>70.05</td>
-      <td>56.08</td>
-      <td>78.18</td>
-      <td>74.23</td>
-      <td>59.87</td>
+      <td>76.87</td>
+      <td>73.85</td>
+      <td>58.39</td>
+      <td>85.23</td>
+      <td>78.20</td>
+      <td>69.03</td>
+      <td>83.37</td>
+      <td>75.67</td>
+      <td>64.93</td>
+      <td>80.17</td>
+      <td>69.72</td>
+      <td>57.12</td>
+      <td>80.13</td>
+      <td>74.06</td>
+      <td>61.10</td>
     </tr>
     <tr>
       <th>std</th>
-      <td>16.74</td>
-      <td>28.36</td>
-      <td>24.11</td>
-      <td>18.47</td>
-      <td>22.26</td>
-      <td>22.47</td>
-      <td>19.91</td>
-      <td>22.06</td>
-      <td>21.72</td>
-      <td>17.39</td>
-      <td>29.29</td>
-      <td>24.73</td>
-      <td>17.82</td>
-      <td>26.64</td>
-      <td>23.82</td>
+      <td>16.54</td>
+      <td>28.41</td>
+      <td>24.43</td>
+      <td>15.73</td>
+      <td>21.89</td>
+      <td>21.43</td>
+      <td>16.45</td>
+      <td>22.58</td>
+      <td>21.26</td>
+      <td>16.43</td>
+      <td>28.66</td>
+      <td>24.64</td>
+      <td>16.63</td>
+      <td>26.52</td>
+      <td>23.79</td>
     </tr>
     <tr>
       <th>min</th>
       <td>7.70</td>
       <td>0.38</td>
       <td>0.38</td>
-      <td>25.12</td>
+      <td>25.15</td>
       <td>19.16</td>
       <td>16.41</td>
       <td>11.58</td>
       <td>8.27</td>
       <td>8.21</td>
-      <td>33.11</td>
+      <td>33.27</td>
       <td>0.20</td>
       <td>0.20</td>
       <td>7.70</td>
@@ -27736,75 +27749,75 @@ Buffer 500m:
     </tr>
     <tr>
       <th>25%</th>
-      <td>66.41</td>
-      <td>66.89</td>
-      <td>46.72</td>
-      <td>77.50</td>
-      <td>71.50</td>
-      <td>55.25</td>
-      <td>70.94</td>
-      <td>68.36</td>
-      <td>53.27</td>
-      <td>70.59</td>
-      <td>50.35</td>
-      <td>37.81</td>
-      <td>69.23</td>
-      <td>64.79</td>
-      <td>47.47</td>
+      <td>68.72</td>
+      <td>65.89</td>
+      <td>47.33</td>
+      <td>79.94</td>
+      <td>70.71</td>
+      <td>59.87</td>
+      <td>80.19</td>
+      <td>65.70</td>
+      <td>56.97</td>
+      <td>72.89</td>
+      <td>50.67</td>
+      <td>38.38</td>
+      <td>72.57</td>
+      <td>64.72</td>
+      <td>47.85</td>
     </tr>
     <tr>
       <th>50%</th>
-      <td>78.13</td>
-      <td>84.90</td>
-      <td>63.47</td>
-      <td>86.83</td>
+      <td>78.73</td>
+      <td>85.36</td>
+      <td>64.76</td>
+      <td>89.61</td>
       <td>85.68</td>
-      <td>72.63</td>
-      <td>84.20</td>
-      <td>82.52</td>
-      <td>64.42</td>
-      <td>81.14</td>
-      <td>85.21</td>
-      <td>62.45</td>
-      <td>81.32</td>
+      <td>72.66</td>
+      <td>89.41</td>
+      <td>82.57</td>
+      <td>66.12</td>
+      <td>84.08</td>
+      <td>83.10</td>
+      <td>62.54</td>
+      <td>83.32</td>
       <td>84.73</td>
-      <td>65.09</td>
+      <td>66.69</td>
     </tr>
     <tr>
       <th>75%</th>
-      <td>89.35</td>
-      <td>93.76</td>
-      <td>74.67</td>
-      <td>96.37</td>
-      <td>93.37</td>
-      <td>83.52</td>
-      <td>93.50</td>
-      <td>91.93</td>
-      <td>80.66</td>
-      <td>91.13</td>
-      <td>93.25</td>
-      <td>75.72</td>
-      <td>91.93</td>
-      <td>93.58</td>
-      <td>76.50</td>
+      <td>89.68</td>
+      <td>93.79</td>
+      <td>75.75</td>
+      <td>96.82</td>
+      <td>92.99</td>
+      <td>85.58</td>
+      <td>94.71</td>
+      <td>92.36</td>
+      <td>81.63</td>
+      <td>91.41</td>
+      <td>93.05</td>
+      <td>76.63</td>
+      <td>92.82</td>
+      <td>93.10</td>
+      <td>78.14</td>
     </tr>
     <tr>
       <th>max</th>
       <td>100.00</td>
-      <td>99.43</td>
+      <td>99.39</td>
       <td>96.76</td>
       <td>100.00</td>
       <td>98.75</td>
-      <td>97.62</td>
-      <td>99.01</td>
+      <td>97.88</td>
+      <td>100.00</td>
       <td>99.20</td>
       <td>91.51</td>
       <td>100.00</td>
       <td>99.67</td>
-      <td>94.96</td>
+      <td>93.36</td>
       <td>100.00</td>
       <td>99.67</td>
-      <td>97.62</td>
+      <td>97.88</td>
     </tr>
   </tbody>
 </table>
@@ -27819,7 +27832,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[73]:</div>
+<div class="prompt input_prompt">In&nbsp;[31]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">scatterplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">pid_stats</span><span class="p">[</span><span class="n">pid_stats</span><span class="o">.</span><span class="n">city_id</span> <span class="o">==</span> <span class="s1">&#39;TOTAL&#39;</span><span class="p">],</span> <span class="n">x</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_buf_eth_area&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_buf_sd_area&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s1">&#39;pct_overlap&#39;</span><span class="p">,</span> <span class="n">sizes</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
@@ -27851,8 +27864,8 @@ Buffer 500m:
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>y = 0.90x + 20.02
-	R² = 0.55
+<pre>y = 0.94x + 18.45
+	R² = 0.59
 	p-value = 0.000
 </pre>
 </div>
@@ -27886,7 +27899,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[36]:</div>
+<div class="prompt input_prompt">In&nbsp;[32]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">sde</span> <span class="o">=</span> <span class="s1">&#39;2SD&#39;</span>
@@ -27952,7 +27965,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[36]:</div>
+    <div class="prompt output_prompt">Out[32]:</div>
 
 
 
@@ -27979,8 +27992,8 @@ Buffer 500m:
       <th>city_id</th>
       <th>Activity space</th>
       <th>Sensor</th>
-      <th>areaEthica</th>
       <th>areaSenseDoc</th>
+      <th>areaEthica</th>
       <th>pct_overlap</th>
     </tr>
   </thead>
@@ -27991,8 +28004,8 @@ Buffer 500m:
       <td>TOTAL</td>
       <td>Convex hull</td>
       <td>Ethica</td>
-      <td>667.90</td>
       <td>683.86</td>
+      <td>667.90</td>
       <td>99.08</td>
     </tr>
     <tr>
@@ -28001,8 +28014,8 @@ Buffer 500m:
       <td>TOTAL</td>
       <td>Convex hull</td>
       <td>SenseDoc</td>
-      <td>667.90</td>
       <td>683.86</td>
+      <td>667.90</td>
       <td>96.76</td>
     </tr>
     <tr>
@@ -28011,8 +28024,8 @@ Buffer 500m:
       <td>TOTAL</td>
       <td>Convex hull</td>
       <td>Ethica ∪ SenseDoc</td>
-      <td>667.90</td>
       <td>683.86</td>
+      <td>667.90</td>
       <td>95.15</td>
     </tr>
     <tr>
@@ -28021,8 +28034,8 @@ Buffer 500m:
       <td>TOTAL</td>
       <td>Convex hull</td>
       <td>Ethica</td>
-      <td>1304.06</td>
       <td>5413.53</td>
+      <td>1304.06</td>
       <td>85.83</td>
     </tr>
     <tr>
@@ -28031,8 +28044,8 @@ Buffer 500m:
       <td>TOTAL</td>
       <td>Convex hull</td>
       <td>SenseDoc</td>
-      <td>1304.06</td>
       <td>5413.53</td>
+      <td>1304.06</td>
       <td>20.67</td>
     </tr>
     <tr>
@@ -28051,9 +28064,9 @@ Buffer 500m:
       <td>TOTAL</td>
       <td>500m Buffer along tracks</td>
       <td>SenseDoc</td>
+      <td>68.34</td>
       <td>6.46</td>
-      <td>68.38</td>
-      <td>9.17</td>
+      <td>9.18</td>
     </tr>
     <tr>
       <th>4064</th>
@@ -28061,8 +28074,8 @@ Buffer 500m:
       <td>TOTAL</td>
       <td>500m Buffer along tracks</td>
       <td>Ethica ∪ SenseDoc</td>
+      <td>68.34</td>
       <td>6.46</td>
-      <td>68.38</td>
       <td>9.15</td>
     </tr>
     <tr>
@@ -28071,8 +28084,8 @@ Buffer 500m:
       <td>TOTAL</td>
       <td>500m Buffer along tracks</td>
       <td>Ethica</td>
+      <td>276.80</td>
       <td>294.59</td>
-      <td>276.81</td>
       <td>74.63</td>
     </tr>
     <tr>
@@ -28081,8 +28094,8 @@ Buffer 500m:
       <td>TOTAL</td>
       <td>500m Buffer along tracks</td>
       <td>SenseDoc</td>
+      <td>276.80</td>
       <td>294.59</td>
-      <td>276.81</td>
       <td>79.42</td>
     </tr>
     <tr>
@@ -28091,8 +28104,8 @@ Buffer 500m:
       <td>TOTAL</td>
       <td>500m Buffer along tracks</td>
       <td>Ethica ∪ SenseDoc</td>
+      <td>276.80</td>
       <td>294.59</td>
-      <td>276.81</td>
       <td>62.54</td>
     </tr>
   </tbody>
@@ -28147,7 +28160,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[38]:</div>
+<div class="prompt input_prompt">In&nbsp;[33]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">relplot</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">tidy_all</span><span class="p">[</span><span class="n">tidy_all</span><span class="o">.</span><span class="n">Sensor</span> <span class="o">==</span> <span class="s1">&#39;Ethica </span><span class="se">\u222a</span><span class="s1"> SenseDoc&#39;</span><span class="p">],</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;scatter&quot;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;areaEthica&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;areaSenseDoc&#39;</span><span class="p">,</span> 
@@ -28195,7 +28208,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[40]:</div>
+<div class="prompt input_prompt">In&nbsp;[34]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">as_tab</span> <span class="o">=</span> <span class="n">tidy_all</span><span class="p">[[</span><span class="s1">&#39;Activity space&#39;</span><span class="p">,</span> <span class="s1">&#39;Sensor&#39;</span><span class="p">,</span> <span class="s1">&#39;areaEthica&#39;</span><span class="p">,</span> <span class="s1">&#39;areaSenseDoc&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -28219,7 +28232,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[40]:</div>
+    <div class="prompt output_prompt">Out[34]:</div>
 
 
 
@@ -28294,7 +28307,7 @@ Buffer 500m:
       <td>90.11</td>
       <td>NaN</td>
       <td>75.49</td>
-      <td>87.83</td>
+      <td>89.47</td>
       <td>NaN</td>
     </tr>
     <tr>
@@ -28309,7 +28322,7 @@ Buffer 500m:
       <td>109.18</td>
       <td>NaN</td>
       <td>88.49</td>
-      <td>107.00</td>
+      <td>108.23</td>
       <td>NaN</td>
     </tr>
     <tr>
@@ -28323,8 +28336,8 @@ Buffer 500m:
       <td>0.81</td>
       <td>1.59</td>
       <td>NaN</td>
-      <td>0.79</td>
-      <td>0.82</td>
+      <td>0.81</td>
+      <td>1.60</td>
       <td>NaN</td>
     </tr>
     <tr>
@@ -28339,7 +28352,7 @@ Buffer 500m:
       <td>26.29</td>
       <td>NaN</td>
       <td>21.53</td>
-      <td>24.76</td>
+      <td>26.31</td>
       <td>NaN</td>
     </tr>
     <tr>
@@ -28354,7 +28367,7 @@ Buffer 500m:
       <td>52.10</td>
       <td>NaN</td>
       <td>46.25</td>
-      <td>49.84</td>
+      <td>52.12</td>
       <td>NaN</td>
     </tr>
     <tr>
@@ -28369,7 +28382,7 @@ Buffer 500m:
       <td>105.89</td>
       <td>NaN</td>
       <td>93.41</td>
-      <td>104.04</td>
+      <td>105.77</td>
       <td>NaN</td>
     </tr>
     <tr>
@@ -28384,7 +28397,7 @@ Buffer 500m:
       <td>751.64</td>
       <td>NaN</td>
       <td>651.71</td>
-      <td>750.45</td>
+      <td>751.90</td>
       <td>NaN</td>
     </tr>
     <tr>
@@ -28414,9 +28427,9 @@ Buffer 500m:
       <td>90.60</td>
       <td>59.87</td>
       <td>54.98</td>
-      <td>78.18</td>
-      <td>74.23</td>
-      <td>59.87</td>
+      <td>80.13</td>
+      <td>74.06</td>
+      <td>61.10</td>
     </tr>
     <tr>
       <th>std</th>
@@ -28429,9 +28442,9 @@ Buffer 500m:
       <td>14.25</td>
       <td>27.28</td>
       <td>24.90</td>
-      <td>17.82</td>
-      <td>26.64</td>
-      <td>23.82</td>
+      <td>16.63</td>
+      <td>26.52</td>
+      <td>23.79</td>
     </tr>
     <tr>
       <th>min</th>
@@ -28459,9 +28472,9 @@ Buffer 500m:
       <td>87.15</td>
       <td>40.41</td>
       <td>38.58</td>
-      <td>69.23</td>
-      <td>64.79</td>
-      <td>47.47</td>
+      <td>72.57</td>
+      <td>64.72</td>
+      <td>47.85</td>
     </tr>
     <tr>
       <th>50%</th>
@@ -28474,9 +28487,9 @@ Buffer 500m:
       <td>96.96</td>
       <td>65.08</td>
       <td>59.27</td>
-      <td>81.32</td>
+      <td>83.32</td>
       <td>84.73</td>
-      <td>65.09</td>
+      <td>66.69</td>
     </tr>
     <tr>
       <th>75%</th>
@@ -28489,9 +28502,9 @@ Buffer 500m:
       <td>99.44</td>
       <td>82.86</td>
       <td>74.03</td>
-      <td>91.93</td>
-      <td>93.58</td>
-      <td>76.50</td>
+      <td>92.82</td>
+      <td>93.10</td>
+      <td>78.14</td>
     </tr>
     <tr>
       <th>max</th>
@@ -28506,7 +28519,7 @@ Buffer 500m:
       <td>96.85</td>
       <td>100.00</td>
       <td>99.67</td>
-      <td>97.62</td>
+      <td>97.88</td>
     </tr>
   </tbody>
 </table>
