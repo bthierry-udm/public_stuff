@@ -13297,6 +13297,411 @@ $( document ).ready(function(){
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Looking-at-gap-distribution">Looking at gap distribution<a class="anchor-link" href="#Looking-at-gap-distribution">&#182;</a></h3><h4 id="Ethica-tracks">Ethica tracks<a class="anchor-link" href="#Ethica-tracks">&#182;</a></h4>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[42]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;select iid, gap, count(*)</span>
+<span class="s2">from (</span>
+<span class="s2">    select iid, corrected_time</span>
+<span class="s2">        ,corrected_time - lag(corrected_time) over (partition by iid order by corrected_time) gap</span>
+<span class="s2">    from level_0.bt_w1_eth_gps_clean2</span>
+<span class="s2">    --where iid in (101005415, 101018267)</span>
+<span class="s2">) foo</span>
+<span class="s2">group by iid, gap</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="n">gaps</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">engine</span><span class="p">)</span>
+<span class="n">gaps_count</span> <span class="o">=</span> <span class="n">gaps</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;gap&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">gaps_count</span> <span class="o">=</span> <span class="n">gaps_count</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,[(</span><span class="s1">&#39;gap&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">)]]</span><span class="o">.</span><span class="n">droplevel</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;columns&#39;</span><span class="p">)</span>
+<span class="n">gaps_count</span><span class="p">[</span><span class="s1">&#39;gap_s&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gaps_count</span><span class="p">[</span><span class="s1">&#39;gap&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+<span class="n">gaps_count</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+
+<span class="c1">#ax = sns.lineplot(data=gaps_count, x=&#39;gap_s&#39;, y=&#39;count&#39;)</span>
+<span class="c1">#_ = ax.set_xlim(xmin=-10, xmax = 600)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[42]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>gap</th>
+      <th>count</th>
+      <th>gap_s</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0 days 00:00:01</td>
+      <td>29884502</td>
+      <td>1.00</td>
+    </tr>
+    <tr>
+      <th>299</th>
+      <td>0 days 00:05:00</td>
+      <td>1164299</td>
+      <td>300.00</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0 days 00:00:02</td>
+      <td>675956</td>
+      <td>2.00</td>
+    </tr>
+    <tr>
+      <th>298</th>
+      <td>0 days 00:04:59</td>
+      <td>396546</td>
+      <td>299.00</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>0 days 00:00:06</td>
+      <td>316102</td>
+      <td>6.00</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0 days 00:00:05</td>
+      <td>304181</td>
+      <td>5.00</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0 days 00:00:03</td>
+      <td>292253</td>
+      <td>3.00</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0 days 00:00:04</td>
+      <td>222008</td>
+      <td>4.00</td>
+    </tr>
+    <tr>
+      <th>297</th>
+      <td>0 days 00:04:58</td>
+      <td>181394</td>
+      <td>298.00</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>0 days 00:00:07</td>
+      <td>172411</td>
+      <td>7.00</td>
+    </tr>
+    <tr>
+      <th>296</th>
+      <td>0 days 00:04:57</td>
+      <td>156364</td>
+      <td>297.00</td>
+    </tr>
+    <tr>
+      <th>295</th>
+      <td>0 days 00:04:56</td>
+      <td>129855</td>
+      <td>296.00</td>
+    </tr>
+    <tr>
+      <th>300</th>
+      <td>0 days 00:05:01</td>
+      <td>119583</td>
+      <td>301.00</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>0 days 00:00:20</td>
+      <td>108091</td>
+      <td>20.00</td>
+    </tr>
+    <tr>
+      <th>292</th>
+      <td>0 days 00:04:53</td>
+      <td>107161</td>
+      <td>293.00</td>
+    </tr>
+    <tr>
+      <th>294</th>
+      <td>0 days 00:04:55</td>
+      <td>93392</td>
+      <td>295.00</td>
+    </tr>
+    <tr>
+      <th>293</th>
+      <td>0 days 00:04:54</td>
+      <td>87755</td>
+      <td>294.00</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>0 days 00:00:15</td>
+      <td>74867</td>
+      <td>15.00</td>
+    </tr>
+    <tr>
+      <th>286</th>
+      <td>0 days 00:04:47</td>
+      <td>74708</td>
+      <td>287.00</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>0 days 00:00:10</td>
+      <td>74335</td>
+      <td>10.00</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="SenseDoc-tracks">SenseDoc tracks<a class="anchor-link" href="#SenseDoc-tracks">&#182;</a></h4>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 15m 26s</span>
+<span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;select iid, gap, count(*)</span>
+<span class="s2">from (</span>
+<span class="s2">    select iid, utcdate</span>
+<span class="s2">        ,utcdate - lag(utcdate) over (partition by iid order by utcdate) gap</span>
+<span class="s2">    from level_0.bt_w1_sd_gps_clean</span>
+<span class="s2">    --where iid in (101005415, 101018267)</span>
+<span class="s2">) foo</span>
+<span class="s2">group by iid, gap</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="n">gaps</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">engine</span><span class="p">)</span>
+<span class="n">gaps_count</span> <span class="o">=</span> <span class="n">gaps</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;gap&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">gaps_count</span> <span class="o">=</span> <span class="n">gaps_count</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,[(</span><span class="s1">&#39;gap&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">)]]</span><span class="o">.</span><span class="n">droplevel</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;columns&#39;</span><span class="p">)</span>
+<span class="n">gaps_count</span><span class="p">[</span><span class="s1">&#39;gap_s&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gaps_count</span><span class="p">[</span><span class="s1">&#39;gap&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+<span class="n">gaps_count</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+
+<span class="c1">#ax = sns.lineplot(data=gaps_count, x=&#39;gap_s&#39;, y=&#39;count&#39;)</span>
+<span class="c1">#_ = ax.set_xlim(xmin=-10, xmax = 600)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[3]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>gap</th>
+      <th>count</th>
+      <th>gap_s</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0 days 00:00:01</td>
+      <td>241946524</td>
+      <td>1.00</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0 days 00:00:02</td>
+      <td>6011</td>
+      <td>2.00</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0 days 00:00:03</td>
+      <td>1609</td>
+      <td>3.00</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>0 days 00:00:07</td>
+      <td>875</td>
+      <td>7.00</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>0 days 00:00:13</td>
+      <td>764</td>
+      <td>13.00</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>0 days 00:00:08</td>
+      <td>749</td>
+      <td>8.00</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0 days 00:00:04</td>
+      <td>744</td>
+      <td>4.00</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>0 days 00:00:19</td>
+      <td>688</td>
+      <td>19.00</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>0 days 00:00:25</td>
+      <td>616</td>
+      <td>25.00</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>0 days 00:00:14</td>
+      <td>566</td>
+      <td>14.00</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>0 days 00:00:20</td>
+      <td>545</td>
+      <td>20.00</td>
+    </tr>
+    <tr>
+      <th>36</th>
+      <td>0 days 00:00:37</td>
+      <td>513</td>
+      <td>37.00</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>0 days 00:00:06</td>
+      <td>509</td>
+      <td>6.00</td>
+    </tr>
+    <tr>
+      <th>30</th>
+      <td>0 days 00:00:31</td>
+      <td>506</td>
+      <td>31.00</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0 days 00:00:05</td>
+      <td>504</td>
+      <td>5.00</td>
+    </tr>
+    <tr>
+      <th>42</th>
+      <td>0 days 00:00:43</td>
+      <td>468</td>
+      <td>43.00</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>0 days 00:00:26</td>
+      <td>464</td>
+      <td>26.00</td>
+    </tr>
+    <tr>
+      <th>31</th>
+      <td>0 days 00:00:32</td>
+      <td>427</td>
+      <td>32.00</td>
+    </tr>
+    <tr>
+      <th>48</th>
+      <td>0 days 00:00:49</td>
+      <td>415</td>
+      <td>49.00</td>
+    </tr>
+    <tr>
+      <th>54</th>
+      <td>0 days 00:00:55</td>
+      <td>398</td>
+      <td>55.00</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Spatial-coincidence-of-GPS-tracks-from-SD-and-Ethica">Spatial coincidence of GPS tracks from SD and Ethica<a class="anchor-link" href="#Spatial-coincidence-of-GPS-tracks-from-SD-and-Ethica">&#182;</a></h2>
 </div>
 </div>
@@ -13481,7 +13886,7 @@ $( document ).ready(function(){
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_6_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_10_0.png"
 >
 </div>
 
@@ -13518,7 +13923,7 @@ $( document ).ready(function(){
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_7_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_11_0.png"
 >
 </div>
 
@@ -13698,7 +14103,7 @@ Cross-correlation (CMA AOI) coeff=0.89
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_11_1.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_15_1.png"
 >
 </div>
 
@@ -14200,7 +14605,7 @@ Cross-correlation (CMA AOI) coeff=0.89
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_18_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_22_0.png"
 >
 </div>
 
@@ -14234,7 +14639,7 @@ Cross-correlation (CMA AOI) coeff=0.89
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_19_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_23_0.png"
 >
 </div>
 
@@ -14269,7 +14674,7 @@ Cross-correlation (CMA AOI) coeff=0.89
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_20_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_24_0.png"
 >
 </div>
 
@@ -14319,7 +14724,7 @@ Cross-correlation (CMA AOI) coeff=0.89
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_23_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_27_0.png"
 >
 </div>
 
@@ -14575,7 +14980,7 @@ NB: The multiprocessing version of the script is not working in Jupyter Notebook
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_27_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_31_0.png"
 >
 </div>
 
@@ -14614,7 +15019,7 @@ NB: The multiprocessing version of the script is not working in Jupyter Notebook
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_28_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_32_0.png"
 >
 </div>
 
@@ -14676,7 +15081,7 @@ NB: The multiprocessing version of the script is not working in Jupyter Notebook
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_31_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_35_0.png"
 >
 </div>
 
@@ -14949,7 +15354,7 @@ NB: The multiprocessing version of the script is not working in Jupyter Notebook
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_36_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_40_0.png"
 >
 </div>
 
@@ -15201,7 +15606,7 @@ NB: The multiprocessing version of the script is not working in Jupyter Notebook
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_40_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_44_0.png"
 >
 </div>
 
@@ -15495,7 +15900,7 @@ Results stored in <code>analyses.cross_corr_sd_eth3</code>.</p>
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_44_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_48_0.png"
 >
 </div>
 
@@ -15533,7 +15938,7 @@ Results stored in <code>analyses.cross_corr_sd_eth3</code>.</p>
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_45_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_49_0.png"
 >
 </div>
 
@@ -15571,7 +15976,7 @@ Results stored in <code>analyses.cross_corr_sd_eth3</code>.</p>
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_46_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_50_0.png"
 >
 </div>
 
@@ -16220,7 +16625,7 @@ DTW normalized distance (simulated) = 83.83
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_50_1.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_54_1.png"
 >
 </div>
 
@@ -16336,7 +16741,7 @@ DTW normalized distance = 740.86
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_52_1.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_56_1.png"
 >
 </div>
 
@@ -16451,7 +16856,7 @@ DTW normalized distance = 1441.89
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_54_1.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_58_1.png"
 >
 </div>
 
@@ -16479,7 +16884,7 @@ DTW normalized distance = 457.30
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_54_3.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_58_3.png"
 >
 </div>
 
@@ -16596,7 +17001,7 @@ DTW normalized distance = 649.86
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_56_1.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_60_1.png"
 >
 </div>
 
@@ -16610,7 +17015,7 @@ DTW normalized distance = 649.86
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_56_2.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_60_2.png"
 >
 </div>
 
@@ -16624,7 +17029,7 @@ DTW normalized distance = 649.86
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_56_3.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_60_3.png"
 >
 </div>
 
@@ -16751,7 +17156,7 @@ DTW normalized distance = 649.86
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_58_1.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_62_1.png"
 >
 </div>
 
@@ -16779,7 +17184,7 @@ DTW normalized distance = 649.86
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_58_3.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_62_3.png"
 >
 </div>
 
@@ -17303,7 +17708,7 @@ DTW normalized distance = 649.86
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_61_1.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_65_1.png"
 >
 </div>
 
@@ -17591,7 +17996,7 @@ DTW normalized distance = 649.86
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_64_1.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_68_1.png"
 >
 </div>
 
@@ -17746,7 +18151,7 @@ DTW normalized distance = 649.86
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_68_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_72_0.png"
 >
 </div>
 
@@ -18322,7 +18727,7 @@ p-value = 0.000
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_75_1.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_79_1.png"
 >
 </div>
 
@@ -18461,7 +18866,7 @@ p-value = 0.000
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_77_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_81_0.png"
 >
 </div>
 
@@ -18586,7 +18991,7 @@ p-value = 0.000
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_78_1.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_82_1.png"
 >
 </div>
 
@@ -18622,7 +19027,7 @@ p-value = 0.000
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_79_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_83_0.png"
 >
 </div>
 
@@ -18685,7 +19090,7 @@ p-value = 0.000
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_80_1.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_84_1.png"
 >
 </div>
 
@@ -19155,7 +19560,7 @@ p-value = 0.000
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_85_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_89_0.png"
 >
 </div>
 
@@ -19383,7 +19788,7 @@ p-value = 0.000
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_88_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_92_0.png"
 >
 </div>
 
@@ -19522,7 +19927,7 @@ p-value = 0.067
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_91_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_95_0.png"
 >
 </div>
 
@@ -19559,7 +19964,7 @@ p-value = 0.067
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_92_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_96_0.png"
 >
 </div>
 
@@ -19599,7 +20004,7 @@ p-value = 0.067
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_93_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_97_0.png"
 >
 </div>
 
@@ -19638,7 +20043,7 @@ p-value = 0.067
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_94_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_98_0.png"
 >
 </div>
 
@@ -19876,7 +20281,7 @@ p-value = 0.067
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_97_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_101_0.png"
 >
 </div>
 
@@ -19890,7 +20295,7 @@ p-value = 0.067
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_97_1.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_101_1.png"
 >
 </div>
 
@@ -19904,7 +20309,7 @@ p-value = 0.067
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_97_2.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_101_2.png"
 >
 </div>
 
@@ -19955,7 +20360,7 @@ p-value = 0.000
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_98_1.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_102_1.png"
 >
 </div>
 
@@ -20094,7 +20499,7 @@ p-value = 0.000
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_101_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_105_0.png"
 >
 </div>
 
@@ -20131,7 +20536,7 @@ p-value = 0.000
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_102_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_106_0.png"
 >
 </div>
 
@@ -20171,7 +20576,7 @@ p-value = 0.000
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_103_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_107_0.png"
 >
 </div>
 
@@ -20208,7 +20613,7 @@ p-value = 0.000
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_104_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_108_0.png"
 >
 </div>
 
@@ -20350,7 +20755,7 @@ Angle=-3.191325566916475°
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_107_2.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_111_2.png"
 >
 </div>
 
@@ -21173,7 +21578,7 @@ Ellipse 2SD:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_114_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_118_0.png"
 >
 </div>
 
@@ -21211,7 +21616,7 @@ Ellipse 2SD:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_115_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_119_0.png"
 >
 </div>
 
@@ -21253,7 +21658,7 @@ Ellipse 2SD:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_116_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_120_0.png"
 >
 </div>
 
@@ -21289,7 +21694,7 @@ Ellipse 2SD:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_117_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_121_0.png"
 >
 </div>
 
@@ -21663,7 +22068,7 @@ Ellipse 2SD:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_122_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_126_0.png"
 >
 </div>
 
@@ -21701,7 +22106,7 @@ Ellipse 2SD:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_123_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_127_0.png"
 >
 </div>
 
@@ -21743,7 +22148,7 @@ Ellipse 2SD:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_124_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_128_0.png"
 >
 </div>
 
@@ -21779,7 +22184,7 @@ Ellipse 2SD:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_125_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_129_0.png"
 >
 </div>
 
@@ -21802,6 +22207,7 @@ Ellipse 2SD:
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="Buffer-zones-(250-and-500m)">Buffer zones (250 and 500m)<a class="anchor-link" href="#Buffer-zones-(250-and-500m)">&#182;</a></h3><p>Buffers have been computed around single fixes as well as along tracks (as line segments). For buffers along tracks, only segments no longer than what would correspond to a movement at 140km/h have been included.</p>
+<p>Buffers along tracks are filtered to keep only segments with a duration equal or shorter than a Ethica Duty Cycle ~ 5min. We also filtered out segments with an apparent speed greater than 140km/h.</p>
 <table>
 <thead><tr>
 <th style="text-align:left">View name</th>
@@ -21839,6 +22245,11 @@ Ellipse 2SD:
 <td style="text-align:left"><code>buf_500_trk_eth</code></td>
 <td style="text-align:right">346</td>
 <td style="text-align:left">As above, with buffers 500m</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>buf_500_trk_road_eth</code></td>
+<td style="text-align:right">341</td>
+<td style="text-align:left">Buffers 500m along Ethica track lines, interpolated from road network for the 4 min gap period (following Kevin's coment)</td>
 </tr>
 <tr>
 <td style="text-align:left"><code>buf_250_trk_eth_cma</code></td>
@@ -22030,13 +22441,14 @@ Ellipse 2SD:
     <span class="n">ST_buffer</span><span class="p">(</span><span class="n">geom</span><span class="p">::</span><span class="n">geography</span><span class="p">,</span> <span class="mi">250</span><span class="p">)::</span><span class="n">geometry</span><span class="p">)</span> <span class="n">geom</span>
 <span class="k">from</span> <span class="n">level_0</span><span class="p">.</span><span class="n">bt_w1_eth_gps_track2</span> <span class="n">gps</span>
 <span class="k">join</span> <span class="n">survey</span> <span class="n">s</span> <span class="k">on</span> <span class="n">s</span><span class="p">.</span><span class="n">iid</span><span class="o">=</span><span class="n">gps</span><span class="p">.</span><span class="n">iid</span> <span class="k">and</span> <span class="p">(</span><span class="n">gps</span><span class="p">.</span><span class="n">start_time</span><span class="p">,</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span><span class="p">)</span> <span class="k">overlaps</span> <span class="p">(</span><span class="n">survey_start</span><span class="p">,</span> <span class="n">survey_end</span><span class="p">)</span>
-<span class="k">where</span> <span class="n">ST_length</span><span class="p">(</span><span class="n">geog</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">140000</span><span class="o">/</span><span class="mi">15</span>
+<span class="k">where</span> <span class="mi">3</span><span class="p">.</span><span class="mi">6</span> <span class="o">*</span> <span class="n">ST_length</span><span class="p">(</span><span class="n">geog</span><span class="p">)</span> <span class="o">/</span> <span class="k">extract</span><span class="p">(</span><span class="n">epoch</span> <span class="k">from</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span> <span class="o">-</span> <span class="n">gps</span><span class="p">.</span><span class="n">start_time</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">140</span>
+    <span class="k">and</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span> <span class="o">-</span> <span class="n">gps</span><span class="p">.</span><span class="n">start_time</span> <span class="o">&lt;=</span> <span class="s1">&#39;5min&#39;</span><span class="p">::</span><span class="nb">interval</span>
 <span class="k">group</span> <span class="k">by</span> <span class="n">gps</span><span class="p">.</span><span class="n">iid</span><span class="p">,</span> <span class="n">city</span><span class="p">,</span> <span class="n">survey_duration</span><span class="p">;</span>
 
 <span class="k">comment</span> <span class="k">on</span> <span class="n">materialized</span> <span class="k">view</span> <span class="n">analyses</span><span class="p">.</span><span class="n">buf_250_trk_eth</span> <span class="k">is</span> <span class="s1">&#39;Buffers 250m of Ethica GPS tracklines, only common periods of Ethica and SD tracks&#39;</span><span class="p">;</span>
 
 
-<span class="c1">-- common period dataset, along tracklines, buffer 500m ~ 2 hr 43 min</span>
+<span class="c1">-- common period dataset, along tracklines, buffer 500m ~ 2:54:27</span>
 <span class="k">create</span> <span class="n">materialized</span> <span class="k">view</span> <span class="n">analyses</span><span class="p">.</span><span class="n">buf_500_trk_eth</span> <span class="k">as</span>
 <span class="k">with</span> <span class="n">survey</span> <span class="k">as</span> <span class="p">(</span>
     <span class="k">select</span> <span class="n">iid</span>
@@ -22053,7 +22465,8 @@ Ellipse 2SD:
     <span class="n">ST_buffer</span><span class="p">(</span><span class="n">geom</span><span class="p">::</span><span class="n">geography</span><span class="p">,</span> <span class="mi">500</span><span class="p">)::</span><span class="n">geometry</span><span class="p">)</span> <span class="n">geom</span>
 <span class="k">from</span> <span class="n">level_0</span><span class="p">.</span><span class="n">bt_w1_eth_gps_track2</span> <span class="n">gps</span>
 <span class="k">join</span> <span class="n">survey</span> <span class="n">s</span> <span class="k">on</span> <span class="n">s</span><span class="p">.</span><span class="n">iid</span><span class="o">=</span><span class="n">gps</span><span class="p">.</span><span class="n">iid</span> <span class="k">and</span> <span class="p">(</span><span class="n">gps</span><span class="p">.</span><span class="n">start_time</span><span class="p">,</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span><span class="p">)</span> <span class="k">overlaps</span> <span class="p">(</span><span class="n">survey_start</span><span class="p">,</span> <span class="n">survey_end</span><span class="p">)</span>
-<span class="k">where</span> <span class="n">ST_length</span><span class="p">(</span><span class="n">geog</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">140000</span><span class="o">/</span><span class="mi">15</span>
+<span class="k">where</span> <span class="mi">3</span><span class="p">.</span><span class="mi">6</span> <span class="o">*</span> <span class="n">ST_length</span><span class="p">(</span><span class="n">geog</span><span class="p">)</span> <span class="o">/</span> <span class="k">extract</span><span class="p">(</span><span class="n">epoch</span> <span class="k">from</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span> <span class="o">-</span> <span class="n">gps</span><span class="p">.</span><span class="n">start_time</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">140</span>
+    <span class="k">and</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span> <span class="o">-</span> <span class="n">gps</span><span class="p">.</span><span class="n">start_time</span> <span class="o">&lt;=</span> <span class="s1">&#39;5min&#39;</span><span class="p">::</span><span class="nb">interval</span>
 <span class="k">group</span> <span class="k">by</span> <span class="n">gps</span><span class="p">.</span><span class="n">iid</span><span class="p">,</span> <span class="n">city</span><span class="p">,</span> <span class="n">survey_duration</span><span class="p">;</span>
 
 <span class="k">comment</span> <span class="k">on</span> <span class="n">materialized</span> <span class="k">view</span> <span class="n">analyses</span><span class="p">.</span><span class="n">buf_500_trk_eth</span> <span class="k">is</span> <span class="s1">&#39;Buffers 500m of Ethica GPS tracklines, only common periods of Ethica and SD tracks&#39;</span><span class="p">;</span>
@@ -22082,7 +22495,8 @@ Ellipse 2SD:
             <span class="k">when</span> <span class="s1">&#39;Victoria&#39;</span> <span class="k">then</span> <span class="s1">&#39;935&#39;</span>
         <span class="k">end</span> <span class="n">cmauid</span>
     <span class="k">from</span> <span class="n">level_0</span><span class="p">.</span><span class="n">bt_w1_eth_gps_track2</span>
-    <span class="k">where</span> <span class="n">ST_length</span><span class="p">(</span><span class="n">geog</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">140000</span><span class="o">/</span><span class="mi">15</span> <span class="c1">-- filter lines corresponding to moves over 140km/h during 4min gaps</span>
+    <span class="k">where</span> <span class="mi">3</span><span class="p">.</span><span class="mi">6</span> <span class="o">*</span> <span class="n">ST_length</span><span class="p">(</span><span class="n">geog</span><span class="p">)</span> <span class="o">/</span> <span class="k">extract</span><span class="p">(</span><span class="n">epoch</span> <span class="k">from</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span> <span class="o">-</span> <span class="n">gps</span><span class="p">.</span><span class="n">start_time</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">140</span>
+        <span class="k">and</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span> <span class="o">-</span> <span class="n">gps</span><span class="p">.</span><span class="n">start_time</span> <span class="o">&lt;=</span> <span class="s1">&#39;5min&#39;</span><span class="p">::</span><span class="nb">interval</span>
 <span class="p">)</span>
 <span class="k">select</span> <span class="s1">&#39;ethica|trk|cma&#39;</span> <span class="k">source</span><span class="p">,</span> <span class="n">gps</span><span class="p">.</span><span class="n">iid</span><span class="p">,</span> <span class="n">city</span><span class="p">,</span> <span class="n">survey_duration</span><span class="p">,</span> <span class="n">ST_Union</span><span class="p">(</span>
     <span class="n">ST_buffer</span><span class="p">(</span><span class="n">geom</span><span class="p">::</span><span class="n">geography</span><span class="p">,</span> <span class="mi">250</span><span class="p">)::</span><span class="n">geometry</span><span class="p">)</span> <span class="n">geom</span>
@@ -22117,7 +22531,8 @@ Ellipse 2SD:
             <span class="k">when</span> <span class="s1">&#39;Victoria&#39;</span> <span class="k">then</span> <span class="s1">&#39;935&#39;</span>
         <span class="k">end</span> <span class="n">cmauid</span>
     <span class="k">from</span> <span class="n">level_0</span><span class="p">.</span><span class="n">bt_w1_eth_gps_track2</span>
-    <span class="k">where</span> <span class="n">ST_length</span><span class="p">(</span><span class="n">geog</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">140000</span><span class="o">/</span><span class="mi">15</span> <span class="c1">-- filter lines corresponding to moves over 140km/h during 4min gaps</span>
+    <span class="k">where</span> <span class="mi">3</span><span class="p">.</span><span class="mi">6</span> <span class="o">*</span> <span class="n">ST_length</span><span class="p">(</span><span class="n">geog</span><span class="p">)</span> <span class="o">/</span> <span class="k">extract</span><span class="p">(</span><span class="n">epoch</span> <span class="k">from</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span> <span class="o">-</span> <span class="n">gps</span><span class="p">.</span><span class="n">start_time</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">140</span>
+        <span class="k">and</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span> <span class="o">-</span> <span class="n">gps</span><span class="p">.</span><span class="n">start_time</span> <span class="o">&lt;=</span> <span class="s1">&#39;5min&#39;</span><span class="p">::</span><span class="nb">interval</span>
 <span class="p">)</span>
 <span class="k">select</span> <span class="s1">&#39;ethica|trk|cma&#39;</span> <span class="k">source</span><span class="p">,</span> <span class="n">gps</span><span class="p">.</span><span class="n">iid</span><span class="p">,</span> <span class="n">city</span><span class="p">,</span> <span class="n">survey_duration</span><span class="p">,</span> <span class="n">ST_Union</span><span class="p">(</span>
     <span class="n">ST_buffer</span><span class="p">(</span><span class="n">geom</span><span class="p">::</span><span class="n">geography</span><span class="p">,</span> <span class="mi">500</span><span class="p">)::</span><span class="n">geometry</span><span class="p">)</span> <span class="n">geom</span>
@@ -22127,6 +22542,37 @@ Ellipse 2SD:
 <span class="k">group</span> <span class="k">by</span> <span class="n">gps</span><span class="p">.</span><span class="n">iid</span><span class="p">,</span> <span class="n">city</span><span class="p">,</span> <span class="n">survey_duration</span><span class="p">;</span>
 
 <span class="k">comment</span> <span class="k">on</span> <span class="n">materialized</span> <span class="k">view</span> <span class="n">analyses</span><span class="p">.</span><span class="n">buf_500_trk_eth_cma</span> <span class="k">is</span> <span class="s1">&#39;Buffers 500m of Ethica GPS tracklines, clipped to CMA boundaries, only common periods of Ethica and SD tracks&#39;</span><span class="p">;</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h5 id="UPDATE-2022-02-02-|-ROAD-NETWORK-BUFFERS">UPDATE 2022-02-02 | ROAD NETWORK BUFFERS<a class="anchor-link" href="#UPDATE-2022-02-02-|-ROAD-NETWORK-BUFFERS">&#182;</a></h5><p>See note above about creating road network inteprolated track. Below is the SQL code to create the corresponding 500m buffers. (Other buffers are discarded to save time, as they are not used in the paper)</p>
+<div class="highlight"><pre><span></span><span class="c1">-- common period dataset, along tracklines, buffer 500m ~ 2:29:58</span>
+<span class="k">create</span> <span class="n">materialized</span> <span class="k">view</span> <span class="n">analyses</span><span class="p">.</span><span class="n">buf_500_trk_road_eth</span> <span class="k">as</span>
+<span class="k">with</span> <span class="n">survey</span> <span class="k">as</span> <span class="p">(</span>
+    <span class="k">select</span> <span class="n">iid</span>
+        <span class="p">,</span><span class="n">greatest</span><span class="p">(</span><span class="n">start_eth</span><span class="p">,</span> <span class="n">start_sd</span><span class="p">)</span> <span class="k">at</span> <span class="k">time</span> <span class="k">zone</span> <span class="s1">&#39;UTC&#39;</span> <span class="n">survey_start</span>
+        <span class="p">,</span><span class="n">least</span><span class="p">(</span><span class="n">end_eth</span><span class="p">,</span> <span class="n">end_sd</span><span class="p">)</span> <span class="k">at</span> <span class="k">time</span> <span class="k">zone</span> <span class="s1">&#39;UTC&#39;</span> <span class="n">survey_end</span>
+        <span class="p">,</span><span class="n">least</span><span class="p">(</span><span class="n">end_eth</span><span class="p">,</span> <span class="n">end_sd</span><span class="p">)</span> <span class="o">-</span> <span class="n">greatest</span><span class="p">(</span><span class="n">start_eth</span><span class="p">,</span> <span class="n">start_sd</span><span class="p">)</span> <span class="n">survey_duration</span>
+    <span class="k">from</span> <span class="p">(</span><span class="k">select</span> <span class="n">iid</span><span class="p">,</span> <span class="k">min</span><span class="p">(</span><span class="n">corrected_time</span> <span class="k">at</span> <span class="k">time</span> <span class="k">zone</span> <span class="s1">&#39;UTC&#39;</span><span class="p">)</span> <span class="n">start_eth</span><span class="p">,</span> <span class="k">max</span><span class="p">(</span><span class="n">corrected_time</span> <span class="k">at</span> <span class="k">time</span> <span class="k">zone</span> <span class="s1">&#39;UTC&#39;</span><span class="p">)</span> <span class="n">end_eth</span> 
+        <span class="k">from</span> <span class="n">level_0</span><span class="p">.</span><span class="n">bt_w1_eth_gps_clean2</span> <span class="k">group</span> <span class="k">by</span> <span class="n">iid</span><span class="p">)</span> <span class="n">eth</span>
+    <span class="k">join</span> <span class="p">(</span><span class="k">select</span> <span class="n">iid</span><span class="p">,</span> <span class="k">min</span><span class="p">(</span><span class="n">utcdate</span><span class="p">)</span> <span class="n">start_sd</span><span class="p">,</span> <span class="k">max</span><span class="p">(</span><span class="n">utcdate</span><span class="p">)</span> <span class="n">end_sd</span> 
+        <span class="k">from</span> <span class="n">level_0</span><span class="p">.</span><span class="n">bt_w1_sd_gps_clean</span> <span class="k">group</span> <span class="k">by</span> <span class="n">iid</span><span class="p">)</span> <span class="n">sd</span> <span class="k">using</span> <span class="p">(</span><span class="n">iid</span><span class="p">)</span>
+    <span class="k">where</span> <span class="p">(</span><span class="n">start_eth</span><span class="p">,</span> <span class="n">end_eth</span><span class="p">)</span> <span class="k">overlaps</span> <span class="p">(</span><span class="n">start_sd</span><span class="p">,</span> <span class="n">end_sd</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="k">select</span> <span class="s1">&#39;ethica|trk&#39;</span> <span class="k">source</span><span class="p">,</span> <span class="n">gps</span><span class="p">.</span><span class="n">iid</span><span class="p">,</span> <span class="n">city</span><span class="p">,</span> <span class="n">survey_duration</span><span class="p">,</span> <span class="n">ST_Union</span><span class="p">(</span>
+    <span class="n">ST_buffer</span><span class="p">(</span><span class="n">geom</span><span class="p">::</span><span class="n">geography</span><span class="p">,</span> <span class="mi">500</span><span class="p">)::</span><span class="n">geometry</span><span class="p">)</span> <span class="n">geom</span>
+<span class="k">from</span> <span class="n">level_0</span><span class="p">.</span><span class="n">bt_w1_eth_gps_track2_w_road</span> <span class="n">gps</span>
+<span class="k">join</span> <span class="n">survey</span> <span class="n">s</span> <span class="k">on</span> <span class="n">s</span><span class="p">.</span><span class="n">iid</span><span class="o">=</span><span class="n">gps</span><span class="p">.</span><span class="n">iid</span> <span class="k">and</span> <span class="p">(</span><span class="n">gps</span><span class="p">.</span><span class="n">start_time</span><span class="p">,</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span><span class="p">)</span> <span class="k">overlaps</span> <span class="p">(</span><span class="n">survey_start</span><span class="p">,</span> <span class="n">survey_end</span><span class="p">)</span>
+<span class="k">where</span> <span class="mi">3</span><span class="p">.</span><span class="mi">6</span> <span class="o">*</span> <span class="n">ST_length</span><span class="p">(</span><span class="n">geog</span><span class="p">)</span> <span class="o">/</span> <span class="k">extract</span><span class="p">(</span><span class="n">epoch</span> <span class="k">from</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span> <span class="o">-</span> <span class="n">gps</span><span class="p">.</span><span class="n">start_time</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">140</span>
+    <span class="k">and</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span> <span class="o">-</span> <span class="n">gps</span><span class="p">.</span><span class="n">start_time</span> <span class="o">&lt;=</span> <span class="s1">&#39;5min&#39;</span><span class="p">::</span><span class="nb">interval</span>
+<span class="k">group</span> <span class="k">by</span> <span class="n">gps</span><span class="p">.</span><span class="n">iid</span><span class="p">,</span> <span class="n">city</span><span class="p">,</span> <span class="n">survey_duration</span><span class="p">;</span>
+
+<span class="k">comment</span> <span class="k">on</span> <span class="n">materialized</span> <span class="k">view</span> <span class="n">analyses</span><span class="p">.</span><span class="n">buf_500_trk_road_eth</span> <span class="k">is</span> <span class="s1">&#39;Buffers 500m of Ethica GPS road network interpolated tracklines, only common periods of Ethica and SD tracks&#39;</span><span class="p">;</span>
 </pre></div>
 
 </div>
@@ -22273,12 +22719,13 @@ Ellipse 2SD:
 <span class="k">from</span> <span class="n">level_0</span><span class="p">.</span><span class="n">bt_w1_sd_gps_track</span> <span class="n">gps</span>
 <span class="k">join</span> <span class="n">survey</span> <span class="n">s</span> <span class="k">on</span> <span class="n">s</span><span class="p">.</span><span class="n">iid</span><span class="o">=</span><span class="n">gps</span><span class="p">.</span><span class="n">iid</span> <span class="k">and</span> <span class="p">(</span><span class="n">gps</span><span class="p">.</span><span class="n">start_time</span><span class="p">,</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span><span class="p">)</span> <span class="k">overlaps</span> <span class="p">(</span><span class="n">survey_start</span><span class="p">,</span> <span class="n">survey_end</span><span class="p">)</span>
 <span class="k">where</span> <span class="mi">3</span><span class="p">.</span><span class="mi">6</span> <span class="o">*</span> <span class="n">ST_length</span><span class="p">(</span><span class="n">geog</span><span class="p">)</span> <span class="o">/</span> <span class="k">extract</span><span class="p">(</span><span class="n">epoch</span> <span class="k">from</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span> <span class="o">-</span> <span class="n">gps</span><span class="p">.</span><span class="n">start_time</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">140</span>
+    <span class="k">and</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span> <span class="o">-</span> <span class="n">gps</span><span class="p">.</span><span class="n">start_time</span> <span class="o">&lt;=</span> <span class="s1">&#39;5min&#39;</span><span class="p">::</span><span class="nb">interval</span>
 <span class="k">group</span> <span class="k">by</span> <span class="n">gps</span><span class="p">.</span><span class="n">iid</span><span class="p">,</span> <span class="n">city_id</span><span class="p">,</span> <span class="n">survey_duration</span><span class="p">;</span>
 
 <span class="k">comment</span> <span class="k">on</span> <span class="n">materialized</span> <span class="k">view</span> <span class="n">analyses</span><span class="p">.</span><span class="n">buf_250_trk_sd</span> <span class="k">is</span> <span class="s1">&#39;Buffers 250m of SenseDoc GPS tracklines, only common periods of Ethica and SD tracks&#39;</span><span class="p">;</span>
 
 
-<span class="c1">-- common period dataset, along tracklines, buffer 500m ~ 21:56:01</span>
+<span class="c1">-- common period dataset, along tracklines, buffer 500m ~ 21:10:45</span>
 <span class="k">create</span> <span class="n">materialized</span> <span class="k">view</span> <span class="n">analyses</span><span class="p">.</span><span class="n">buf_500_trk_sd</span> <span class="k">as</span>
 <span class="k">with</span> <span class="n">survey</span> <span class="k">as</span> <span class="p">(</span>
     <span class="k">select</span> <span class="n">iid</span>
@@ -22296,6 +22743,7 @@ Ellipse 2SD:
 <span class="k">from</span> <span class="n">level_0</span><span class="p">.</span><span class="n">bt_w1_sd_gps_track</span> <span class="n">gps</span>
 <span class="k">join</span> <span class="n">survey</span> <span class="n">s</span> <span class="k">on</span> <span class="n">s</span><span class="p">.</span><span class="n">iid</span><span class="o">=</span><span class="n">gps</span><span class="p">.</span><span class="n">iid</span> <span class="k">and</span> <span class="p">(</span><span class="n">gps</span><span class="p">.</span><span class="n">start_time</span><span class="p">,</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span><span class="p">)</span> <span class="k">overlaps</span> <span class="p">(</span><span class="n">survey_start</span><span class="p">,</span> <span class="n">survey_end</span><span class="p">)</span>
 <span class="k">where</span> <span class="mi">3</span><span class="p">.</span><span class="mi">6</span> <span class="o">*</span> <span class="n">ST_length</span><span class="p">(</span><span class="n">geog</span><span class="p">)</span> <span class="o">/</span> <span class="k">extract</span><span class="p">(</span><span class="n">epoch</span> <span class="k">from</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span> <span class="o">-</span> <span class="n">gps</span><span class="p">.</span><span class="n">start_time</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">140</span>
+    <span class="k">and</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span> <span class="o">-</span> <span class="n">gps</span><span class="p">.</span><span class="n">start_time</span> <span class="o">&lt;=</span> <span class="s1">&#39;5min&#39;</span><span class="p">::</span><span class="nb">interval</span>
 <span class="k">group</span> <span class="k">by</span> <span class="n">gps</span><span class="p">.</span><span class="n">iid</span><span class="p">,</span> <span class="n">city_id</span><span class="p">,</span> <span class="n">survey_duration</span><span class="p">;</span>
 
 <span class="k">comment</span> <span class="k">on</span> <span class="n">materialized</span> <span class="k">view</span> <span class="n">analyses</span><span class="p">.</span><span class="n">buf_500_trk_sd</span> <span class="k">is</span> <span class="s1">&#39;Buffers 500m of SenseDoc GPS tracklines, only common periods of Ethica and SD tracks&#39;</span><span class="p">;</span>
@@ -22331,6 +22779,7 @@ Ellipse 2SD:
 <span class="k">join</span> <span class="n">survey</span> <span class="n">s</span> <span class="k">on</span> <span class="n">s</span><span class="p">.</span><span class="n">iid</span><span class="o">=</span><span class="n">gps</span><span class="p">.</span><span class="n">iid</span> <span class="k">and</span> <span class="p">(</span><span class="n">gps</span><span class="p">.</span><span class="n">start_time</span><span class="p">,</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span><span class="p">)</span> <span class="k">overlaps</span> <span class="p">(</span><span class="n">survey_start</span><span class="p">,</span> <span class="n">survey_end</span><span class="p">)</span>
 <span class="k">join</span> <span class="n">analyses</span><span class="p">.</span><span class="n">cma2016</span> <span class="n">cma</span> <span class="k">on</span> <span class="n">ST_Within</span><span class="p">(</span><span class="n">gps</span><span class="p">.</span><span class="n">geom</span><span class="p">,</span> <span class="n">cma</span><span class="p">.</span><span class="n">wkb_geometry</span><span class="p">)</span> <span class="k">and</span> <span class="n">gps</span><span class="p">.</span><span class="n">cmauid</span><span class="o">=</span><span class="n">cma</span><span class="p">.</span><span class="n">cmauid</span>
 <span class="k">where</span>  <span class="mi">3</span><span class="p">.</span><span class="mi">6</span> <span class="o">*</span> <span class="n">ST_length</span><span class="p">(</span><span class="n">geog</span><span class="p">)</span> <span class="o">/</span> <span class="k">extract</span><span class="p">(</span><span class="n">epoch</span> <span class="k">from</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span> <span class="o">-</span> <span class="n">gps</span><span class="p">.</span><span class="n">start_time</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">140</span>
+    <span class="k">and</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span> <span class="o">-</span> <span class="n">gps</span><span class="p">.</span><span class="n">start_time</span> <span class="o">&lt;=</span> <span class="s1">&#39;5min&#39;</span><span class="p">::</span><span class="nb">interval</span>
 <span class="k">group</span> <span class="k">by</span> <span class="n">gps</span><span class="p">.</span><span class="n">iid</span><span class="p">,</span> <span class="n">city_id</span><span class="p">,</span> <span class="n">survey_duration</span><span class="p">;</span>
 
 <span class="k">comment</span> <span class="k">on</span> <span class="n">materialized</span> <span class="k">view</span> <span class="n">analyses</span><span class="p">.</span><span class="n">buf_250_trk_sd_cma</span> <span class="k">is</span> <span class="s1">&#39;Buffers 250m of Ethica GPS tracklines, clipped to CMA boundaries, only common periods of Ethica and SD tracks&#39;</span><span class="p">;</span>
@@ -22369,6 +22818,113 @@ Ellipse 2SD:
 <span class="k">group</span> <span class="k">by</span> <span class="n">gps</span><span class="p">.</span><span class="n">iid</span><span class="p">,</span> <span class="n">city_id</span><span class="p">,</span> <span class="n">survey_duration</span><span class="p">;</span>
 
 <span class="k">comment</span> <span class="k">on</span> <span class="n">materialized</span> <span class="k">view</span> <span class="n">analyses</span><span class="p">.</span><span class="n">buf_500_trk_sd_cma</span> <span class="k">is</span> <span class="s1">&#39;Buffers 250m of Ethica GPS tracklines, clipped to CMA boundaries, only common periods of Ethica and SD tracks&#39;</span><span class="p">;</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Update-2022-02-02-|-Road-network-interpolation">Update 2022-02-02 | Road network interpolation<a class="anchor-link" href="#Update-2022-02-02-|-Road-network-interpolation">&#182;</a></h4><p>Following Kevin's suggestion/objection, linear interpolation of GPS track is replaced by interpolation along the road network in certain condition:</p>
+<ul>
+<li>track segment corresponds to the duty cycle gap, <em>i.e.</em> between 1 minute and 5 minutes</li>
+<li>track segment length must be longer than 50m (otherwise, linear interpolation is used)</li>
+<li>track segment longer than 5 minutes are discarded (same as before)</li>
+<li>track segments with apparent speed over 140km/h are discarded (same as before)</li>
+<li>track segments shorter than 1 minute are still linearly interpolated (same as before -- to avoid having to many vertices to process)</li>
+<li>track segments with start and/or end point outside Canada are discarded</li>
+</ul>
+<p>The same criteria are applied to SenseDoc data.</p>
+<p>Import Canada Digital boundary file of Province, Census program 2021, to filter points outside of Canada:</p>
+<div class="highlight"><pre><span></span>ogr2ogr -f <span class="s2">&quot;PostgreSQL&quot;</span> PG:<span class="s2">&quot;dbname=&#39;interact_sensors&#39;&quot;</span> lpr_000a21a_e.shp -lco <span class="nv">SCHEMA</span><span class="o">=</span>analyses -nln canada2021 -t_srs EPSG:4326 -nlt PROMOTE_TO_MULTI
+</pre></div>
+<p>Then, get the start and end points of all GPS track segments that qualify:</p>
+<div class="highlight"><pre><span></span><span class="c1">-- Ethica data extract</span>
+<span class="k">with</span> <span class="n">survey</span> <span class="k">as</span> <span class="p">(</span>
+    <span class="k">select</span> <span class="n">iid</span>
+        <span class="p">,</span><span class="n">greatest</span><span class="p">(</span><span class="n">start_eth</span><span class="p">,</span> <span class="n">start_sd</span><span class="p">)</span> <span class="k">at</span> <span class="k">time</span> <span class="k">zone</span> <span class="s1">&#39;UTC&#39;</span> <span class="n">survey_start</span>
+        <span class="p">,</span><span class="n">least</span><span class="p">(</span><span class="n">end_eth</span><span class="p">,</span> <span class="n">end_sd</span><span class="p">)</span> <span class="k">at</span> <span class="k">time</span> <span class="k">zone</span> <span class="s1">&#39;UTC&#39;</span> <span class="n">survey_end</span>
+        <span class="p">,</span><span class="n">least</span><span class="p">(</span><span class="n">end_eth</span><span class="p">,</span> <span class="n">end_sd</span><span class="p">)</span> <span class="o">-</span> <span class="n">greatest</span><span class="p">(</span><span class="n">start_eth</span><span class="p">,</span> <span class="n">start_sd</span><span class="p">)</span> <span class="n">survey_duration</span>
+    <span class="k">from</span> <span class="p">(</span><span class="k">select</span> <span class="n">iid</span><span class="p">,</span> <span class="k">min</span><span class="p">(</span><span class="n">corrected_time</span> <span class="k">at</span> <span class="k">time</span> <span class="k">zone</span> <span class="s1">&#39;UTC&#39;</span><span class="p">)</span> <span class="n">start_eth</span><span class="p">,</span> <span class="k">max</span><span class="p">(</span><span class="n">corrected_time</span> <span class="k">at</span> <span class="k">time</span> <span class="k">zone</span> <span class="s1">&#39;UTC&#39;</span><span class="p">)</span> <span class="n">end_eth</span> 
+        <span class="k">from</span> <span class="n">level_0</span><span class="p">.</span><span class="n">bt_w1_eth_gps_clean2</span> <span class="k">group</span> <span class="k">by</span> <span class="n">iid</span><span class="p">)</span> <span class="n">eth</span>
+    <span class="k">join</span> <span class="p">(</span><span class="k">select</span> <span class="n">iid</span><span class="p">,</span> <span class="k">min</span><span class="p">(</span><span class="n">utcdate</span><span class="p">)</span> <span class="n">start_sd</span><span class="p">,</span> <span class="k">max</span><span class="p">(</span><span class="n">utcdate</span><span class="p">)</span> <span class="n">end_sd</span> 
+        <span class="k">from</span> <span class="n">level_0</span><span class="p">.</span><span class="n">bt_w1_sd_gps_clean</span> <span class="k">group</span> <span class="k">by</span> <span class="n">iid</span><span class="p">)</span> <span class="n">sd</span> <span class="k">using</span> <span class="p">(</span><span class="n">iid</span><span class="p">)</span>
+    <span class="k">where</span> <span class="p">(</span><span class="n">start_eth</span><span class="p">,</span> <span class="n">end_eth</span><span class="p">)</span> <span class="k">overlaps</span> <span class="p">(</span><span class="n">start_sd</span><span class="p">,</span> <span class="n">end_sd</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="k">select</span> <span class="n">city</span><span class="p">,</span> <span class="n">gps</span><span class="p">.</span><span class="n">iid</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span>
+    <span class="p">,</span><span class="n">concat_ws</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">,</span> <span class="n">gps</span><span class="p">.</span><span class="n">iid</span><span class="p">,</span> <span class="n">start_time</span><span class="p">)</span> <span class="n">id</span>
+    <span class="c1">--,ST_StartPoint(geom)</span>
+    <span class="p">,</span><span class="n">ST_X</span><span class="p">(</span><span class="n">ST_StartPoint</span><span class="p">(</span><span class="n">geom</span><span class="p">))</span> <span class="n">start_x</span>
+    <span class="p">,</span><span class="n">ST_Y</span><span class="p">(</span><span class="n">ST_StartPoint</span><span class="p">(</span><span class="n">geom</span><span class="p">))</span> <span class="n">start_y</span>
+    <span class="c1">--,ST_EndPoint(geom)</span>
+    <span class="p">,</span><span class="n">ST_X</span><span class="p">(</span><span class="n">ST_EndPoint</span><span class="p">(</span><span class="n">geom</span><span class="p">))</span> <span class="n">end_x</span>
+    <span class="p">,</span><span class="n">ST_Y</span><span class="p">(</span><span class="n">ST_EndPoint</span><span class="p">(</span><span class="n">geom</span><span class="p">))</span> <span class="n">end_y</span>
+<span class="k">from</span> <span class="n">level_0</span><span class="p">.</span><span class="n">bt_w1_eth_gps_track2</span> <span class="n">gps</span>
+<span class="k">join</span> <span class="n">survey</span> <span class="n">s</span> <span class="k">on</span> <span class="n">s</span><span class="p">.</span><span class="n">iid</span><span class="o">=</span><span class="n">gps</span><span class="p">.</span><span class="n">iid</span> <span class="k">and</span> <span class="p">(</span><span class="n">gps</span><span class="p">.</span><span class="n">start_time</span><span class="p">,</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span><span class="p">)</span> <span class="k">overlaps</span> <span class="p">(</span><span class="n">survey_start</span><span class="p">,</span> <span class="n">survey_end</span><span class="p">)</span>
+<span class="k">join</span> <span class="n">analyses</span><span class="p">.</span><span class="n">canada2021</span> <span class="n">c21</span> <span class="k">on</span> <span class="n">ST_Intersects</span><span class="p">(</span><span class="n">c21</span><span class="p">.</span><span class="n">wkb_geometry</span><span class="p">,</span> <span class="n">gps</span><span class="p">.</span><span class="n">geom</span><span class="p">)</span>
+<span class="k">where</span> <span class="n">stop_time</span> <span class="o">-</span> <span class="n">start_time</span> <span class="k">between</span> <span class="s1">&#39;1min&#39;</span><span class="p">::</span><span class="nb">interval</span> <span class="k">and</span> <span class="s1">&#39;5min&#39;</span><span class="p">::</span><span class="nb">interval</span>
+    <span class="k">and</span> <span class="mi">3</span><span class="p">.</span><span class="mi">6</span> <span class="o">*</span> <span class="n">st_length</span><span class="p">(</span><span class="n">geog</span><span class="p">)</span> <span class="o">/</span> <span class="k">extract</span><span class="p">(</span><span class="n">epoch</span> <span class="k">from</span> <span class="n">stop_time</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">140</span>
+    <span class="k">and</span> <span class="n">st_length</span><span class="p">(</span><span class="n">geog</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">50</span>
+<span class="k">order</span> <span class="k">by</span> <span class="n">iid</span><span class="p">,</span> <span class="n">start_time</span><span class="p">;</span>
+
+<span class="c1">-- SenseDoc data extract ~ no segment</span>
+<span class="k">with</span> <span class="n">survey</span> <span class="k">as</span> <span class="p">(</span>
+    <span class="k">select</span> <span class="n">iid</span>
+        <span class="p">,</span><span class="n">greatest</span><span class="p">(</span><span class="n">start_eth</span><span class="p">,</span> <span class="n">start_sd</span><span class="p">)</span> <span class="n">survey_start</span>
+        <span class="p">,</span><span class="n">least</span><span class="p">(</span><span class="n">end_eth</span><span class="p">,</span> <span class="n">end_sd</span><span class="p">)</span> <span class="n">survey_end</span>
+        <span class="p">,</span><span class="n">least</span><span class="p">(</span><span class="n">end_eth</span><span class="p">,</span> <span class="n">end_sd</span><span class="p">)</span> <span class="o">-</span> <span class="n">greatest</span><span class="p">(</span><span class="n">start_eth</span><span class="p">,</span> <span class="n">start_sd</span><span class="p">)</span> <span class="n">survey_duration</span>
+    <span class="k">from</span> <span class="p">(</span><span class="k">select</span> <span class="n">iid</span><span class="p">,</span> <span class="k">min</span><span class="p">(</span><span class="n">corrected_time</span> <span class="k">at</span> <span class="k">time</span> <span class="k">zone</span> <span class="s1">&#39;UTC&#39;</span><span class="p">)</span> <span class="n">start_eth</span><span class="p">,</span> <span class="k">max</span><span class="p">(</span><span class="n">corrected_time</span> <span class="k">at</span> <span class="k">time</span> <span class="k">zone</span> <span class="s1">&#39;UTC&#39;</span><span class="p">)</span> <span class="n">end_eth</span> 
+        <span class="k">from</span> <span class="n">level_0</span><span class="p">.</span><span class="n">bt_w1_eth_gps_clean2</span> <span class="k">group</span> <span class="k">by</span> <span class="n">iid</span><span class="p">)</span> <span class="n">eth</span>
+    <span class="k">join</span> <span class="p">(</span><span class="k">select</span> <span class="n">iid</span><span class="p">,</span> <span class="k">min</span><span class="p">(</span><span class="n">utcdate</span><span class="p">)</span> <span class="n">start_sd</span><span class="p">,</span> <span class="k">max</span><span class="p">(</span><span class="n">utcdate</span><span class="p">)</span> <span class="n">end_sd</span> 
+        <span class="k">from</span> <span class="n">level_0</span><span class="p">.</span><span class="n">bt_w1_sd_gps_clean</span> <span class="k">group</span> <span class="k">by</span> <span class="n">iid</span><span class="p">)</span> <span class="n">sd</span> <span class="k">using</span> <span class="p">(</span><span class="n">iid</span><span class="p">)</span>
+    <span class="k">where</span> <span class="p">(</span><span class="n">start_eth</span><span class="p">,</span> <span class="n">end_eth</span><span class="p">)</span> <span class="k">overlaps</span> <span class="p">(</span><span class="n">start_sd</span><span class="p">,</span> <span class="n">end_sd</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="k">select</span> <span class="n">city</span><span class="p">,</span> <span class="n">gps</span><span class="p">.</span><span class="n">iid</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">stop_time</span>
+    <span class="p">,</span><span class="n">concat_ws</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">,</span> <span class="n">gps</span><span class="p">.</span><span class="n">iid</span><span class="p">,</span> <span class="n">start_time</span><span class="p">)</span> <span class="n">id</span>
+    <span class="c1">--,ST_StartPoint(geom)</span>
+    <span class="p">,</span><span class="n">ST_X</span><span class="p">(</span><span class="n">ST_StartPoint</span><span class="p">(</span><span class="n">geom</span><span class="p">))</span> <span class="n">start_x</span>
+    <span class="p">,</span><span class="n">ST_Y</span><span class="p">(</span><span class="n">ST_StartPoint</span><span class="p">(</span><span class="n">geom</span><span class="p">))</span> <span class="n">start_y</span>
+    <span class="c1">--,ST_EndPoint(geom)</span>
+    <span class="p">,</span><span class="n">ST_X</span><span class="p">(</span><span class="n">ST_EndPoint</span><span class="p">(</span><span class="n">geom</span><span class="p">))</span> <span class="n">end_x</span>
+    <span class="p">,</span><span class="n">ST_Y</span><span class="p">(</span><span class="n">ST_EndPoint</span><span class="p">(</span><span class="n">geom</span><span class="p">))</span> <span class="n">end_y</span>
+<span class="k">from</span> <span class="n">level_0</span><span class="p">.</span><span class="n">bt_w1_sd_gps_track</span> <span class="n">gps</span>
+<span class="k">join</span> <span class="n">survey</span> <span class="n">s</span> <span class="k">on</span> <span class="n">s</span><span class="p">.</span><span class="n">iid</span><span class="o">=</span><span class="n">gps</span><span class="p">.</span><span class="n">iid</span> <span class="k">and</span> <span class="p">(</span><span class="n">gps</span><span class="p">.</span><span class="n">start_time</span><span class="p">,</span> <span class="n">gps</span><span class="p">.</span><span class="n">stop_time</span><span class="p">)</span> <span class="k">overlaps</span> <span class="p">(</span><span class="n">survey_start</span><span class="p">,</span> <span class="n">survey_end</span><span class="p">)</span>
+<span class="k">join</span> <span class="n">analyses</span><span class="p">.</span><span class="n">canada2021</span> <span class="n">c21</span> <span class="k">on</span> <span class="n">ST_Intersects</span><span class="p">(</span><span class="n">c21</span><span class="p">.</span><span class="n">wkb_geometry</span><span class="p">,</span> <span class="n">gps</span><span class="p">.</span><span class="n">geom</span><span class="p">)</span>
+<span class="k">where</span> <span class="n">stop_time</span> <span class="o">-</span> <span class="n">start_time</span> <span class="k">between</span> <span class="s1">&#39;1min&#39;</span><span class="p">::</span><span class="nb">interval</span> <span class="k">and</span> <span class="s1">&#39;5min&#39;</span><span class="p">::</span><span class="nb">interval</span>
+    <span class="k">and</span> <span class="mi">3</span><span class="p">.</span><span class="mi">6</span> <span class="o">*</span> <span class="n">st_length</span><span class="p">(</span><span class="n">geog</span><span class="p">)</span> <span class="o">/</span> <span class="k">extract</span><span class="p">(</span><span class="n">epoch</span> <span class="k">from</span> <span class="n">stop_time</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">140</span>
+    <span class="k">and</span> <span class="n">st_length</span><span class="p">(</span><span class="n">geog</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">50</span>
+<span class="k">order</span> <span class="k">by</span> <span class="n">iid</span><span class="p">,</span> <span class="n">start_time</span><span class="p">;</span>
+</pre></div>
+<p>Once the start and end points of each qualifying segments are extracted to CSV, they are imported into ArcGIS pro and mapped to Network Analyst Stops with a unique ID for each route to be computed. The routes between each matching stop pairs are computed using a shortest path along the road network (DMTI Road network 2018). 60165 Ethica track segments had to be processed, of which 60160 were successfully computed; no SenseDoc track segments qualified for this road network processing step.</p>
+<p>The resulting segments are imported back into the pg database (<code>analyses.arcgis_na_ethica_track</code>) and merged with the remaining track segments to produce a new layer: <code>level_0.bt_w1_eth_gps_track2_w_road</code>. (<em>NB</em> the layer is prefiltered for the period of interest).</p>
+<p>This layer is used to compute the buffers used in the analyses below.</p>
+<div class="highlight"><pre><span></span><span class="k">create</span> <span class="n">materialized</span> <span class="k">view</span> <span class="n">level_0</span><span class="p">.</span><span class="n">bt_w1_eth_gps_track2_w_road</span> <span class="k">as</span>
+<span class="k">with</span> <span class="n">survey</span> <span class="k">as</span> <span class="p">(</span>
+    <span class="k">select</span> <span class="n">iid</span>
+        <span class="p">,</span><span class="n">greatest</span><span class="p">(</span><span class="n">start_eth</span><span class="p">,</span> <span class="n">start_sd</span><span class="p">)</span> <span class="k">at</span> <span class="k">time</span> <span class="k">zone</span> <span class="s1">&#39;UTC&#39;</span> <span class="n">survey_start</span>
+        <span class="p">,</span><span class="n">least</span><span class="p">(</span><span class="n">end_eth</span><span class="p">,</span> <span class="n">end_sd</span><span class="p">)</span> <span class="k">at</span> <span class="k">time</span> <span class="k">zone</span> <span class="s1">&#39;UTC&#39;</span> <span class="n">survey_end</span>
+        <span class="p">,</span><span class="n">least</span><span class="p">(</span><span class="n">end_eth</span><span class="p">,</span> <span class="n">end_sd</span><span class="p">)</span> <span class="o">-</span> <span class="n">greatest</span><span class="p">(</span><span class="n">start_eth</span><span class="p">,</span> <span class="n">start_sd</span><span class="p">)</span> <span class="n">survey_duration</span>
+    <span class="k">from</span> <span class="p">(</span><span class="k">select</span> <span class="n">iid</span><span class="p">,</span> <span class="k">min</span><span class="p">(</span><span class="n">corrected_time</span> <span class="k">at</span> <span class="k">time</span> <span class="k">zone</span> <span class="s1">&#39;UTC&#39;</span><span class="p">)</span> <span class="n">start_eth</span><span class="p">,</span> <span class="k">max</span><span class="p">(</span><span class="n">corrected_time</span> <span class="k">at</span> <span class="k">time</span> <span class="k">zone</span> <span class="s1">&#39;UTC&#39;</span><span class="p">)</span> <span class="n">end_eth</span> 
+        <span class="k">from</span> <span class="n">level_0</span><span class="p">.</span><span class="n">bt_w1_eth_gps_clean2</span> <span class="k">group</span> <span class="k">by</span> <span class="n">iid</span><span class="p">)</span> <span class="n">eth</span>
+    <span class="k">join</span> <span class="p">(</span><span class="k">select</span> <span class="n">iid</span><span class="p">,</span> <span class="k">min</span><span class="p">(</span><span class="n">utcdate</span><span class="p">)</span> <span class="n">start_sd</span><span class="p">,</span> <span class="k">max</span><span class="p">(</span><span class="n">utcdate</span><span class="p">)</span> <span class="n">end_sd</span> 
+        <span class="k">from</span> <span class="n">level_0</span><span class="p">.</span><span class="n">bt_w1_sd_gps_clean</span> <span class="k">group</span> <span class="k">by</span> <span class="n">iid</span><span class="p">)</span> <span class="n">sd</span> <span class="k">using</span> <span class="p">(</span><span class="n">iid</span><span class="p">)</span>
+    <span class="k">where</span> <span class="p">(</span><span class="n">start_eth</span><span class="p">,</span> <span class="n">end_eth</span><span class="p">)</span> <span class="k">overlaps</span> <span class="p">(</span><span class="n">start_sd</span><span class="p">,</span> <span class="n">end_sd</span><span class="p">)</span>
+<span class="p">),</span>
+<span class="n">road_track</span> <span class="k">as</span> <span class="p">(</span>
+    <span class="k">select</span> <span class="n">t2</span><span class="p">.</span><span class="n">city</span><span class="p">,</span> <span class="n">t2</span><span class="p">.</span><span class="n">iid</span><span class="p">,</span> <span class="n">t2</span><span class="p">.</span><span class="n">start_time</span><span class="p">,</span> <span class="n">t2</span><span class="p">.</span><span class="n">stop_time</span><span class="p">,</span> <span class="n">rt</span><span class="p">.</span><span class="n">wkb_geometry</span> <span class="n">geom</span><span class="p">,</span> <span class="n">rt</span><span class="p">.</span><span class="n">wkb_geometry</span><span class="p">::</span><span class="n">geography</span> <span class="n">geog</span>
+    <span class="k">from</span> <span class="n">analyses</span><span class="p">.</span><span class="n">arcgis_na_ethica_track</span> <span class="n">rt</span>
+    <span class="k">join</span> <span class="p">(</span><span class="k">select</span> <span class="o">*</span><span class="p">,</span> <span class="n">concat_ws</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">,</span> <span class="n">iid</span><span class="p">,</span> <span class="n">start_time</span><span class="p">)</span> <span class="ss">&quot;name&quot;</span> <span class="k">from</span> <span class="n">level_0</span><span class="p">.</span><span class="n">bt_w1_eth_gps_track2</span><span class="p">)</span> <span class="n">t2</span> <span class="k">using</span> <span class="p">(</span><span class="ss">&quot;name&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="k">select</span> <span class="n">t2</span><span class="p">.</span><span class="o">*</span>
+<span class="k">from</span> <span class="n">level_0</span><span class="p">.</span><span class="n">bt_w1_eth_gps_track2</span> <span class="n">t2</span>
+<span class="k">join</span> <span class="n">survey</span> <span class="n">s</span> <span class="k">on</span> <span class="n">s</span><span class="p">.</span><span class="n">iid</span><span class="o">=</span><span class="n">t2</span><span class="p">.</span><span class="n">iid</span> <span class="k">and</span> <span class="p">(</span><span class="n">t2</span><span class="p">.</span><span class="n">start_time</span><span class="p">,</span> <span class="n">t2</span><span class="p">.</span><span class="n">stop_time</span><span class="p">)</span> <span class="k">overlaps</span> <span class="p">(</span><span class="n">survey_start</span><span class="p">,</span> <span class="n">survey_end</span><span class="p">)</span>
+<span class="k">left</span> <span class="k">join</span> <span class="n">road_track</span> <span class="n">rt</span> <span class="k">on</span> <span class="n">rt</span><span class="p">.</span><span class="n">iid</span><span class="o">=</span><span class="n">t2</span><span class="p">.</span><span class="n">iid</span> <span class="k">and</span> <span class="n">rt</span><span class="p">.</span><span class="n">start_time</span><span class="o">=</span><span class="n">t2</span><span class="p">.</span><span class="n">start_time</span>
+<span class="k">where</span> <span class="n">rt</span><span class="p">.</span><span class="n">iid</span> <span class="k">is</span> <span class="k">null</span>
+<span class="k">union</span>
+<span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">road_track</span><span class="p">;</span>
+
+<span class="k">comment</span> <span class="k">on</span> <span class="n">materialized</span> <span class="k">view</span> <span class="n">level_0</span><span class="p">.</span><span class="n">bt_w1_eth_gps_track2_w_road</span> <span class="k">is</span> <span class="s1">&#39;GPS track segments for thica data, linearly interpolated for segments shorter than 1min and along road network for segment between 1min and 5min. Segments longer than 5min are simply ignored | Only common periods of Ethica and SD tracks&#39;</span><span class="p">;</span>
 </pre></div>
 
 </div>
@@ -22789,7 +23345,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_135_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_141_0.png"
 >
 </div>
 
@@ -22830,7 +23386,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_136_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_142_0.png"
 >
 </div>
 
@@ -23225,7 +23781,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_141_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_147_0.png"
 >
 </div>
 
@@ -23266,7 +23822,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_142_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_148_0.png"
 >
 </div>
 
@@ -23683,7 +24239,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_147_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_153_0.png"
 >
 </div>
 
@@ -23724,8 +24280,268 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_148_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_154_0.png"
 >
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h6 id="Update-2022-02-07-|-500m-buffer-along-tracklines,-raod-network-interpolated-vs-linearly-interpolated">Update 2022-02-07 | 500m buffer along tracklines, raod network interpolated vs linearly interpolated<a class="anchor-link" href="#Update-2022-02-07-|-500m-buffer-along-tracklines,-raod-network-interpolated-vs-linearly-interpolated">&#182;</a></h6>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 1m 37s</span>
+<span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">select iid, &#39;500rd&#39; buf_radius, eth.survey_duration</span>
+<span class="s2">	,ST_Area(eth.geom::geography) / 1000000 buf_eth_area</span>
+<span class="s2">	,ST_Area(sd.geom::geography) / 1000000 buf_sd_area</span>
+<span class="s2">	,ST_Area(ST_Intersection(eth.geom, sd.geom)::geography) / 1000000 overlap_area</span>
+<span class="s2">	,ST_Area(ST_Union(eth.geom, sd.geom)::geography) / 1000000 union_area</span>
+<span class="s2">from analyses.buf_500_trk_road_eth eth</span>
+<span class="s2">join analyses.buf_500_trk_sd sd using(iid)</span>
+<span class="s2">union</span>
+<span class="s2">select iid, &#39;500&#39; buf_radius, eth.survey_duration</span>
+<span class="s2">	,ST_Area(eth.geom::geography) / 1000000 buf_eth_area</span>
+<span class="s2">	,ST_Area(sd.geom::geography) / 1000000 buf_sd_area</span>
+<span class="s2">	,ST_Area(ST_Intersection(eth.geom, sd.geom)::geography) / 1000000 overlap_area</span>
+<span class="s2">	,ST_Area(ST_Union(eth.geom, sd.geom)::geography) / 1000000 union_area</span>
+<span class="s2">from analyses.buf_500_trk_eth eth</span>
+<span class="s2">join analyses.buf_500_trk_sd sd using(iid);&quot;&quot;&quot;</span>
+<span class="n">buf_stats_trk_rd</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">engine</span><span class="p">)</span>
+
+<span class="n">buf_stats_trk_rd</span><span class="p">[</span><span class="s1">&#39;pct_overlap_eth&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">buf_stats_trk_rd</span><span class="o">.</span><span class="n">overlap_area</span> <span class="o">/</span> <span class="n">buf_stats_trk_rd</span><span class="o">.</span><span class="n">buf_eth_area</span> <span class="o">*</span> <span class="mf">100.</span>
+<span class="n">buf_stats_trk_rd</span><span class="p">[</span><span class="s1">&#39;pct_overlap_sd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">buf_stats_trk_rd</span><span class="o">.</span><span class="n">overlap_area</span> <span class="o">/</span> <span class="n">buf_stats_trk_rd</span><span class="o">.</span><span class="n">buf_sd_area</span> <span class="o">*</span> <span class="mf">100.</span>
+<span class="n">buf_stats_trk_rd</span><span class="p">[</span><span class="s1">&#39;pct_overlap&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">buf_stats_trk_rd</span><span class="o">.</span><span class="n">overlap_area</span> <span class="o">/</span> <span class="n">buf_stats_trk_rd</span><span class="o">.</span><span class="n">union_area</span> <span class="o">*</span> <span class="mf">100.</span><span class="p">,</span> <span class="mf">100.</span><span class="p">)</span>
+<span class="n">buf_stats_trk_rd</span><span class="p">[</span><span class="s1">&#39;duration_days&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">buf_stats_trk_rd</span><span class="o">.</span><span class="n">survey_duration</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">/</span> <span class="mi">24</span> <span class="o">/</span> <span class="mi">3600</span>
+
+<span class="n">buf_stats_trk_rd</span><span class="p">[[</span><span class="s1">&#39;buf_radius&#39;</span><span class="p">,</span> <span class="s1">&#39;survey_duration&#39;</span><span class="p">,</span> <span class="s1">&#39;duration_days&#39;</span><span class="p">,</span> <span class="s1">&#39;buf_eth_area&#39;</span><span class="p">,</span> <span class="s1">&#39;buf_sd_area&#39;</span><span class="p">,</span> 
+	<span class="s1">&#39;overlap_area&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap_eth&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap_sd&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">&#39;buf_radius&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">unstack</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[2]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead tr th {
+        text-align: left;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th>buf_radius</th>
+      <th colspan="8" halign="left">500</th>
+      <th colspan="8" halign="left">500rd</th>
+    </tr>
+    <tr>
+      <th></th>
+      <th>survey_duration</th>
+      <th>duration_days</th>
+      <th>buf_eth_area</th>
+      <th>buf_sd_area</th>
+      <th>overlap_area</th>
+      <th>pct_overlap_eth</th>
+      <th>pct_overlap_sd</th>
+      <th>pct_overlap</th>
+      <th>survey_duration</th>
+      <th>duration_days</th>
+      <th>buf_eth_area</th>
+      <th>buf_sd_area</th>
+      <th>overlap_area</th>
+      <th>pct_overlap_eth</th>
+      <th>pct_overlap_sd</th>
+      <th>pct_overlap</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>count</th>
+      <td>340</td>
+      <td>340.00</td>
+      <td>340.00</td>
+      <td>340.00</td>
+      <td>340.00</td>
+      <td>340.00</td>
+      <td>340.00</td>
+      <td>340.00</td>
+      <td>340</td>
+      <td>340.00</td>
+      <td>340.00</td>
+      <td>340.00</td>
+      <td>340.00</td>
+      <td>340.00</td>
+      <td>340.00</td>
+      <td>340.00</td>
+    </tr>
+    <tr>
+      <th>mean</th>
+      <td>8 days 16:51:47.494117647</td>
+      <td>8.70</td>
+      <td>67.18</td>
+      <td>90.29</td>
+      <td>54.95</td>
+      <td>84.32</td>
+      <td>69.96</td>
+      <td>60.36</td>
+      <td>8 days 16:51:47.494117647</td>
+      <td>8.70</td>
+      <td>67.20</td>
+      <td>90.29</td>
+      <td>54.99</td>
+      <td>84.33</td>
+      <td>69.99</td>
+      <td>60.37</td>
+    </tr>
+    <tr>
+      <th>std</th>
+      <td>2 days 15:17:57.963916212</td>
+      <td>2.64</td>
+      <td>79.31</td>
+      <td>109.01</td>
+      <td>65.25</td>
+      <td>15.99</td>
+      <td>27.48</td>
+      <td>24.70</td>
+      <td>2 days 15:17:57.963916212</td>
+      <td>2.64</td>
+      <td>79.33</td>
+      <td>109.01</td>
+      <td>65.31</td>
+      <td>16.01</td>
+      <td>27.50</td>
+      <td>24.70</td>
+    </tr>
+    <tr>
+      <th>min</th>
+      <td>0 days 05:06:35</td>
+      <td>0.21</td>
+      <td>0.78</td>
+      <td>1.60</td>
+      <td>0.78</td>
+      <td>7.71</td>
+      <td>0.19</td>
+      <td>0.19</td>
+      <td>0 days 05:06:35</td>
+      <td>0.21</td>
+      <td>0.78</td>
+      <td>1.60</td>
+      <td>0.78</td>
+      <td>7.71</td>
+      <td>0.19</td>
+      <td>0.19</td>
+    </tr>
+    <tr>
+      <th>25%</th>
+      <td>8 days 09:57:39.750000</td>
+      <td>8.42</td>
+      <td>19.05</td>
+      <td>26.35</td>
+      <td>16.20</td>
+      <td>77.65</td>
+      <td>54.69</td>
+      <td>46.12</td>
+      <td>8 days 09:57:39.750000</td>
+      <td>8.42</td>
+      <td>19.05</td>
+      <td>26.35</td>
+      <td>16.20</td>
+      <td>77.65</td>
+      <td>54.69</td>
+      <td>46.12</td>
+    </tr>
+    <tr>
+      <th>50%</th>
+      <td>9 days 10:09:15</td>
+      <td>9.42</td>
+      <td>38.83</td>
+      <td>52.36</td>
+      <td>32.64</td>
+      <td>88.49</td>
+      <td>79.79</td>
+      <td>66.74</td>
+      <td>9 days 10:09:15</td>
+      <td>9.42</td>
+      <td>38.83</td>
+      <td>52.36</td>
+      <td>32.64</td>
+      <td>88.49</td>
+      <td>79.79</td>
+      <td>66.74</td>
+    </tr>
+    <tr>
+      <th>75%</th>
+      <td>9 days 20:31:07.500000</td>
+      <td>9.85</td>
+      <td>80.63</td>
+      <td>105.85</td>
+      <td>68.40</td>
+      <td>96.58</td>
+      <td>91.20</td>
+      <td>79.25</td>
+      <td>9 days 20:31:07.500000</td>
+      <td>9.85</td>
+      <td>80.63</td>
+      <td>105.85</td>
+      <td>68.40</td>
+      <td>96.58</td>
+      <td>91.31</td>
+      <td>79.25</td>
+    </tr>
+    <tr>
+      <th>max</th>
+      <td>21 days 11:10:27</td>
+      <td>21.47</td>
+      <td>583.44</td>
+      <td>751.90</td>
+      <td>485.08</td>
+      <td>100.00</td>
+      <td>99.67</td>
+      <td>97.85</td>
+      <td>21 days 11:10:27</td>
+      <td>21.47</td>
+      <td>583.44</td>
+      <td>751.90</td>
+      <td>485.08</td>
+      <td>100.00</td>
+      <td>99.67</td>
+      <td>97.85</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 </div>
 
 </div>
@@ -24119,7 +24935,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_153_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_161_0.png"
 >
 </div>
 
@@ -24160,7 +24976,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_154_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_162_0.png"
 >
 </div>
 
@@ -24194,10 +25010,10 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[20]:</div>
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 4m</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 3m</span>
 <span class="c1">######## Reload all data required in analyses below #######</span>
 <span class="c1">#</span>
 <span class="c1"># Cross-correlation (3rd version)</span>
@@ -24323,22 +25139,22 @@ Buffer 500m:
 <span class="n">buf_stats</span><span class="p">[</span><span class="s1">&#39;pct_overlap&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">buf_stats</span><span class="o">.</span><span class="n">overlap_area</span> <span class="o">/</span> <span class="n">buf_stats</span><span class="o">.</span><span class="n">union_area</span> <span class="o">*</span> <span class="mf">100.</span><span class="p">,</span> <span class="mf">100.</span><span class="p">)</span>
 <span class="n">buf_stats</span><span class="p">[</span><span class="s1">&#39;duration_days&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">buf_stats</span><span class="o">.</span><span class="n">survey_duration</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">/</span> <span class="mi">24</span> <span class="o">/</span> <span class="mi">3600</span>
 
-<span class="c1"># Buffer along track (not bounded)</span>
+<span class="c1"># Buffer along track (not bounded) | Following Kevin&#39;s comment, loading only the 500m buffers from road network interpolated tracks</span>
 <span class="n">buf_stats_trk</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">    select iid, 250 buf_radius, eth.survey_duration</span>
+<span class="s2">/*    select iid, 250 buf_radius, eth.survey_duration</span>
 <span class="s2">        ,ST_Area(eth.geom::geography) / 1000000 buf_eth_area</span>
 <span class="s2">        ,ST_Area(sd.geom::geography) / 1000000 buf_sd_area</span>
 <span class="s2">        ,ST_Area(ST_Intersection(eth.geom, sd.geom)::geography) / 1000000 overlap_area</span>
 <span class="s2">        ,ST_Area(ST_Union(eth.geom, sd.geom)::geography) / 1000000 union_area</span>
 <span class="s2">    from analyses.buf_250_trk_eth eth</span>
 <span class="s2">    join analyses.buf_250_trk_sd sd using(iid)</span>
-<span class="s2">    union</span>
+<span class="s2">    union*/</span>
 <span class="s2">    select iid, 500 buf_radius, eth.survey_duration</span>
 <span class="s2">        ,ST_Area(eth.geom::geography) / 1000000 buf_eth_area</span>
 <span class="s2">        ,ST_Area(sd.geom::geography) / 1000000 buf_sd_area</span>
 <span class="s2">        ,ST_Area(ST_Intersection(eth.geom, sd.geom)::geography) / 1000000 overlap_area</span>
 <span class="s2">        ,ST_Area(ST_Union(eth.geom, sd.geom)::geography) / 1000000 union_area</span>
-<span class="s2">    from analyses.buf_500_trk_eth eth</span>
+<span class="s2">    from analyses.buf_500_trk_road_eth eth</span>
 <span class="s2">    join analyses.buf_500_trk_sd sd using(iid);&quot;&quot;&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="p">)</span>
 <span class="n">buf_stats_trk</span><span class="p">[</span><span class="s1">&#39;pct_overlap_eth&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">buf_stats_trk</span><span class="o">.</span><span class="n">overlap_area</span> <span class="o">/</span> <span class="n">buf_stats_trk</span><span class="o">.</span><span class="n">buf_eth_area</span> <span class="o">*</span> <span class="mf">100.</span>
 <span class="n">buf_stats_trk</span><span class="p">[</span><span class="s1">&#39;pct_overlap_sd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">buf_stats_trk</span><span class="o">.</span><span class="n">overlap_area</span> <span class="o">/</span> <span class="n">buf_stats_trk</span><span class="o">.</span><span class="n">buf_sd_area</span> <span class="o">*</span> <span class="mf">100.</span>
@@ -24353,7 +25169,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Find all participants with common survey period, who are included in stats</span>
@@ -24397,7 +25213,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[3]:</div>
+    <div class="prompt output_prompt">Out[5]:</div>
 
 
 
@@ -24542,7 +25358,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Using version 3 of CC computing, the Union of density histograms (~ cccoeff)</span>
@@ -24572,7 +25388,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[14]:</div>
+    <div class="prompt output_prompt">Out[6]:</div>
 
 
 
@@ -24921,7 +25737,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[21]:</div>
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Get participants stats</span>
@@ -24984,7 +25800,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[21]:</div>
+    <div class="prompt output_prompt">Out[7]:</div>
 
 
 
@@ -25044,15 +25860,15 @@ Buffer 500m:
       <td>5</td>
       <td>181433.00</td>
       <td>...</td>
-      <td>4.25</td>
+      <td>NaN</td>
       <td>4 days 06:05:42</td>
-      <td>113.83</td>
+      <td>94.00</td>
       <td>95.43</td>
-      <td>82.71</td>
-      <td>126.56</td>
-      <td>72.66</td>
-      <td>86.67</td>
-      <td>65.35</td>
+      <td>71.97</td>
+      <td>117.48</td>
+      <td>76.56</td>
+      <td>75.41</td>
+      <td>61.26</td>
       <td>4.25</td>
     </tr>
     <tr>
@@ -25068,15 +25884,15 @@ Buffer 500m:
       <td>8</td>
       <td>127783.00</td>
       <td>...</td>
-      <td>9.36</td>
+      <td>NaN</td>
       <td>9 days 08:31:53</td>
-      <td>144.40</td>
+      <td>144.30</td>
       <td>292.58</td>
-      <td>79.30</td>
-      <td>357.68</td>
+      <td>79.25</td>
+      <td>357.63</td>
       <td>54.92</td>
-      <td>27.10</td>
-      <td>22.17</td>
+      <td>27.09</td>
+      <td>22.16</td>
       <td>9.36</td>
     </tr>
     <tr>
@@ -25092,15 +25908,15 @@ Buffer 500m:
       <td>10</td>
       <td>221457.00</td>
       <td>...</td>
-      <td>9.43</td>
+      <td>NaN</td>
       <td>9 days 10:14:57</td>
-      <td>130.71</td>
+      <td>70.36</td>
       <td>94.93</td>
-      <td>71.46</td>
-      <td>154.19</td>
-      <td>54.67</td>
-      <td>75.28</td>
-      <td>46.35</td>
+      <td>54.55</td>
+      <td>110.74</td>
+      <td>77.53</td>
+      <td>57.46</td>
+      <td>49.26</td>
       <td>9.43</td>
     </tr>
     <tr>
@@ -25116,15 +25932,15 @@ Buffer 500m:
       <td>10</td>
       <td>193258.00</td>
       <td>...</td>
-      <td>9.00</td>
+      <td>NaN</td>
       <td>9 days 00:05:12</td>
-      <td>67.37</td>
+      <td>67.35</td>
       <td>66.68</td>
-      <td>43.36</td>
-      <td>90.69</td>
+      <td>43.34</td>
+      <td>90.68</td>
       <td>64.35</td>
-      <td>65.03</td>
-      <td>47.81</td>
+      <td>65.00</td>
+      <td>47.80</td>
       <td>9.00</td>
     </tr>
     <tr>
@@ -25140,15 +25956,15 @@ Buffer 500m:
       <td>11</td>
       <td>215450.00</td>
       <td>...</td>
-      <td>9.36</td>
+      <td>NaN</td>
       <td>9 days 08:35:48</td>
-      <td>57.41</td>
+      <td>48.29</td>
       <td>64.22</td>
-      <td>55.11</td>
-      <td>66.52</td>
-      <td>95.99</td>
-      <td>85.82</td>
-      <td>82.86</td>
+      <td>47.21</td>
+      <td>65.29</td>
+      <td>97.77</td>
+      <td>73.52</td>
+      <td>72.31</td>
       <td>9.36</td>
     </tr>
     <tr>
@@ -25188,15 +26004,15 @@ Buffer 500m:
       <td>11</td>
       <td>273137.00</td>
       <td>...</td>
-      <td>10.10</td>
+      <td>NaN</td>
       <td>10 days 02:27:21</td>
-      <td>60.79</td>
+      <td>55.23</td>
       <td>60.43</td>
-      <td>55.60</td>
-      <td>65.62</td>
-      <td>91.46</td>
-      <td>92.01</td>
-      <td>84.73</td>
+      <td>53.82</td>
+      <td>61.83</td>
+      <td>97.46</td>
+      <td>89.08</td>
+      <td>87.06</td>
       <td>10.10</td>
     </tr>
     <tr>
@@ -25212,15 +26028,15 @@ Buffer 500m:
       <td>11</td>
       <td>140415.00</td>
       <td>...</td>
-      <td>11.50</td>
+      <td>NaN</td>
       <td>11 days 12:02:23</td>
-      <td>55.91</td>
+      <td>45.04</td>
       <td>20.90</td>
-      <td>18.94</td>
-      <td>57.87</td>
-      <td>33.88</td>
-      <td>90.61</td>
-      <td>32.73</td>
+      <td>19.72</td>
+      <td>46.22</td>
+      <td>43.78</td>
+      <td>94.34</td>
+      <td>42.66</td>
       <td>11.50</td>
     </tr>
     <tr>
@@ -25236,15 +26052,15 @@ Buffer 500m:
       <td>7</td>
       <td>275332.00</td>
       <td>...</td>
-      <td>9.53</td>
+      <td>NaN</td>
       <td>9 days 12:48:54</td>
-      <td>16.39</td>
+      <td>13.64</td>
       <td>22.88</td>
-      <td>16.28</td>
-      <td>22.98</td>
-      <td>99.35</td>
-      <td>71.18</td>
-      <td>70.85</td>
+      <td>13.62</td>
+      <td>22.90</td>
+      <td>99.82</td>
+      <td>59.54</td>
+      <td>59.47</td>
       <td>9.53</td>
     </tr>
     <tr>
@@ -25260,15 +26076,15 @@ Buffer 500m:
       <td>9</td>
       <td>31019.00</td>
       <td>...</td>
-      <td>10.08</td>
+      <td>NaN</td>
       <td>10 days 01:49:27</td>
-      <td>6.46</td>
+      <td>4.83</td>
       <td>68.34</td>
-      <td>6.27</td>
-      <td>68.52</td>
-      <td>97.15</td>
-      <td>9.18</td>
-      <td>9.15</td>
+      <td>4.80</td>
+      <td>68.37</td>
+      <td>99.32</td>
+      <td>7.02</td>
+      <td>7.01</td>
       <td>10.08</td>
     </tr>
     <tr>
@@ -25284,15 +26100,15 @@ Buffer 500m:
       <td>8</td>
       <td>163519.00</td>
       <td>...</td>
-      <td>7.13</td>
+      <td>NaN</td>
       <td>7 days 03:08:12</td>
-      <td>294.59</td>
+      <td>296.50</td>
       <td>276.80</td>
-      <td>219.84</td>
-      <td>351.55</td>
-      <td>74.63</td>
-      <td>79.42</td>
-      <td>62.54</td>
+      <td>220.67</td>
+      <td>352.62</td>
+      <td>74.43</td>
+      <td>79.72</td>
+      <td>62.58</td>
       <td>7.13</td>
     </tr>
   </tbody>
@@ -25316,7 +26132,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[16]:</div>
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Build age row</span>
@@ -25446,7 +26262,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[16]:</div>
+    <div class="prompt output_prompt">Out[8]:</div>
 
 
 
@@ -25721,11 +26537,12 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[22]:</div>
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Display CC coeff of 2D point density histogram for all epochsand spatial scales, using union as processing extent</span>
-<span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">catplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">cc_results3_pivot</span><span class="p">[(</span><span class="n">cc_results3_pivot</span><span class="p">[</span><span class="s1">&#39;aoi&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;union&#39;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">cc_results3_pivot</span><span class="p">[</span><span class="s1">&#39;histo_type&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;density&#39;</span><span class="p">)],</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;box&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;cccoeff&quot;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;cellsize&#39;</span><span class="p">,</span> <span class="c1">#hue=&#39;city&#39;, </span>
+<span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">catplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">cc_results3_pivot</span><span class="p">[(</span><span class="n">cc_results3_pivot</span><span class="p">[</span><span class="s1">&#39;aoi&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;union&#39;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">cc_results3_pivot</span><span class="p">[</span><span class="s1">&#39;histo_type&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;density&#39;</span><span class="p">)],</span> 
+    <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;box&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;cccoeff&quot;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;cellsize&#39;</span><span class="p">,</span> <span class="n">showfliers</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="c1">#hue=&#39;city&#39;, </span>
     <span class="n">col</span><span class="o">=</span><span class="s1">&#39;epoch&#39;</span><span class="p">,</span> <span class="n">col_wrap</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">col_order</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Survey&#39;</span><span class="p">,</span> <span class="s1">&#39;Day&#39;</span><span class="p">,</span> <span class="s1">&#39;6hours&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour&#39;</span><span class="p">,</span> <span class="s1">&#39;15min&#39;</span><span class="p">,</span> <span class="s1">&#39;5min&#39;</span><span class="p">],</span>
     <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
 <span class="n">g</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">top</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
@@ -25748,7 +26565,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_164_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_172_0.png"
 >
 </div>
 
@@ -25768,7 +26585,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[23]:</div>
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Build DTW stat table, split by city</span>
@@ -25794,7 +26611,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[23]:</div>
+    <div class="prompt output_prompt">Out[10]:</div>
 
 
 
@@ -26323,7 +27140,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_170_1.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_178_1.png"
 >
 </div>
 
@@ -26913,7 +27730,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_173_1.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_181_1.png"
 >
 </div>
 
@@ -26956,7 +27773,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_174_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_182_0.png"
 >
 </div>
 
@@ -26993,7 +27810,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_175_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_183_0.png"
 >
 </div>
 
@@ -27436,7 +28253,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_178_1.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_186_1.png"
 >
 </div>
 
@@ -27449,14 +28266,14 @@ Buffer 500m:
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h5 id="Along-tracks">Along tracks<a class="anchor-link" href="#Along-tracks">&#182;</a></h5><p>Buffers 250m and 500m, computed along tracks instead of around GPS fixes. Looking at 500m radius.</p>
+<h5 id="Along-tracks-|-UPDATE-2022-02-07:-using-500m-buffers-along-tracklines-interpolated-along-Road-Network">Along tracks | UPDATE 2022-02-07: using 500m buffers along tracklines interpolated along Road Network<a class="anchor-link" href="#Along-tracks-|-UPDATE-2022-02-07:-using-500m-buffers-along-tracklines-interpolated-along-Road-Network">&#182;</a></h5><p>Buffers 250m and 500m, computed along tracks instead of around GPS fixes. Looking at 500m radius.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[30]:</div>
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">radius</span> <span class="o">=</span> <span class="s1">&#39;500&#39;</span>
@@ -27478,7 +28295,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[30]:</div>
+    <div class="prompt output_prompt">Out[11]:</div>
 
 
 
@@ -27550,127 +28367,127 @@ Buffer 500m:
     </tr>
     <tr>
       <th>mean</th>
-      <td>85.32</td>
+      <td>73.48</td>
       <td>103.16</td>
       <td>NaN</td>
-      <td>44.36</td>
+      <td>37.41</td>
       <td>48.34</td>
       <td>NaN</td>
-      <td>80.73</td>
+      <td>73.53</td>
       <td>90.40</td>
       <td>NaN</td>
-      <td>76.32</td>
-      <td>93.98</td>
+      <td>68.79</td>
+      <td>93.97</td>
       <td>NaN</td>
-      <td>75.49</td>
+      <td>66.21</td>
       <td>89.47</td>
       <td>NaN</td>
     </tr>
     <tr>
       <th>std</th>
-      <td>88.66</td>
+      <td>73.36</td>
       <td>109.28</td>
       <td>NaN</td>
-      <td>87.82</td>
+      <td>75.48</td>
       <td>94.20</td>
       <td>NaN</td>
-      <td>87.06</td>
+      <td>84.34</td>
       <td>97.53</td>
       <td>NaN</td>
-      <td>85.76</td>
-      <td>118.44</td>
+      <td>78.80</td>
+      <td>118.43</td>
       <td>NaN</td>
-      <td>88.49</td>
+      <td>77.67</td>
       <td>108.23</td>
       <td>NaN</td>
     </tr>
     <tr>
       <th>min</th>
-      <td>0.81</td>
+      <td>0.78</td>
       <td>1.60</td>
       <td>NaN</td>
-      <td>4.14</td>
+      <td>3.20</td>
       <td>6.42</td>
       <td>NaN</td>
       <td>0.86</td>
       <td>5.02</td>
       <td>NaN</td>
-      <td>0.86</td>
+      <td>0.83</td>
       <td>4.57</td>
       <td>NaN</td>
-      <td>0.81</td>
+      <td>0.78</td>
       <td>1.60</td>
       <td>NaN</td>
     </tr>
     <tr>
       <th>25%</th>
-      <td>25.05</td>
+      <td>22.71</td>
       <td>28.69</td>
       <td>NaN</td>
-      <td>17.37</td>
+      <td>15.66</td>
       <td>19.74</td>
       <td>NaN</td>
-      <td>30.77</td>
+      <td>29.48</td>
       <td>35.79</td>
       <td>NaN</td>
-      <td>14.66</td>
+      <td>13.91</td>
       <td>26.78</td>
       <td>NaN</td>
-      <td>21.53</td>
+      <td>18.91</td>
       <td>26.31</td>
       <td>NaN</td>
     </tr>
     <tr>
       <th>50%</th>
-      <td>52.36</td>
+      <td>45.30</td>
       <td>60.18</td>
       <td>NaN</td>
-      <td>26.19</td>
+      <td>23.95</td>
       <td>26.37</td>
       <td>NaN</td>
-      <td>54.30</td>
+      <td>47.98</td>
       <td>60.99</td>
       <td>NaN</td>
-      <td>50.64</td>
+      <td>43.43</td>
       <td>60.43</td>
       <td>NaN</td>
-      <td>46.25</td>
+      <td>38.62</td>
       <td>52.12</td>
       <td>NaN</td>
     </tr>
     <tr>
       <th>75%</th>
-      <td>118.73</td>
+      <td>99.90</td>
       <td>138.26</td>
       <td>NaN</td>
-      <td>42.65</td>
+      <td>37.44</td>
       <td>46.38</td>
       <td>NaN</td>
-      <td>81.40</td>
+      <td>72.71</td>
       <td>91.67</td>
       <td>NaN</td>
-      <td>96.09</td>
+      <td>88.08</td>
       <td>105.19</td>
       <td>NaN</td>
-      <td>93.41</td>
+      <td>79.94</td>
       <td>105.77</td>
       <td>NaN</td>
     </tr>
     <tr>
       <th>max</th>
-      <td>517.65</td>
+      <td>347.18</td>
       <td>558.60</td>
       <td>NaN</td>
-      <td>651.71</td>
+      <td>583.44</td>
       <td>699.10</td>
       <td>NaN</td>
-      <td>443.20</td>
+      <td>424.31</td>
       <td>517.07</td>
       <td>NaN</td>
-      <td>368.13</td>
+      <td>332.56</td>
       <td>751.90</td>
       <td>NaN</td>
-      <td>651.71</td>
+      <td>583.44</td>
       <td>751.90</td>
       <td>NaN</td>
     </tr>
@@ -27695,129 +28512,129 @@ Buffer 500m:
     </tr>
     <tr>
       <th>mean</th>
-      <td>76.87</td>
-      <td>73.85</td>
-      <td>58.39</td>
-      <td>85.23</td>
-      <td>78.20</td>
-      <td>69.03</td>
-      <td>83.37</td>
-      <td>75.67</td>
-      <td>64.93</td>
-      <td>80.17</td>
-      <td>69.72</td>
-      <td>57.12</td>
-      <td>80.13</td>
-      <td>74.06</td>
-      <td>61.10</td>
+      <td>81.92</td>
+      <td>69.82</td>
+      <td>58.61</td>
+      <td>88.31</td>
+      <td>73.12</td>
+      <td>66.54</td>
+      <td>86.78</td>
+      <td>71.32</td>
+      <td>63.24</td>
+      <td>83.89</td>
+      <td>65.95</td>
+      <td>55.87</td>
+      <td>84.28</td>
+      <td>69.84</td>
+      <td>60.21</td>
     </tr>
     <tr>
       <th>std</th>
-      <td>16.54</td>
-      <td>28.41</td>
-      <td>24.43</td>
-      <td>15.73</td>
-      <td>21.89</td>
-      <td>21.43</td>
-      <td>16.45</td>
-      <td>22.58</td>
-      <td>21.26</td>
-      <td>16.43</td>
-      <td>28.66</td>
-      <td>24.64</td>
-      <td>16.63</td>
-      <td>26.52</td>
-      <td>23.79</td>
+      <td>15.94</td>
+      <td>29.17</td>
+      <td>25.57</td>
+      <td>15.58</td>
+      <td>24.98</td>
+      <td>23.56</td>
+      <td>16.25</td>
+      <td>22.81</td>
+      <td>21.40</td>
+      <td>15.84</td>
+      <td>29.42</td>
+      <td>25.34</td>
+      <td>16.04</td>
+      <td>27.51</td>
+      <td>24.68</td>
     </tr>
     <tr>
       <th>min</th>
-      <td>7.70</td>
+      <td>7.71</td>
       <td>0.38</td>
       <td>0.38</td>
-      <td>25.15</td>
-      <td>19.16</td>
-      <td>16.41</td>
-      <td>11.58</td>
-      <td>8.27</td>
-      <td>8.21</td>
-      <td>33.27</td>
-      <td>0.20</td>
-      <td>0.20</td>
-      <td>7.70</td>
-      <td>0.20</td>
-      <td>0.20</td>
+      <td>17.77</td>
+      <td>5.92</td>
+      <td>5.92</td>
+      <td>13.97</td>
+      <td>6.49</td>
+      <td>6.47</td>
+      <td>35.65</td>
+      <td>0.19</td>
+      <td>0.19</td>
+      <td>7.71</td>
+      <td>0.19</td>
+      <td>0.19</td>
     </tr>
     <tr>
       <th>25%</th>
-      <td>68.72</td>
-      <td>65.89</td>
-      <td>47.33</td>
-      <td>79.94</td>
-      <td>70.71</td>
-      <td>59.87</td>
-      <td>80.19</td>
-      <td>65.70</td>
-      <td>56.97</td>
-      <td>72.89</td>
-      <td>50.67</td>
-      <td>38.38</td>
-      <td>72.57</td>
-      <td>64.72</td>
-      <td>47.85</td>
+      <td>75.72</td>
+      <td>54.24</td>
+      <td>44.72</td>
+      <td>83.43</td>
+      <td>60.77</td>
+      <td>51.36</td>
+      <td>82.14</td>
+      <td>60.68</td>
+      <td>53.57</td>
+      <td>79.06</td>
+      <td>48.48</td>
+      <td>40.62</td>
+      <td>77.61</td>
+      <td>54.24</td>
+      <td>45.82</td>
     </tr>
     <tr>
       <th>50%</th>
-      <td>78.73</td>
       <td>85.36</td>
-      <td>64.76</td>
-      <td>89.61</td>
-      <td>85.68</td>
-      <td>72.66</td>
-      <td>89.41</td>
-      <td>82.57</td>
-      <td>66.12</td>
-      <td>84.08</td>
-      <td>83.10</td>
-      <td>62.54</td>
-      <td>83.32</td>
-      <td>84.73</td>
-      <td>66.69</td>
+      <td>79.31</td>
+      <td>65.11</td>
+      <td>94.40</td>
+      <td>81.99</td>
+      <td>70.89</td>
+      <td>93.10</td>
+      <td>76.21</td>
+      <td>63.44</td>
+      <td>87.95</td>
+      <td>77.09</td>
+      <td>62.45</td>
+      <td>88.46</td>
+      <td>79.70</td>
+      <td>66.33</td>
     </tr>
     <tr>
       <th>75%</th>
-      <td>89.68</td>
-      <td>93.79</td>
-      <td>75.75</td>
-      <td>96.82</td>
-      <td>92.99</td>
-      <td>85.58</td>
-      <td>94.71</td>
-      <td>92.36</td>
-      <td>81.63</td>
-      <td>91.41</td>
-      <td>93.05</td>
-      <td>76.63</td>
-      <td>92.82</td>
-      <td>93.10</td>
-      <td>78.14</td>
+      <td>93.54</td>
+      <td>92.06</td>
+      <td>77.36</td>
+      <td>98.16</td>
+      <td>91.39</td>
+      <td>83.97</td>
+      <td>97.34</td>
+      <td>89.94</td>
+      <td>80.01</td>
+      <td>96.16</td>
+      <td>89.79</td>
+      <td>75.98</td>
+      <td>96.63</td>
+      <td>91.16</td>
+      <td>78.81</td>
     </tr>
     <tr>
       <th>max</th>
       <td>100.00</td>
-      <td>99.39</td>
-      <td>96.76</td>
+      <td>99.38</td>
+      <td>96.88</td>
       <td>100.00</td>
-      <td>98.75</td>
-      <td>97.88</td>
+      <td>98.72</td>
+      <td>97.85</td>
       <td>100.00</td>
       <td>99.20</td>
-      <td>91.51</td>
+      <td>92.57</td>
       <td>100.00</td>
       <td>99.67</td>
-      <td>93.36</td>
+      <td>93.52</td>
       <td>100.00</td>
       <td>99.67</td>
-      <td>97.88</td>
+      <td>97.85</td>
     </tr>
   </tbody>
 </table>
@@ -27832,7 +28649,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[31]:</div>
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">scatterplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">pid_stats</span><span class="p">[</span><span class="n">pid_stats</span><span class="o">.</span><span class="n">city_id</span> <span class="o">==</span> <span class="s1">&#39;TOTAL&#39;</span><span class="p">],</span> <span class="n">x</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_buf_eth_area&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_buf_sd_area&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s1">&#39;pct_overlap&#39;</span><span class="p">,</span> <span class="n">sizes</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
@@ -27864,8 +28681,8 @@ Buffer 500m:
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>y = 0.94x + 18.45
-	R² = 0.59
+<pre>y = 1.03x + 21.54
+	R² = 0.54
 	p-value = 0.000
 </pre>
 </div>
@@ -27879,7 +28696,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_181_1.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_189_1.png"
 >
 </div>
 
@@ -27899,7 +28716,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[32]:</div>
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">sde</span> <span class="o">=</span> <span class="s1">&#39;2SD&#39;</span>
@@ -27965,7 +28782,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[32]:</div>
+    <div class="prompt output_prompt">Out[13]:</div>
 
 
 
@@ -27992,8 +28809,8 @@ Buffer 500m:
       <th>city_id</th>
       <th>Activity space</th>
       <th>Sensor</th>
-      <th>areaSenseDoc</th>
       <th>areaEthica</th>
+      <th>areaSenseDoc</th>
       <th>pct_overlap</th>
     </tr>
   </thead>
@@ -28004,8 +28821,8 @@ Buffer 500m:
       <td>TOTAL</td>
       <td>Convex hull</td>
       <td>Ethica</td>
-      <td>683.86</td>
       <td>667.90</td>
+      <td>683.86</td>
       <td>99.08</td>
     </tr>
     <tr>
@@ -28014,8 +28831,8 @@ Buffer 500m:
       <td>TOTAL</td>
       <td>Convex hull</td>
       <td>SenseDoc</td>
-      <td>683.86</td>
       <td>667.90</td>
+      <td>683.86</td>
       <td>96.76</td>
     </tr>
     <tr>
@@ -28024,8 +28841,8 @@ Buffer 500m:
       <td>TOTAL</td>
       <td>Convex hull</td>
       <td>Ethica ∪ SenseDoc</td>
-      <td>683.86</td>
       <td>667.90</td>
+      <td>683.86</td>
       <td>95.15</td>
     </tr>
     <tr>
@@ -28034,8 +28851,8 @@ Buffer 500m:
       <td>TOTAL</td>
       <td>Convex hull</td>
       <td>Ethica</td>
-      <td>5413.53</td>
       <td>1304.06</td>
+      <td>5413.53</td>
       <td>85.83</td>
     </tr>
     <tr>
@@ -28044,8 +28861,8 @@ Buffer 500m:
       <td>TOTAL</td>
       <td>Convex hull</td>
       <td>SenseDoc</td>
-      <td>5413.53</td>
       <td>1304.06</td>
+      <td>5413.53</td>
       <td>20.67</td>
     </tr>
     <tr>
@@ -28064,9 +28881,9 @@ Buffer 500m:
       <td>TOTAL</td>
       <td>500m Buffer along tracks</td>
       <td>SenseDoc</td>
+      <td>4.83</td>
       <td>68.34</td>
-      <td>6.46</td>
-      <td>9.18</td>
+      <td>7.02</td>
     </tr>
     <tr>
       <th>4064</th>
@@ -28074,9 +28891,9 @@ Buffer 500m:
       <td>TOTAL</td>
       <td>500m Buffer along tracks</td>
       <td>Ethica ∪ SenseDoc</td>
+      <td>4.83</td>
       <td>68.34</td>
-      <td>6.46</td>
-      <td>9.15</td>
+      <td>7.01</td>
     </tr>
     <tr>
       <th>4065</th>
@@ -28084,9 +28901,9 @@ Buffer 500m:
       <td>TOTAL</td>
       <td>500m Buffer along tracks</td>
       <td>Ethica</td>
+      <td>296.50</td>
       <td>276.80</td>
-      <td>294.59</td>
-      <td>74.63</td>
+      <td>74.43</td>
     </tr>
     <tr>
       <th>4066</th>
@@ -28094,9 +28911,9 @@ Buffer 500m:
       <td>TOTAL</td>
       <td>500m Buffer along tracks</td>
       <td>SenseDoc</td>
+      <td>296.50</td>
       <td>276.80</td>
-      <td>294.59</td>
-      <td>79.42</td>
+      <td>79.72</td>
     </tr>
     <tr>
       <th>4067</th>
@@ -28104,9 +28921,9 @@ Buffer 500m:
       <td>TOTAL</td>
       <td>500m Buffer along tracks</td>
       <td>Ethica ∪ SenseDoc</td>
+      <td>296.50</td>
       <td>276.80</td>
-      <td>294.59</td>
-      <td>62.54</td>
+      <td>62.58</td>
     </tr>
   </tbody>
 </table>
@@ -28122,7 +28939,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[37]:</div>
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">catplot</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">tidy_all</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;box&quot;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;Sensor&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;pct_overlap&#39;</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s1">&#39;Activity space&#39;</span><span class="p">,</span> <span class="n">col_wrap</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">palette</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
@@ -28148,7 +28965,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_184_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_192_0.png"
 >
 </div>
 
@@ -28160,7 +28977,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[33]:</div>
+<div class="prompt input_prompt">In&nbsp;[28]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">relplot</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">tidy_all</span><span class="p">[</span><span class="n">tidy_all</span><span class="o">.</span><span class="n">Sensor</span> <span class="o">==</span> <span class="s1">&#39;Ethica </span><span class="se">\u222a</span><span class="s1"> SenseDoc&#39;</span><span class="p">],</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;scatter&quot;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;areaEthica&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;areaSenseDoc&#39;</span><span class="p">,</span> 
@@ -28196,7 +29013,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_185_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_193_0.png"
 >
 </div>
 
@@ -28208,7 +29025,65 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[34]:</div>
+<div class="prompt input_prompt">In&nbsp;[32]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Prepare data fro Bland-Altman graph, i.e. diff vs. mean of measures</span>
+<span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;mean_area&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;areaEthica&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;areaSenseDoc&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+<span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;diff_area&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;areaEthica&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;areaSenseDoc&#39;</span><span class="p">]</span>
+
+<span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">relplot</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">tidy_all</span><span class="p">[</span><span class="n">tidy_all</span><span class="o">.</span><span class="n">Sensor</span> <span class="o">==</span> <span class="s1">&#39;Ethica </span><span class="se">\u222a</span><span class="s1"> SenseDoc&#39;</span><span class="p">],</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;scatter&quot;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;mean_area&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;diff_area&#39;</span><span class="p">,</span> 
+    <span class="n">size</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;pct_overlap&#39;</span><span class="p">,</span> <span class="n">sizes</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span>
+    <span class="n">col</span><span class="o">=</span><span class="s1">&#39;Activity space&#39;</span><span class="p">,</span> <span class="n">col_wrap</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">facet_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;sharex&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;sharey&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">.5</span><span class="p">)</span>
+<span class="n">g</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">set_axis_labels</span><span class="p">(</span><span class="s1">&#39;Average of Ethica and SenseDoc activity space areas&#39;</span><span class="p">,</span> <span class="s1">&#39;Difference of Ethica and Sensedoc activity space areas&#39;</span><span class="p">)</span>
+<span class="n">g</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">set_titles</span><span class="p">(</span><span class="n">col_template</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{col_name}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bland-Altman plot of agreement between activity space areas, by activity space type&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
+    <span class="c1"># Rescale axes to discard outliers</span>
+    <span class="n">xmax</span> <span class="o">=</span> <span class="n">tidy_all</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">tidy_all</span><span class="o">.</span><span class="n">Sensor</span> <span class="o">==</span> <span class="s1">&#39;Ethica </span><span class="se">\u222a</span><span class="s1"> SenseDoc&#39;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;Activity space&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_title</span><span class="p">()),</span> <span class="s1">&#39;mean_area&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">.95</span><span class="p">)</span>
+    <span class="n">ymin</span> <span class="o">=</span> <span class="n">tidy_all</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">tidy_all</span><span class="o">.</span><span class="n">Sensor</span> <span class="o">==</span> <span class="s1">&#39;Ethica </span><span class="se">\u222a</span><span class="s1"> SenseDoc&#39;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;Activity space&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_title</span><span class="p">()),</span> <span class="s1">&#39;diff_area&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">.05</span><span class="p">)</span>
+    <span class="n">ymax</span> <span class="o">=</span> <span class="n">tidy_all</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">tidy_all</span><span class="o">.</span><span class="n">Sensor</span> <span class="o">==</span> <span class="s1">&#39;Ethica </span><span class="se">\u222a</span><span class="s1"> SenseDoc&#39;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;Activity space&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_title</span><span class="p">()),</span> <span class="s1">&#39;diff_area&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">.95</span><span class="p">)</span>
+    <span class="n">mean_diff</span> <span class="o">=</span> <span class="n">tidy_all</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">tidy_all</span><span class="o">.</span><span class="n">Sensor</span> <span class="o">==</span> <span class="s1">&#39;Ethica </span><span class="se">\u222a</span><span class="s1"> SenseDoc&#39;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;Activity space&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_title</span><span class="p">()),</span> <span class="s1">&#39;diff_area&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">sd_diff</span> <span class="o">=</span> <span class="n">tidy_all</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">tidy_all</span><span class="o">.</span><span class="n">Sensor</span> <span class="o">==</span> <span class="s1">&#39;Ethica </span><span class="se">\u222a</span><span class="s1"> SenseDoc&#39;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;Activity space&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_title</span><span class="p">()),</span> <span class="s1">&#39;diff_area&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">xmin</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="n">xmax</span><span class="o">+</span><span class="mi">100</span><span class="p">)</span> 
+    <span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ymin</span><span class="o">=</span><span class="mf">1.05</span> <span class="o">*</span> <span class="p">(</span><span class="n">mean_diff</span> <span class="o">-</span> <span class="mf">1.96</span><span class="o">*</span><span class="n">sd_diff</span><span class="p">),</span> <span class="n">ymax</span><span class="o">=</span><span class="mf">1.05</span> <span class="o">*</span> <span class="p">(</span><span class="n">mean_diff</span> <span class="o">+</span> <span class="mf">1.96</span><span class="o">*</span><span class="n">sd_diff</span><span class="p">))</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">mean_diff</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">mean_diff</span> <span class="o">-</span> <span class="mf">1.96</span><span class="o">*</span><span class="n">sd_diff</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">mean_diff</span> <span class="o">+</span> <span class="mf">1.96</span><span class="o">*</span><span class="n">sd_diff</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+    <span class="c1"># print(f&quot;{ax.get_title()} -&gt; mean ± 1.96xsd:  {round(mean_diff, 1)} ± {round(1.96*sd_diff, 1)}&quot;)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">legend</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">% o</span><span class="s1">verlap&#39;</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_194_0.png"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">as_tab</span> <span class="o">=</span> <span class="n">tidy_all</span><span class="p">[[</span><span class="s1">&#39;Activity space&#39;</span><span class="p">,</span> <span class="s1">&#39;Sensor&#39;</span><span class="p">,</span> <span class="s1">&#39;areaEthica&#39;</span><span class="p">,</span> <span class="s1">&#39;areaSenseDoc&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -28232,7 +29107,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[34]:</div>
+    <div class="prompt output_prompt">Out[16]:</div>
 
 
 
@@ -28306,7 +29181,7 @@ Buffer 500m:
       <td>45.90</td>
       <td>90.11</td>
       <td>NaN</td>
-      <td>75.49</td>
+      <td>66.21</td>
       <td>89.47</td>
       <td>NaN</td>
     </tr>
@@ -28321,7 +29196,7 @@ Buffer 500m:
       <td>47.44</td>
       <td>109.18</td>
       <td>NaN</td>
-      <td>88.49</td>
+      <td>77.67</td>
       <td>108.23</td>
       <td>NaN</td>
     </tr>
@@ -28336,7 +29211,7 @@ Buffer 500m:
       <td>0.81</td>
       <td>1.59</td>
       <td>NaN</td>
-      <td>0.81</td>
+      <td>0.78</td>
       <td>1.60</td>
       <td>NaN</td>
     </tr>
@@ -28351,7 +29226,7 @@ Buffer 500m:
       <td>16.30</td>
       <td>26.29</td>
       <td>NaN</td>
-      <td>21.53</td>
+      <td>18.91</td>
       <td>26.31</td>
       <td>NaN</td>
     </tr>
@@ -28366,7 +29241,7 @@ Buffer 500m:
       <td>31.64</td>
       <td>52.10</td>
       <td>NaN</td>
-      <td>46.25</td>
+      <td>38.62</td>
       <td>52.12</td>
       <td>NaN</td>
     </tr>
@@ -28381,7 +29256,7 @@ Buffer 500m:
       <td>57.71</td>
       <td>105.89</td>
       <td>NaN</td>
-      <td>93.41</td>
+      <td>79.94</td>
       <td>105.77</td>
       <td>NaN</td>
     </tr>
@@ -28396,7 +29271,7 @@ Buffer 500m:
       <td>286.34</td>
       <td>751.64</td>
       <td>NaN</td>
-      <td>651.71</td>
+      <td>583.44</td>
       <td>751.90</td>
       <td>NaN</td>
     </tr>
@@ -28427,9 +29302,9 @@ Buffer 500m:
       <td>90.60</td>
       <td>59.87</td>
       <td>54.98</td>
-      <td>80.13</td>
-      <td>74.06</td>
-      <td>61.10</td>
+      <td>84.28</td>
+      <td>69.84</td>
+      <td>60.21</td>
     </tr>
     <tr>
       <th>std</th>
@@ -28442,9 +29317,9 @@ Buffer 500m:
       <td>14.25</td>
       <td>27.28</td>
       <td>24.90</td>
-      <td>16.63</td>
-      <td>26.52</td>
-      <td>23.79</td>
+      <td>16.04</td>
+      <td>27.51</td>
+      <td>24.68</td>
     </tr>
     <tr>
       <th>min</th>
@@ -28457,9 +29332,9 @@ Buffer 500m:
       <td>21.04</td>
       <td>0.19</td>
       <td>0.19</td>
-      <td>7.70</td>
-      <td>0.20</td>
-      <td>0.20</td>
+      <td>7.71</td>
+      <td>0.19</td>
+      <td>0.19</td>
     </tr>
     <tr>
       <th>25%</th>
@@ -28472,9 +29347,9 @@ Buffer 500m:
       <td>87.15</td>
       <td>40.41</td>
       <td>38.58</td>
-      <td>72.57</td>
-      <td>64.72</td>
-      <td>47.85</td>
+      <td>77.61</td>
+      <td>54.24</td>
+      <td>45.82</td>
     </tr>
     <tr>
       <th>50%</th>
@@ -28487,9 +29362,9 @@ Buffer 500m:
       <td>96.96</td>
       <td>65.08</td>
       <td>59.27</td>
-      <td>83.32</td>
-      <td>84.73</td>
-      <td>66.69</td>
+      <td>88.46</td>
+      <td>79.70</td>
+      <td>66.33</td>
     </tr>
     <tr>
       <th>75%</th>
@@ -28502,9 +29377,9 @@ Buffer 500m:
       <td>99.44</td>
       <td>82.86</td>
       <td>74.03</td>
-      <td>92.82</td>
-      <td>93.10</td>
-      <td>78.14</td>
+      <td>96.63</td>
+      <td>91.16</td>
+      <td>78.81</td>
     </tr>
     <tr>
       <th>max</th>
@@ -28519,7 +29394,7 @@ Buffer 500m:
       <td>96.85</td>
       <td>100.00</td>
       <td>99.67</td>
-      <td>97.88</td>
+      <td>97.85</td>
     </tr>
   </tbody>
 </table>
@@ -28528,19 +29403,6 @@ Buffer 500m:
 
 </div>
 
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
-</pre></div>
-
-    </div>
 </div>
 </div>
 
