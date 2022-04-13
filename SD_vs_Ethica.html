@@ -25097,10 +25097,10 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[25]:</div>
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 2m30s</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># 3m30s</span>
 <span class="c1">######## Reload all data required in analyses below #######</span>
 <span class="c1">#</span>
 <span class="c1">#  A FIRST VERSION OF THIS CHUNK WAS USING THE UNBOUND VERSION OF THE ACTIVITY SPACE,</span>
@@ -25174,6 +25174,25 @@ Buffer 500m:
 <span class="s2">        ,string_agg(distinct model, &#39;;&#39;) model</span>
 <span class="s2">    from foo group by iid;&quot;&quot;&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="p">)</span>
 <span class="n">dtw_cmp_algo</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">sm_info</span><span class="p">,</span> <span class="n">dtw_cmp_algo</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;city&#39;</span><span class="p">])</span>
+
+<span class="c1"># Direct timestamp match</span>
+<span class="n">ts_match</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;with sd as (</span>
+<span class="s2">        select iid, utcdate at time zone &#39;UTC&#39; utcdate, geog</span>
+<span class="s2">        from level_0.bt_w1_sd_gps_clean_cma</span>
+<span class="s2">    ),</span>
+<span class="s2">    eth as (</span>
+<span class="s2">        select iid, corrected_time utcdate, geog</span>
+<span class="s2">        from level_0.bt_w1_eth_gps_clean2_cma eth</span>
+<span class="s2">        where geom is not null</span>
+<span class="s2">    )</span>
+<span class="s2">    select iid</span>
+<span class="s2">        ,sum(ST_Distance(sd.geog, eth.geog, false)) ts_dist</span>
+<span class="s2">        ,avg(ST_Distance(sd.geog, eth.geog, false)) norm_ts_dist</span>
+<span class="s2">    from sd</span>
+<span class="s2">    join eth using (iid, utcdate)</span>
+<span class="s2">    group by iid</span>
+<span class="s2">    &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="p">)</span>
+<span class="n">dtw_cmp_algo</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">dtw_cmp_algo</span><span class="p">,</span> <span class="n">ts_match</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;iid&#39;</span><span class="p">)</span>
 
 <span class="c1"># Convex hull (not bounded)</span>
 <span class="c1"># cvx_stats = pd.read_sql(&quot;&quot;&quot;</span>
@@ -25262,14 +25281,6 @@ Buffer 500m:
 <span class="c1"># buf_stats[&#39;duration_days&#39;] = buf_stats.survey_duration.dt.total_seconds() / 24 / 3600</span>
 <span class="c1"># CMA</span>
 <span class="n">buf_stats</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">    select iid, 250 buf_radius, eth.survey_duration</span>
-<span class="s2">        ,ST_Area(eth.geom::geography) / 1000000 buf_eth_area</span>
-<span class="s2">        ,ST_Area(sd.geom::geography) / 1000000 buf_sd_area</span>
-<span class="s2">        ,ST_Area(ST_Intersection(eth.geom, sd.geom)::geography) / 1000000 overlap_area</span>
-<span class="s2">        ,ST_Area(ST_Union(eth.geom, sd.geom)::geography) / 1000000 union_area</span>
-<span class="s2">    from analyses.buf_250_eth eth</span>
-<span class="s2">    join analyses.buf_250_sd sd using(iid)</span>
-<span class="s2">    union</span>
 <span class="s2">    select iid, 500 buf_radius, eth.survey_duration</span>
 <span class="s2">        ,ST_Area(eth.geom::geography) / 1000000 buf_eth_area</span>
 <span class="s2">        ,ST_Area(sd.geom::geography) / 1000000 buf_sd_area</span>
@@ -25305,14 +25316,6 @@ Buffer 500m:
 <span class="c1"># buf_stats_trk[&#39;duration_days&#39;] = buf_stats_trk.survey_duration.dt.total_seconds() / 24 / 3600</span>
 <span class="c1"># CMA bound</span>
 <span class="n">buf_stats_trk</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">/*    select iid, 250 buf_radius, eth.survey_duration</span>
-<span class="s2">        ,ST_Area(eth.geom::geography) / 1000000 buf_eth_area</span>
-<span class="s2">        ,ST_Area(sd.geom::geography) / 1000000 buf_sd_area</span>
-<span class="s2">        ,ST_Area(ST_Intersection(eth.geom, sd.geom)::geography) / 1000000 overlap_area</span>
-<span class="s2">        ,ST_Area(ST_Union(eth.geom, sd.geom)::geography) / 1000000 union_area</span>
-<span class="s2">    from analyses.buf_250_trk_eth eth</span>
-<span class="s2">    join analyses.buf_250_trk_sd sd using(iid)</span>
-<span class="s2">    union*/</span>
 <span class="s2">    select iid, 500 buf_radius, eth.survey_duration</span>
 <span class="s2">        ,ST_Area(eth.geom::geography) / 1000000 buf_eth_area</span>
 <span class="s2">        ,ST_Area(sd.geom::geography) / 1000000 buf_sd_area</span>
@@ -25333,7 +25336,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[26]:</div>
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Find all participants with common survey period, who are included in stats || USING THE CMA BOUND VERSION</span>
@@ -25377,7 +25380,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[26]:</div>
+    <div class="prompt output_prompt">Out[3]:</div>
 
 
 
@@ -25522,7 +25525,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[27]:</div>
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Using version 3 of CC computing, the Union of density histograms (~ cccoeff)</span>
@@ -25552,7 +25555,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[27]:</div>
+    <div class="prompt output_prompt">Out[4]:</div>
 
 
 
@@ -25901,7 +25904,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[28]:</div>
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Get participants stats</span>
@@ -25920,7 +25923,7 @@ Buffer 500m:
 
 <span class="c1"># Merge DTW stats</span>
 <span class="n">dtw_keepers</span> <span class="o">=</span> <span class="n">dtw_cmp_algo</span><span class="p">[</span><span class="n">dtw_cmp_algo</span><span class="p">[</span><span class="s1">&#39;ndist_sd_fast&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()]</span>
-<span class="n">pid_stats</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">pid_stats</span><span class="p">,</span> <span class="n">dtw_keepers</span><span class="p">[[</span><span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;n_devices&#39;</span><span class="p">,</span> <span class="s1">&#39;os&#39;</span><span class="p">,</span> <span class="s1">&#39;ndist_sd_fast&#39;</span><span class="p">,</span> <span class="s1">&#39;ndist_sd_self_fast&#39;</span><span class="p">]],</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;iid&#39;</span><span class="p">)</span>
+<span class="n">pid_stats</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">pid_stats</span><span class="p">,</span> <span class="n">dtw_keepers</span><span class="p">[[</span><span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;n_devices&#39;</span><span class="p">,</span> <span class="s1">&#39;os&#39;</span><span class="p">,</span> <span class="s1">&#39;ndist_sd_fast&#39;</span><span class="p">,</span> <span class="s1">&#39;ndist_sd_self_fast&#39;</span><span class="p">,</span> <span class="s1">&#39;norm_ts_dist&#39;</span><span class="p">]],</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;iid&#39;</span><span class="p">)</span>
 
 <span class="c1"># Merge CC stats (using 3rd version)</span>
 <span class="n">pid_stats</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">pid_stats</span><span class="p">,</span> <span class="n">cc_results3_stats</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;iid&#39;</span><span class="p">)</span>
@@ -25967,7 +25970,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[28]:</div>
+    <div class="prompt output_prompt">Out[5]:</div>
 
 
 
@@ -26280,7 +26283,7 @@ Buffer 500m:
     </tr>
   </tbody>
 </table>
-<p>674 rows × 119 columns</p>
+<p>674 rows × 111 columns</p>
 </div>
 </div>
 
@@ -26299,7 +26302,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[29]:</div>
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Build age row</span>
@@ -26429,7 +26432,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[29]:</div>
+    <div class="prompt output_prompt">Out[6]:</div>
 
 
 
@@ -26704,7 +26707,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[30]:</div>
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Keep only stats for selected participants</span>
@@ -26748,7 +26751,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[31]:</div>
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">cc_results3_pivot</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;epoch&#39;</span><span class="p">,</span> <span class="s1">&#39;cellsize&#39;</span><span class="p">])[</span><span class="s1">&#39;cccoeff&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">map</span><span class="p">({</span><span class="s1">&#39;5min&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;15min&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Hour&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;6hours&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;Day&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;Survey&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">}),</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -26764,7 +26767,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[31]:</div>
+    <div class="prompt output_prompt">Out[8]:</div>
 
 
 
@@ -27300,7 +27303,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[32]:</div>
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Build DTW stat table, split by city</span>
@@ -27326,7 +27329,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[32]:</div>
+    <div class="prompt output_prompt">Out[9]:</div>
 
 
 
@@ -27418,7 +27421,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[33]:</div>
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Build DTW stat table, split by city || SIMULATED data to get an indication of best DTW distance given 1 to 5 pattern</span>
@@ -27444,7 +27447,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[33]:</div>
+    <div class="prompt output_prompt">Out[10]:</div>
 
 
 
@@ -27536,7 +27539,125 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[34]:</div>
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Build TS matched stat table, split by city</span>
+<span class="n">tab_dtw</span> <span class="o">=</span> <span class="n">pid_stats</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;city_id&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;norm_ts_dist&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">),</span>
+    <span class="n">Mean</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;norm_ts_dist&#39;</span><span class="p">,</span> <span class="s1">&#39;mean&#39;</span><span class="p">),</span>
+    <span class="n">Std</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;norm_ts_dist&#39;</span><span class="p">,</span> <span class="s1">&#39;std&#39;</span><span class="p">),</span>
+    <span class="n">Min</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;norm_ts_dist&#39;</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">),</span>
+    <span class="n">Max</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;norm_ts_dist&#39;</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">),</span>
+    <span class="n">Median</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;norm_ts_dist&#39;</span><span class="p">,</span> <span class="s1">&#39;median&#39;</span><span class="p">))</span>
+<span class="n">tab_dtw</span> <span class="o">=</span> <span class="n">tab_dtw</span><span class="o">.</span><span class="n">T</span>
+<span class="n">tab_dtw</span> <span class="o">=</span> <span class="n">tab_dtw</span><span class="p">[[</span><span class="s1">&#39;Montréal&#39;</span><span class="p">,</span> <span class="s1">&#39;Saskatoon&#39;</span><span class="p">,</span> <span class="s1">&#39;Vancouver&#39;</span><span class="p">,</span> <span class="s1">&#39;Victoria&#39;</span><span class="p">,</span> <span class="s1">&#39;TOTAL&#39;</span><span class="p">]]</span>
+<span class="n">tab_dtw</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[11]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>city_id</th>
+      <th>Montréal</th>
+      <th>Saskatoon</th>
+      <th>Vancouver</th>
+      <th>Victoria</th>
+      <th>TOTAL</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>N</th>
+      <td>149.00</td>
+      <td>58.00</td>
+      <td>58.00</td>
+      <td>70.00</td>
+      <td>335.00</td>
+    </tr>
+    <tr>
+      <th>Mean</th>
+      <td>3895.66</td>
+      <td>2180.15</td>
+      <td>3448.26</td>
+      <td>3068.89</td>
+      <td>3348.43</td>
+    </tr>
+    <tr>
+      <th>Std</th>
+      <td>3974.73</td>
+      <td>1378.50</td>
+      <td>2727.64</td>
+      <td>2712.51</td>
+      <td>3240.87</td>
+    </tr>
+    <tr>
+      <th>Min</th>
+      <td>25.14</td>
+      <td>259.26</td>
+      <td>249.14</td>
+      <td>263.28</td>
+      <td>25.14</td>
+    </tr>
+    <tr>
+      <th>Max</th>
+      <td>40240.26</td>
+      <td>6643.94</td>
+      <td>14254.57</td>
+      <td>16147.04</td>
+      <td>40240.26</td>
+    </tr>
+    <tr>
+      <th>Median</th>
+      <td>3172.47</td>
+      <td>1807.42</td>
+      <td>2861.03</td>
+      <td>2629.20</td>
+      <td>2636.15</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Display DTW distance</span>
@@ -27565,7 +27686,92 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_178_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_179_0.png"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Display DTW distance</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">boxplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">pid_stats</span><span class="p">,</span> 
+    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;norm_ts_dist&quot;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="n">showfliers</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="c1">#hue=&#39;city&#39;,</span>
+    <span class="n">palette</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
+    <span class="c1">#color=&#39;gray&#39;)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Comparison of distance between SenseDoc and Ethica tracks&#39;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;City&#39;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;ts matched distance&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_180_0.png"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Combined graphs</span>
+<span class="n">dist_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">pid_stats</span><span class="p">[[</span><span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="s1">&#39;norm_ts_dist&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">dist_type</span><span class="o">=</span><span class="s1">&#39;Direct&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;norm_ts_dist&#39;</span><span class="p">:</span> <span class="s1">&#39;distance&#39;</span><span class="p">}),</span>
+                <span class="n">pid_stats</span><span class="p">[[</span><span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="s1">&#39;ndist_sd_fast&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">dist_type</span><span class="o">=</span><span class="s1">&#39;DTW&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;ndist_sd_fast&#39;</span><span class="p">:</span> <span class="s1">&#39;distance&#39;</span><span class="p">}),</span>
+                <span class="n">pid_stats</span><span class="p">[[</span><span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="s1">&#39;ndist_sd_self_fast&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">dist_type</span><span class="o">=</span><span class="s1">&#39;Simulated DTW&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;ndist_sd_self_fast&#39;</span><span class="p">:</span> <span class="s1">&#39;distance&#39;</span><span class="p">})])</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">boxplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">dist_df</span><span class="p">,</span> 
+    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;distance&quot;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="n">showfliers</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s1">&#39;dist_type&#39;</span><span class="p">,</span>
+    <span class="n">palette</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Comparison of DTW and direct distances between SenseDoc and Ethica tracks&#39;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;City&#39;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Distance&#39;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;Distance type&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_181_0.png"
 >
 </div>
 
@@ -27592,7 +27798,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[35]:</div>
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">cvx_tab</span> <span class="o">=</span> <span class="n">pid_stats</span><span class="p">[[</span><span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="s1">&#39;cvx_eth_area&#39;</span><span class="p">,</span> <span class="s1">&#39;cvx_sd_area&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap_eth&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap_sd&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap&#39;</span><span class="p">]]</span>
@@ -27613,7 +27819,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[35]:</div>
+    <div class="prompt output_prompt">Out[15]:</div>
 
 
 
@@ -27967,382 +28173,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[36]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">cvx_tab</span> <span class="o">=</span> <span class="n">pid_stats</span><span class="p">[[</span><span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="s1">&#39;cvx_eth_area&#39;</span><span class="p">,</span> <span class="s1">&#39;cvx_sd_area&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap_eth&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap_sd&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap&#39;</span><span class="p">]]</span>
-<span class="n">cvx_tab</span> <span class="o">=</span> <span class="n">cvx_tab</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;cvx_eth_area&#39;</span><span class="p">:</span> <span class="s1">&#39;cvx_area_eth&#39;</span><span class="p">,</span> <span class="s1">&#39;cvx_sd_area&#39;</span><span class="p">:</span> <span class="s1">&#39;cvx_area_sd&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap&#39;</span><span class="p">:</span> <span class="s1">&#39;pct_overlap_eth+sd&#39;</span><span class="p">})</span>
-<span class="n">cvx_tab</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">wide_to_long</span><span class="p">(</span><span class="n">cvx_tab</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;cvx_area&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap&#39;</span><span class="p">],</span> <span class="n">i</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">],</span> <span class="n">j</span><span class="o">=</span><span class="s1">&#39;sensor&#39;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;\D+&#39;</span><span class="p">)</span>
-<span class="n">cvx_tab</span> <span class="o">=</span> <span class="n">cvx_tab</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="s1">&#39;sensor&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">T</span>
-<span class="n">cvx_tab</span> <span class="o">=</span> <span class="n">cvx_tab</span><span class="p">[[(</span><span class="n">c</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;Montréal&#39;</span><span class="p">,</span> <span class="s1">&#39;Saskatoon&#39;</span><span class="p">,</span> <span class="s1">&#39;Vancouver&#39;</span><span class="p">,</span> <span class="s1">&#39;Victoria&#39;</span><span class="p">,</span> <span class="s1">&#39;TOTAL&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;eth&#39;</span><span class="p">,</span> <span class="s1">&#39;sd&#39;</span><span class="p">,</span> <span class="s1">&#39;eth+sd&#39;</span><span class="p">]]]</span>
-<span class="n">cvx_tab</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt output_prompt">Out[36]:</div>
-
-
-
-<div class="output_html rendered_html output_subarea output_execute_result">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead tr th {
-        text-align: left;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr>
-      <th></th>
-      <th>city_id</th>
-      <th colspan="3" halign="left">Montréal</th>
-      <th colspan="3" halign="left">Saskatoon</th>
-      <th colspan="3" halign="left">Vancouver</th>
-      <th colspan="3" halign="left">Victoria</th>
-      <th colspan="3" halign="left">TOTAL</th>
-    </tr>
-    <tr>
-      <th></th>
-      <th>sensor</th>
-      <th>eth</th>
-      <th>sd</th>
-      <th>eth+sd</th>
-      <th>eth</th>
-      <th>sd</th>
-      <th>eth+sd</th>
-      <th>eth</th>
-      <th>sd</th>
-      <th>eth+sd</th>
-      <th>eth</th>
-      <th>sd</th>
-      <th>eth+sd</th>
-      <th>eth</th>
-      <th>sd</th>
-      <th>eth+sd</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th rowspan="8" valign="top">cvx_area</th>
-      <th>count</th>
-      <td>149.00</td>
-      <td>149.00</td>
-      <td>0.00</td>
-      <td>59.00</td>
-      <td>59.00</td>
-      <td>0.00</td>
-      <td>58.00</td>
-      <td>58.00</td>
-      <td>0.00</td>
-      <td>71.00</td>
-      <td>71.00</td>
-      <td>0.00</td>
-      <td>337.00</td>
-      <td>337.00</td>
-      <td>0.00</td>
-    </tr>
-    <tr>
-      <th>mean</th>
-      <td>229.48</td>
-      <td>310.99</td>
-      <td>NaN</td>
-      <td>47.42</td>
-      <td>57.64</td>
-      <td>NaN</td>
-      <td>160.70</td>
-      <td>178.49</td>
-      <td>NaN</td>
-      <td>106.98</td>
-      <td>120.28</td>
-      <td>NaN</td>
-      <td>159.96</td>
-      <td>203.65</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>std</th>
-      <td>305.82</td>
-      <td>394.46</td>
-      <td>NaN</td>
-      <td>78.37</td>
-      <td>92.74</td>
-      <td>NaN</td>
-      <td>220.28</td>
-      <td>204.99</td>
-      <td>NaN</td>
-      <td>122.27</td>
-      <td>114.52</td>
-      <td>NaN</td>
-      <td>242.00</td>
-      <td>300.52</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>min</th>
-      <td>0.00</td>
-      <td>0.12</td>
-      <td>NaN</td>
-      <td>1.16</td>
-      <td>2.69</td>
-      <td>NaN</td>
-      <td>0.00</td>
-      <td>1.78</td>
-      <td>NaN</td>
-      <td>0.00</td>
-      <td>0.62</td>
-      <td>NaN</td>
-      <td>0.00</td>
-      <td>0.12</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>25%</th>
-      <td>35.51</td>
-      <td>46.74</td>
-      <td>NaN</td>
-      <td>12.80</td>
-      <td>16.01</td>
-      <td>NaN</td>
-      <td>37.87</td>
-      <td>48.49</td>
-      <td>NaN</td>
-      <td>11.05</td>
-      <td>27.92</td>
-      <td>NaN</td>
-      <td>20.18</td>
-      <td>31.42</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>50%</th>
-      <td>96.74</td>
-      <td>144.96</td>
-      <td>NaN</td>
-      <td>22.64</td>
-      <td>27.20</td>
-      <td>NaN</td>
-      <td>92.71</td>
-      <td>114.51</td>
-      <td>NaN</td>
-      <td>66.44</td>
-      <td>89.63</td>
-      <td>NaN</td>
-      <td>66.44</td>
-      <td>89.99</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>75%</th>
-      <td>326.04</td>
-      <td>408.29</td>
-      <td>NaN</td>
-      <td>51.59</td>
-      <td>61.46</td>
-      <td>NaN</td>
-      <td>174.90</td>
-      <td>181.42</td>
-      <td>NaN</td>
-      <td>150.88</td>
-      <td>187.43</td>
-      <td>NaN</td>
-      <td>205.57</td>
-      <td>250.33</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>max</th>
-      <td>1723.06</td>
-      <td>2318.71</td>
-      <td>NaN</td>
-      <td>407.08</td>
-      <td>481.08</td>
-      <td>NaN</td>
-      <td>1276.46</td>
-      <td>900.21</td>
-      <td>NaN</td>
-      <td>538.91</td>
-      <td>428.40</td>
-      <td>NaN</td>
-      <td>1723.06</td>
-      <td>2318.71</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th rowspan="8" valign="top">pct_overlap</th>
-      <th>count</th>
-      <td>149.00</td>
-      <td>149.00</td>
-      <td>149.00</td>
-      <td>59.00</td>
-      <td>59.00</td>
-      <td>59.00</td>
-      <td>58.00</td>
-      <td>58.00</td>
-      <td>58.00</td>
-      <td>71.00</td>
-      <td>71.00</td>
-      <td>71.00</td>
-      <td>337.00</td>
-      <td>337.00</td>
-      <td>337.00</td>
-    </tr>
-    <tr>
-      <th>mean</th>
-      <td>89.73</td>
-      <td>73.61</td>
-      <td>65.52</td>
-      <td>90.76</td>
-      <td>74.99</td>
-      <td>68.50</td>
-      <td>91.86</td>
-      <td>77.52</td>
-      <td>71.55</td>
-      <td>85.40</td>
-      <td>71.15</td>
-      <td>59.88</td>
-      <td>89.36</td>
-      <td>74.00</td>
-      <td>65.89</td>
-    </tr>
-    <tr>
-      <th>std</th>
-      <td>20.04</td>
-      <td>32.96</td>
-      <td>32.33</td>
-      <td>19.45</td>
-      <td>29.83</td>
-      <td>29.43</td>
-      <td>21.96</td>
-      <td>27.04</td>
-      <td>28.52</td>
-      <td>24.17</td>
-      <td>34.85</td>
-      <td>34.17</td>
-      <td>21.23</td>
-      <td>31.83</td>
-      <td>31.71</td>
-    </tr>
-    <tr>
-      <th>min</th>
-      <td>1.15</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>12.51</td>
-      <td>6.72</td>
-      <td>6.37</td>
-      <td>1.02</td>
-      <td>0.08</td>
-      <td>0.08</td>
-      <td>14.86</td>
-      <td>0.00</td>
-      <td>0.00</td>
-      <td>1.02</td>
-      <td>0.00</td>
-      <td>0.00</td>
-    </tr>
-    <tr>
-      <th>25%</th>
-      <td>88.07</td>
-      <td>57.89</td>
-      <td>42.27</td>
-      <td>97.23</td>
-      <td>65.33</td>
-      <td>48.81</td>
-      <td>99.68</td>
-      <td>66.20</td>
-      <td>57.38</td>
-      <td>76.27</td>
-      <td>40.65</td>
-      <td>27.16</td>
-      <td>92.00</td>
-      <td>59.06</td>
-      <td>41.19</td>
-    </tr>
-    <tr>
-      <th>50%</th>
-      <td>99.38</td>
-      <td>91.17</td>
-      <td>79.50</td>
-      <td>99.89</td>
-      <td>89.29</td>
-      <td>83.85</td>
-      <td>99.92</td>
-      <td>87.75</td>
-      <td>83.72</td>
-      <td>99.30</td>
-      <td>91.26</td>
-      <td>69.69</td>
-      <td>99.82</td>
-      <td>89.66</td>
-      <td>79.99</td>
-    </tr>
-    <tr>
-      <th>75%</th>
-      <td>100.00</td>
-      <td>97.19</td>
-      <td>92.28</td>
-      <td>100.00</td>
-      <td>95.46</td>
-      <td>90.97</td>
-      <td>100.00</td>
-      <td>96.85</td>
-      <td>94.63</td>
-      <td>99.98</td>
-      <td>97.72</td>
-      <td>93.44</td>
-      <td>100.00</td>
-      <td>97.05</td>
-      <td>92.60</td>
-    </tr>
-    <tr>
-      <th>max</th>
-      <td>100.00</td>
-      <td>100.00</td>
-      <td>99.95</td>
-      <td>100.00</td>
-      <td>99.89</td>
-      <td>97.72</td>
-      <td>100.00</td>
-      <td>99.97</td>
-      <td>99.63</td>
-      <td>100.00</td>
-      <td>99.83</td>
-      <td>99.70</td>
-      <td>100.00</td>
-      <td>100.00</td>
-      <td>99.95</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[37]:</div>
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">scatterplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">pid_stats</span><span class="p">[</span><span class="n">pid_stats</span><span class="o">.</span><span class="n">city_id</span> <span class="o">==</span> <span class="s1">&#39;TOTAL&#39;</span><span class="p">],</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;cvx_eth_area&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;cvx_sd_area&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s1">&#39;pct_overlap&#39;</span><span class="p">,</span> <span class="n">sizes</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
@@ -28389,7 +28220,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_183_1.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_185_1.png"
 >
 </div>
 
@@ -28409,7 +28240,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[38]:</div>
+<div class="prompt input_prompt">In&nbsp;[17]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">sde</span> <span class="o">=</span> <span class="s1">&#39;2SD&#39;</span>
@@ -28431,7 +28262,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[38]:</div>
+    <div class="prompt output_prompt">Out[17]:</div>
 
 
 
@@ -28930,7 +28761,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[39]:</div>
+<div class="prompt input_prompt">In&nbsp;[18]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">scatterplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">pid_stats</span><span class="p">[</span><span class="n">pid_stats</span><span class="o">.</span><span class="n">city_id</span> <span class="o">==</span> <span class="s1">&#39;TOTAL&#39;</span><span class="p">],</span> <span class="n">x</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_ellipse_eth_area&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_ellipse_sd_area&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_pct_overlap&#39;</span><span class="p">,</span> <span class="n">sizes</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
@@ -28979,7 +28810,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_186_1.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_188_1.png"
 >
 </div>
 
@@ -28991,7 +28822,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[40]:</div>
+<div class="prompt input_prompt">In&nbsp;[19]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Display distribution of angle of ellipses vs % of overlap</span>
@@ -29022,7 +28853,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_187_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_189_0.png"
 >
 </div>
 
@@ -29034,7 +28865,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[41]:</div>
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Display distribution of angle of ellipses only</span>
@@ -29059,7 +28890,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_188_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_190_0.png"
 >
 </div>
 
@@ -29079,7 +28910,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[42]:</div>
+<div class="prompt input_prompt">In&nbsp;[21]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">radius</span> <span class="o">=</span> <span class="s1">&#39;500&#39;</span>
@@ -29101,7 +28932,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[42]:</div>
+    <div class="prompt output_prompt">Out[21]:</div>
 
 
 
@@ -29455,7 +29286,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[43]:</div>
+<div class="prompt input_prompt">In&nbsp;[22]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">scatterplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">pid_stats</span><span class="p">[</span><span class="n">pid_stats</span><span class="o">.</span><span class="n">city_id</span> <span class="o">==</span> <span class="s1">&#39;TOTAL&#39;</span><span class="p">],</span> <span class="n">x</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">_buf_eth_area&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">_buf_sd_area&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s1">&#39;pct_overlap&#39;</span><span class="p">,</span> <span class="n">sizes</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
@@ -29502,7 +29333,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_191_1.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_193_1.png"
 >
 </div>
 
@@ -29522,7 +29353,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[44]:</div>
+<div class="prompt input_prompt">In&nbsp;[23]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">radius</span> <span class="o">=</span> <span class="s1">&#39;500&#39;</span>
@@ -29544,7 +29375,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[44]:</div>
+    <div class="prompt output_prompt">Out[23]:</div>
 
 
 
@@ -29898,7 +29729,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[45]:</div>
+<div class="prompt input_prompt">In&nbsp;[24]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">scatterplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">pid_stats</span><span class="p">[</span><span class="n">pid_stats</span><span class="o">.</span><span class="n">city_id</span> <span class="o">==</span> <span class="s1">&#39;TOTAL&#39;</span><span class="p">],</span> <span class="n">x</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_buf_eth_area&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_buf_sd_area&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s1">&#39;pct_overlap&#39;</span><span class="p">,</span> <span class="n">sizes</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
@@ -29945,7 +29776,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_194_1.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_196_1.png"
 >
 </div>
 
@@ -29965,7 +29796,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[46]:</div>
+<div class="prompt input_prompt">In&nbsp;[25]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">sde</span> <span class="o">=</span> <span class="s1">&#39;2SD&#39;</span>
@@ -29973,8 +29804,7 @@ Buffer 500m:
 
 <span class="c1"># Making tidy version of flat dataset</span>
 <span class="c1"># Convex hull</span>
-<span class="n">tidy_cvx</span> <span class="o">=</span> <span class="n">pid_stats</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pid_stats</span><span class="p">[</span><span class="s1">&#39;city_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;TOTAL&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;interact_id&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="s1">&#39;cvx_eth_area&#39;</span><span class="p">,</span> <span class="s1">&#39;cvx_sd_area&#39;</span><span class="p">,</span> 
-                                                            <span class="s1">&#39;pct_overlap_eth&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap_sd&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap&#39;</span><span class="p">]]</span>
+<span class="n">tidy_cvx</span> <span class="o">=</span> <span class="n">pid_stats</span><span class="p">[[</span><span class="s1">&#39;interact_id&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="s1">&#39;cvx_eth_area&#39;</span><span class="p">,</span> <span class="s1">&#39;cvx_sd_area&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap_eth&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap_sd&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap&#39;</span><span class="p">]]</span>
 <span class="n">tidy_cvx</span> <span class="o">=</span> <span class="n">tidy_cvx</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span>
     <span class="s1">&#39;pct_overlap_eth&#39;</span><span class="p">:</span><span class="s1">&#39;pct_overlapEthica&#39;</span><span class="p">,</span> 
     <span class="s1">&#39;pct_overlap_sd&#39;</span><span class="p">:</span><span class="s1">&#39;pct_overlapSenseDoc&#39;</span><span class="p">,</span> 
@@ -29984,7 +29814,7 @@ Buffer 500m:
 <span class="n">tidy_cvx</span><span class="p">[</span><span class="s1">&#39;Activity space&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Convex hull&#39;</span>
 
 <span class="c1"># Ellipse</span>
-<span class="n">tidy_elps</span> <span class="o">=</span> <span class="n">pid_stats</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pid_stats</span><span class="p">[</span><span class="s1">&#39;city_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;TOTAL&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;interact_id&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_ellipse_eth_area&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_ellipse_sd_area&#39;</span><span class="p">,</span> 
+<span class="n">tidy_elps</span> <span class="o">=</span> <span class="n">pid_stats</span><span class="p">[[</span><span class="s1">&#39;interact_id&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_ellipse_eth_area&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_ellipse_sd_area&#39;</span><span class="p">,</span> 
                                                             <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_pct_overlap_eth&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_pct_overlap_sd&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_pct_overlap&#39;</span><span class="p">]]</span>
 <span class="n">tidy_elps</span> <span class="o">=</span> <span class="n">tidy_elps</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span>
     <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_pct_overlap_eth&#39;</span><span class="p">:</span><span class="s1">&#39;pct_overlapEthica&#39;</span><span class="p">,</span> 
@@ -29995,7 +29825,7 @@ Buffer 500m:
 <span class="n">tidy_elps</span><span class="p">[</span><span class="s1">&#39;Activity space&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">-Ellipse&#39;</span>
 
 <span class="c1"># Buffer</span>
-<span class="n">tidy_buff</span> <span class="o">=</span> <span class="n">pid_stats</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pid_stats</span><span class="p">[</span><span class="s1">&#39;city_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;TOTAL&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;interact_id&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">_buf_eth_area&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">_buf_sd_area&#39;</span><span class="p">,</span> 
+<span class="n">tidy_buff</span> <span class="o">=</span> <span class="n">pid_stats</span><span class="p">[[</span><span class="s1">&#39;interact_id&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">_buf_eth_area&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">_buf_sd_area&#39;</span><span class="p">,</span> 
                                                             <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">_pct_overlap_eth&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">_pct_overlap_sd&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">_pct_overlap&#39;</span><span class="p">]]</span>
 <span class="n">tidy_buff</span> <span class="o">=</span> <span class="n">tidy_buff</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span>
     <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">_pct_overlap_eth&#39;</span><span class="p">:</span><span class="s1">&#39;pct_overlapEthica&#39;</span><span class="p">,</span> 
@@ -30006,7 +29836,7 @@ Buffer 500m:
 <span class="n">tidy_buff</span><span class="p">[</span><span class="s1">&#39;Activity space&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">m Buffer around fixes&#39;</span>
 
 <span class="c1"># Buffer, trk</span>
-<span class="n">tidy_buftrk</span> <span class="o">=</span> <span class="n">pid_stats</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pid_stats</span><span class="p">[</span><span class="s1">&#39;city_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;TOTAL&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;interact_id&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_buf_eth_area&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_buf_sd_area&#39;</span><span class="p">,</span> 
+<span class="n">tidy_buftrk</span> <span class="o">=</span> <span class="n">pid_stats</span><span class="p">[[</span><span class="s1">&#39;interact_id&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_buf_eth_area&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_buf_sd_area&#39;</span><span class="p">,</span> 
                                                             <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_pct_overlap_eth&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_pct_overlap_sd&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_pct_overlap&#39;</span><span class="p">]]</span>
 <span class="n">tidy_buftrk</span> <span class="o">=</span> <span class="n">tidy_buftrk</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span>
     <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_pct_overlap_eth&#39;</span><span class="p">:</span><span class="s1">&#39;pct_overlapEthica&#39;</span><span class="p">,</span> 
@@ -30018,180 +29848,20 @@ Buffer 500m:
 
 <span class="n">tidy_all</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">tidy_cvx</span><span class="p">,</span> <span class="n">tidy_elps</span><span class="p">,</span> <span class="n">tidy_buff</span><span class="p">,</span> <span class="n">tidy_buftrk</span><span class="p">])</span>
 <span class="n">tidy_all</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">wide_to_long</span><span class="p">(</span><span class="n">tidy_all</span><span class="p">,</span><span class="s1">&#39;pct_overlap&#39;</span><span class="p">,</span> <span class="n">i</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;interact_id&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="s1">&#39;Activity space&#39;</span><span class="p">],</span> <span class="n">j</span><span class="o">=</span><span class="s1">&#39;Sensor&#39;</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;\D+&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-<span class="n">tidy_all</span>
 </pre></div>
 
     </div>
 </div>
 </div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt output_prompt">Out[46]:</div>
-
-
-
-<div class="output_html rendered_html output_subarea output_execute_result">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>interact_id</th>
-      <th>city_id</th>
-      <th>Activity space</th>
-      <th>Sensor</th>
-      <th>areaSenseDoc</th>
-      <th>areaEthica</th>
-      <th>pct_overlap</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>401885616</td>
-      <td>TOTAL</td>
-      <td>Convex hull</td>
-      <td>Ethica</td>
-      <td>273.74</td>
-      <td>267.24</td>
-      <td>96.93</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>401885616</td>
-      <td>TOTAL</td>
-      <td>Convex hull</td>
-      <td>SenseDoc</td>
-      <td>273.74</td>
-      <td>267.24</td>
-      <td>94.63</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>401885616</td>
-      <td>TOTAL</td>
-      <td>Convex hull</td>
-      <td>Ethica ∪ SenseDoc</td>
-      <td>273.74</td>
-      <td>267.24</td>
-      <td>91.87</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>401936329</td>
-      <td>TOTAL</td>
-      <td>Convex hull</td>
-      <td>Ethica</td>
-      <td>743.42</td>
-      <td>446.41</td>
-      <td>57.18</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>401936329</td>
-      <td>TOTAL</td>
-      <td>Convex hull</td>
-      <td>SenseDoc</td>
-      <td>743.42</td>
-      <td>446.41</td>
-      <td>34.33</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>4039</th>
-      <td>101261525</td>
-      <td>TOTAL</td>
-      <td>500m Buffer along tracks</td>
-      <td>SenseDoc</td>
-      <td>68.34</td>
-      <td>4.81</td>
-      <td>6.99</td>
-    </tr>
-    <tr>
-      <th>4040</th>
-      <td>101261525</td>
-      <td>TOTAL</td>
-      <td>500m Buffer along tracks</td>
-      <td>Ethica ∪ SenseDoc</td>
-      <td>68.34</td>
-      <td>4.81</td>
-      <td>6.99</td>
-    </tr>
-    <tr>
-      <th>4041</th>
-      <td>101888460</td>
-      <td>TOTAL</td>
-      <td>500m Buffer along tracks</td>
-      <td>Ethica</td>
-      <td>45.98</td>
-      <td>42.94</td>
-      <td>91.51</td>
-    </tr>
-    <tr>
-      <th>4042</th>
-      <td>101888460</td>
-      <td>TOTAL</td>
-      <td>500m Buffer along tracks</td>
-      <td>SenseDoc</td>
-      <td>45.98</td>
-      <td>42.94</td>
-      <td>85.46</td>
-    </tr>
-    <tr>
-      <th>4043</th>
-      <td>101888460</td>
-      <td>TOTAL</td>
-      <td>500m Buffer along tracks</td>
-      <td>Ethica ∪ SenseDoc</td>
-      <td>45.98</td>
-      <td>42.94</td>
-      <td>79.18</td>
-    </tr>
-  </tbody>
-</table>
-<p>4044 rows × 7 columns</p>
-</div>
-</div>
-
-</div>
-
-</div>
-</div>
-
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[47]:</div>
+<div class="prompt input_prompt">In&nbsp;[26]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">catplot</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">tidy_all</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;box&quot;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;Sensor&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;pct_overlap&#39;</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s1">&#39;Activity space&#39;</span><span class="p">,</span> <span class="n">col_wrap</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">palette</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">showfliers</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">catplot</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">tidy_all</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;box&quot;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;Sensor&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;pct_overlap&#39;</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s1">&#39;city_id&#39;</span><span class="p">,</span>
+    <span class="n">col</span><span class="o">=</span><span class="s1">&#39;Activity space&#39;</span><span class="p">,</span> <span class="n">col_wrap</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">palette</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">showfliers</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
 <span class="n">g</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">set_axis_labels</span><span class="p">(</span><span class="s1">&#39;Sensor&#39;</span><span class="p">,</span> <span class="s1">&#39;Proportion of overlap (%)&#39;</span><span class="p">)</span>
 <span class="n">g</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">set_titles</span><span class="p">(</span><span class="n">col_template</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{col_name}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Proportion of overlap compared to activity space area for each sensor and by activity space type&quot;</span><span class="p">)</span>
@@ -30214,7 +29884,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_197_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_199_0.png"
 >
 </div>
 
@@ -30226,7 +29896,476 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[48]:</div>
+<div class="prompt input_prompt">In&nbsp;[27]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Make table with area + overlap / 4 cities / 4 AS</span>
+<span class="n">cvx_tab</span> <span class="o">=</span> <span class="n">pid_stats</span><span class="p">[[</span><span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="s1">&#39;cvx_eth_area&#39;</span><span class="p">,</span> <span class="s1">&#39;cvx_sd_area&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap_eth&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap_sd&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap&#39;</span><span class="p">]]</span>
+<span class="n">cvx_tab</span> <span class="o">=</span> <span class="n">cvx_tab</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;cvx_eth_area&#39;</span><span class="p">:</span> <span class="s1">&#39;area_eth&#39;</span><span class="p">,</span> <span class="s1">&#39;cvx_sd_area&#39;</span><span class="p">:</span> <span class="s1">&#39;area_sd&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap&#39;</span><span class="p">:</span> <span class="s1">&#39;pct_overlap_eth+sd&#39;</span><span class="p">})</span>
+<span class="n">cvx_tab</span><span class="p">[</span><span class="s1">&#39;area_</span><span class="si">% d</span><span class="s1">iff&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">cvx_tab</span><span class="p">[</span><span class="s1">&#39;area_sd&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">cvx_tab</span><span class="p">[</span><span class="s1">&#39;area_eth&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="n">cvx_tab</span><span class="p">[</span><span class="s1">&#39;area_eth&#39;</span><span class="p">]</span>
+<span class="n">cvx_tab</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">wide_to_long</span><span class="p">(</span><span class="n">cvx_tab</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;area&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap&#39;</span><span class="p">],</span> <span class="n">i</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">],</span> <span class="n">j</span><span class="o">=</span><span class="s1">&#39;sensor&#39;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;\D+&#39;</span><span class="p">)</span>
+<span class="n">cvx_tab</span><span class="p">[</span><span class="s1">&#39;AS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;cvx&#39;</span>
+<span class="c1"># Ellipse</span>
+<span class="n">sde</span> <span class="o">=</span> <span class="s1">&#39;2SD&#39;</span>
+<span class="n">elp_tab</span> <span class="o">=</span> <span class="n">pid_stats</span><span class="p">[[</span><span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_ellipse_eth_area&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_ellipse_sd_area&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_pct_overlap_eth&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_pct_overlap_sd&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_pct_overlap&#39;</span><span class="p">]]</span>
+<span class="n">elp_tab</span> <span class="o">=</span> <span class="n">elp_tab</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_ellipse_eth_area&#39;</span><span class="p">:</span> <span class="s1">&#39;area_eth&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_ellipse_sd_area&#39;</span><span class="p">:</span> <span class="s1">&#39;area_sd&#39;</span><span class="p">,</span> 
+    <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_pct_overlap_eth&#39;</span><span class="p">:</span> <span class="s1">&#39;pct_overlap_eth&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_pct_overlap_sd&#39;</span><span class="p">:</span> <span class="s1">&#39;pct_overlap_sd&#39;</span><span class="p">,</span> 
+    <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1">_pct_overlap&#39;</span><span class="p">:</span> <span class="s1">&#39;pct_overlap_eth+sd&#39;</span><span class="p">})</span>
+<span class="n">elp_tab</span><span class="p">[</span><span class="s1">&#39;area_</span><span class="si">% d</span><span class="s1">iff&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">elp_tab</span><span class="p">[</span><span class="s1">&#39;area_sd&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">elp_tab</span><span class="p">[</span><span class="s1">&#39;area_eth&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="n">elp_tab</span><span class="p">[</span><span class="s1">&#39;area_eth&#39;</span><span class="p">]</span>
+<span class="n">elp_tab</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">wide_to_long</span><span class="p">(</span><span class="n">elp_tab</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;area&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap&#39;</span><span class="p">],</span> <span class="n">i</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">],</span> <span class="n">j</span><span class="o">=</span><span class="s1">&#39;sensor&#39;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;\D+&#39;</span><span class="p">)</span>
+<span class="n">elp_tab</span><span class="p">[</span><span class="s1">&#39;AS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1"> elps&#39;</span>
+<span class="c1"># Buffer 500m</span>
+<span class="n">radius</span> <span class="o">=</span> <span class="s1">&#39;500&#39;</span>
+<span class="n">buf_tab</span> <span class="o">=</span> <span class="n">pid_stats</span><span class="p">[[</span><span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">_buf_eth_area&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">_buf_sd_area&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">_pct_overlap_eth&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">_pct_overlap_sd&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">_pct_overlap&#39;</span><span class="p">]]</span>
+<span class="n">buf_tab</span> <span class="o">=</span> <span class="n">buf_tab</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">_buf_eth_area&#39;</span><span class="p">:</span> <span class="s1">&#39;area_eth&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">_buf_sd_area&#39;</span><span class="p">:</span> <span class="s1">&#39;area_sd&#39;</span><span class="p">,</span> 
+    <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">_pct_overlap_eth&#39;</span><span class="p">:</span> <span class="s1">&#39;pct_overlap_eth&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">_pct_overlap_sd&#39;</span><span class="p">:</span> <span class="s1">&#39;pct_overlap_sd&#39;</span><span class="p">,</span> 
+    <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">_pct_overlap&#39;</span><span class="p">:</span> <span class="s1">&#39;pct_overlap_eth+sd&#39;</span><span class="p">})</span>
+<span class="n">buf_tab</span><span class="p">[</span><span class="s1">&#39;area_</span><span class="si">% d</span><span class="s1">iff&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">buf_tab</span><span class="p">[</span><span class="s1">&#39;area_sd&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">buf_tab</span><span class="p">[</span><span class="s1">&#39;area_eth&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="n">buf_tab</span><span class="p">[</span><span class="s1">&#39;area_eth&#39;</span><span class="p">]</span>
+<span class="n">buf_tab</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">wide_to_long</span><span class="p">(</span><span class="n">buf_tab</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;area&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap&#39;</span><span class="p">],</span> <span class="n">i</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">],</span> <span class="n">j</span><span class="o">=</span><span class="s1">&#39;sensor&#39;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;\D+&#39;</span><span class="p">)</span>
+<span class="n">buf_tab</span><span class="p">[</span><span class="s1">&#39;AS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">m buf&#39;</span>
+<span class="c1"># track Buffer 500m</span>
+<span class="n">tbuf_tab</span> <span class="o">=</span> <span class="n">pid_stats</span><span class="p">[[</span><span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_buf_eth_area&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_buf_sd_area&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_pct_overlap_eth&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_pct_overlap_sd&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_pct_overlap&#39;</span><span class="p">]]</span>
+<span class="n">tbuf_tab</span> <span class="o">=</span> <span class="n">tbuf_tab</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_buf_eth_area&#39;</span><span class="p">:</span> <span class="s1">&#39;area_eth&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_buf_sd_area&#39;</span><span class="p">:</span> <span class="s1">&#39;area_sd&#39;</span><span class="p">,</span> 
+    <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_pct_overlap_eth&#39;</span><span class="p">:</span> <span class="s1">&#39;pct_overlap_eth&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_pct_overlap_sd&#39;</span><span class="p">:</span> <span class="s1">&#39;pct_overlap_sd&#39;</span><span class="p">,</span> 
+    <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">trk_pct_overlap&#39;</span><span class="p">:</span> <span class="s1">&#39;pct_overlap_eth+sd&#39;</span><span class="p">})</span>
+<span class="n">tbuf_tab</span><span class="p">[</span><span class="s1">&#39;area_</span><span class="si">% d</span><span class="s1">iff&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">tbuf_tab</span><span class="p">[</span><span class="s1">&#39;area_sd&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">tbuf_tab</span><span class="p">[</span><span class="s1">&#39;area_eth&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="n">tbuf_tab</span><span class="p">[</span><span class="s1">&#39;area_eth&#39;</span><span class="p">]</span>
+<span class="n">tbuf_tab</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">wide_to_long</span><span class="p">(</span><span class="n">tbuf_tab</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;area&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap&#39;</span><span class="p">],</span> <span class="n">i</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">],</span> <span class="n">j</span><span class="o">=</span><span class="s1">&#39;sensor&#39;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;\D+&#39;</span><span class="p">)</span>
+<span class="n">tbuf_tab</span><span class="p">[</span><span class="s1">&#39;AS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">m trk buf&#39;</span>
+<span class="c1"># Combine individual AS</span>
+<span class="n">tabn</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">cvx_tab</span><span class="p">,</span> <span class="n">elp_tab</span><span class="p">,</span> <span class="n">buf_tab</span><span class="p">,</span> <span class="n">tbuf_tab</span><span class="p">])</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+<span class="n">tabn</span> <span class="o">=</span> <span class="n">tabn</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;AS&#39;</span><span class="p">,</span> <span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="s1">&#39;sensor&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">),</span>
+    <span class="n">area_med</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;area&#39;</span><span class="p">,</span> <span class="s1">&#39;median&#39;</span><span class="p">),</span>
+    <span class="n">area_p25</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;area&#39;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mf">.25</span><span class="p">)),</span>
+    <span class="n">area_p75</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;area&#39;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mf">.75</span><span class="p">)),</span>
+    <span class="n">ovlp_med</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;pct_overlap&#39;</span><span class="p">,</span> <span class="s1">&#39;median&#39;</span><span class="p">),</span>
+    <span class="n">ovlp_p25</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;pct_overlap&#39;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mf">.25</span><span class="p">)),</span>
+    <span class="n">ovlp_p75</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;pct_overlap&#39;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mf">.75</span><span class="p">))</span>
+<span class="p">)</span>
+<span class="n">tabn</span><span class="p">[</span><span class="s1">&#39;area&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tabn</span><span class="p">[</span><span class="s1">&#39;area_med&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; (&#39;</span> <span class="o">+</span> <span class="n">tabn</span><span class="p">[</span><span class="s1">&#39;area_p25&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; - &#39;</span> <span class="o">+</span> <span class="n">tabn</span><span class="p">[</span><span class="s1">&#39;area_p75&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span>
+<span class="n">tabn</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">% o</span><span class="s1">verlap&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tabn</span><span class="p">[</span><span class="s1">&#39;ovlp_med&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; (&#39;</span> <span class="o">+</span> <span class="n">tabn</span><span class="p">[</span><span class="s1">&#39;ovlp_p25&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; - &#39;</span> <span class="o">+</span> <span class="n">tabn</span><span class="p">[</span><span class="s1">&#39;ovlp_p75&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span>
+<span class="n">tabn</span> <span class="o">=</span> <span class="n">tabn</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;area_med&#39;</span><span class="p">,</span> <span class="s1">&#39;area_p25&#39;</span><span class="p">,</span><span class="s1">&#39;area_p75&#39;</span><span class="p">,</span> <span class="s1">&#39;ovlp_med&#39;</span><span class="p">,</span> <span class="s1">&#39;ovlp_p25&#39;</span><span class="p">,</span> <span class="s1">&#39;ovlp_p75&#39;</span><span class="p">])</span>
+<span class="n">tabn</span> <span class="o">=</span> <span class="n">tabn</span><span class="o">.</span><span class="n">unstack</span><span class="p">()</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;N&#39;</span><span class="p">,</span><span class="s1">&#39;eth&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="s1">&#39;eth+sd&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;N&#39;</span><span class="p">,</span><span class="s1">&#39;sd&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">% d</span><span class="s1">iff&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;area&#39;</span><span class="p">,</span> <span class="s1">&#39;eth+sd&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">% o</span><span class="s1">verlap&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">% d</span><span class="s1">iff&#39;</span><span class="p">)])</span>
+<span class="n">tabn</span> <span class="o">=</span> <span class="n">tabn</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">map</span><span class="p">({</span><span class="s1">&#39;cvx&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sde</span><span class="si">}</span><span class="s1"> elps&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">m buf&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s1">m trk buf&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="s1">&#39;Montréal&#39;</span><span class="p">:</span> <span class="mi">11</span><span class="p">,</span> <span class="s1">&#39;Saskatoon&#39;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span> <span class="s1">&#39;Vancouver&#39;</span><span class="p">:</span> <span class="mi">13</span><span class="p">,</span> <span class="s1">&#39;Victoria&#39;</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span> <span class="s1">&#39;TOTAL&#39;</span><span class="p">:</span> <span class="mi">15</span><span class="p">}))</span>
+<span class="n">tabn</span> <span class="o">=</span> <span class="n">tabn</span><span class="p">[</span><span class="n">tabn</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">map</span><span class="p">({</span><span class="s1">&#39;area&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">% o</span><span class="s1">verlap&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;eth&#39;</span><span class="p">:</span> <span class="mi">11</span><span class="p">,</span> <span class="s1">&#39;sd&#39;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span> <span class="s1">&#39;eth+sd&#39;</span><span class="p">:</span> <span class="mi">13</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">% d</span><span class="s1">iff&#39;</span><span class="p">:</span> <span class="mi">14</span><span class="p">}))]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[28]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Display tabn with area stats</span>
+<span class="n">tabn</span><span class="p">[</span><span class="n">tabn</span><span class="o">.</span><span class="n">columns</span><span class="p">[:</span><span class="mi">3</span><span class="p">]]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[28]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead tr th {
+        text-align: left;
+    }
+
+    .dataframe thead tr:last-of-type th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th></th>
+      <th></th>
+      <th colspan="3" halign="left">area</th>
+    </tr>
+    <tr>
+      <th></th>
+      <th>sensor</th>
+      <th>eth</th>
+      <th>sd</th>
+      <th>% diff</th>
+    </tr>
+    <tr>
+      <th>AS</th>
+      <th>city_id</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">cvx</th>
+      <th>Montréal</th>
+      <td>96.7 (35.5 - 326.0)</td>
+      <td>145.0 (46.7 - 408.3)</td>
+      <td>6.9 (-1.9 - 66.5)</td>
+    </tr>
+    <tr>
+      <th>Saskatoon</th>
+      <td>22.6 (12.8 - 51.6)</td>
+      <td>27.2 (16.0 - 61.5)</td>
+      <td>10.9 (3.0 - 31.7)</td>
+    </tr>
+    <tr>
+      <th>Vancouver</th>
+      <td>92.7 (37.9 - 174.9)</td>
+      <td>114.5 (48.5 - 181.4)</td>
+      <td>11.6 (2.4 - 41.1)</td>
+    </tr>
+    <tr>
+      <th>Victoria</th>
+      <td>66.4 (11.0 - 150.9)</td>
+      <td>89.6 (27.9 - 187.4)</td>
+      <td>6.6 (-5.6 - 105.1)</td>
+    </tr>
+    <tr>
+      <th>TOTAL</th>
+      <td>66.4 (20.2 - 205.6)</td>
+      <td>90.0 (31.4 - 250.3)</td>
+      <td>7.5 (-0.6 - 55.0)</td>
+    </tr>
+    <tr>
+      <th rowspan="5" valign="top">2SD elps</th>
+      <th>Montréal</th>
+      <td>77.4 (23.6 - 234.4)</td>
+      <td>74.6 (22.3 - 252.5)</td>
+      <td>1.2 (-36.0 - 85.0)</td>
+    </tr>
+    <tr>
+      <th>Saskatoon</th>
+      <td>20.6 (9.5 - 45.5)</td>
+      <td>16.0 (7.6 - 45.4)</td>
+      <td>-12.7 (-43.8 - 15.5)</td>
+    </tr>
+    <tr>
+      <th>Vancouver</th>
+      <td>51.3 (21.1 - 103.3)</td>
+      <td>70.3 (34.8 - 132.4)</td>
+      <td>53.7 (-5.2 - 109.5)</td>
+    </tr>
+    <tr>
+      <th>Victoria</th>
+      <td>41.5 (9.7 - 99.2)</td>
+      <td>45.0 (17.1 - 142.3)</td>
+      <td>13.1 (-29.3 - 98.7)</td>
+    </tr>
+    <tr>
+      <th>TOTAL</th>
+      <td>48.3 (13.0 - 140.2)</td>
+      <td>54.0 (17.1 - 148.1)</td>
+      <td>6.2 (-34.2 - 78.6)</td>
+    </tr>
+    <tr>
+      <th rowspan="5" valign="top">500m buf</th>
+      <th>Montréal</th>
+      <td>31.7 (17.8 - 52.6)</td>
+      <td>57.0 (29.3 - 94.7)</td>
+      <td>41.1 (3.6 - 129.3)</td>
+    </tr>
+    <tr>
+      <th>Saskatoon</th>
+      <td>19.7 (11.6 - 29.7)</td>
+      <td>26.4 (19.7 - 46.3)</td>
+      <td>34.9 (13.2 - 74.0)</td>
+    </tr>
+    <tr>
+      <th>Vancouver</th>
+      <td>37.4 (22.9 - 53.3)</td>
+      <td>60.9 (35.2 - 81.8)</td>
+      <td>40.8 (15.6 - 91.2)</td>
+    </tr>
+    <tr>
+      <th>Victoria</th>
+      <td>31.4 (12.0 - 52.8)</td>
+      <td>47.2 (25.9 - 76.2)</td>
+      <td>39.5 (8.8 - 99.1)</td>
+    </tr>
+    <tr>
+      <th>TOTAL</th>
+      <td>29.8 (15.3 - 47.6)</td>
+      <td>48.2 (25.7 - 82.3)</td>
+      <td>39.4 (6.9 - 107.6)</td>
+    </tr>
+    <tr>
+      <th rowspan="5" valign="top">500m trk buf</th>
+      <th>Montréal</th>
+      <td>40.2 (21.7 - 72.2)</td>
+      <td>57.1 (28.5 - 94.9)</td>
+      <td>10.1 (-5.2 - 54.7)</td>
+    </tr>
+    <tr>
+      <th>Saskatoon</th>
+      <td>22.5 (14.7 - 37.4)</td>
+      <td>26.4 (19.7 - 46.4)</td>
+      <td>10.3 (1.7 - 39.9)</td>
+    </tr>
+    <tr>
+      <th>Vancouver</th>
+      <td>47.0 (28.9 - 69.1)</td>
+      <td>60.9 (35.2 - 81.9)</td>
+      <td>15.1 (0.2 - 46.5)</td>
+    </tr>
+    <tr>
+      <th>Victoria</th>
+      <td>34.9 (13.4 - 65.7)</td>
+      <td>47.2 (25.9 - 76.3)</td>
+      <td>10.0 (-3.8 - 72.1)</td>
+    </tr>
+    <tr>
+      <th>TOTAL</th>
+      <td>36.1 (17.8 - 63.5)</td>
+      <td>48.1 (25.5 - 81.3)</td>
+      <td>10.9 (-3.2 - 51.3)</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[29]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Display tabn with % overlap stats</span>
+<span class="n">tabn</span><span class="p">[</span><span class="n">tabn</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">3</span><span class="p">:]]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[29]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead tr th {
+        text-align: left;
+    }
+
+    .dataframe thead tr:last-of-type th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th></th>
+      <th></th>
+      <th colspan="3" halign="left">% overlap</th>
+    </tr>
+    <tr>
+      <th></th>
+      <th>sensor</th>
+      <th>eth</th>
+      <th>sd</th>
+      <th>eth+sd</th>
+    </tr>
+    <tr>
+      <th>AS</th>
+      <th>city_id</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="5" valign="top">cvx</th>
+      <th>Montréal</th>
+      <td>99.4 (88.1 - 100.0)</td>
+      <td>91.2 (57.9 - 97.2)</td>
+      <td>79.5 (42.3 - 92.3)</td>
+    </tr>
+    <tr>
+      <th>Saskatoon</th>
+      <td>99.9 (97.2 - 100.0)</td>
+      <td>89.3 (65.3 - 95.5)</td>
+      <td>83.8 (48.8 - 91.0)</td>
+    </tr>
+    <tr>
+      <th>Vancouver</th>
+      <td>99.9 (99.7 - 100.0)</td>
+      <td>87.8 (66.2 - 96.9)</td>
+      <td>83.7 (57.4 - 94.6)</td>
+    </tr>
+    <tr>
+      <th>Victoria</th>
+      <td>99.3 (76.3 - 100.0)</td>
+      <td>91.3 (40.7 - 97.7)</td>
+      <td>69.7 (27.2 - 93.4)</td>
+    </tr>
+    <tr>
+      <th>TOTAL</th>
+      <td>99.8 (92.0 - 100.0)</td>
+      <td>89.7 (59.1 - 97.0)</td>
+      <td>80.0 (41.2 - 92.6)</td>
+    </tr>
+    <tr>
+      <th rowspan="5" valign="top">2SD elps</th>
+      <th>Montréal</th>
+      <td>81.1 (53.8 - 100.0)</td>
+      <td>77.1 (49.3 - 99.6)</td>
+      <td>52.7 (31.8 - 65.9)</td>
+    </tr>
+    <tr>
+      <th>Saskatoon</th>
+      <td>71.0 (52.3 - 88.2)</td>
+      <td>91.7 (74.6 - 100.0)</td>
+      <td>61.5 (42.9 - 73.6)</td>
+    </tr>
+    <tr>
+      <th>Vancouver</th>
+      <td>99.6 (81.3 - 100.0)</td>
+      <td>63.9 (46.1 - 89.6)</td>
+      <td>57.8 (32.1 - 65.2)</td>
+    </tr>
+    <tr>
+      <th>Victoria</th>
+      <td>87.9 (60.5 - 99.9)</td>
+      <td>82.4 (43.2 - 95.1)</td>
+      <td>51.1 (30.7 - 70.8)</td>
+    </tr>
+    <tr>
+      <th>TOTAL</th>
+      <td>85.4 (56.4 - 100.0)</td>
+      <td>78.8 (52.7 - 98.7)</td>
+      <td>54.2 (33.4 - 68.2)</td>
+    </tr>
+    <tr>
+      <th rowspan="5" valign="top">500m buf</th>
+      <th>Montréal</th>
+      <td>95.1 (86.5 - 99.3)</td>
+      <td>66.3 (42.3 - 84.9)</td>
+      <td>59.5 (38.7 - 74.8)</td>
+    </tr>
+    <tr>
+      <th>Saskatoon</th>
+      <td>99.1 (93.8 - 99.7)</td>
+      <td>70.9 (52.7 - 85.2)</td>
+      <td>67.6 (49.9 - 80.4)</td>
+    </tr>
+    <tr>
+      <th>Vancouver</th>
+      <td>98.6 (90.7 - 99.4)</td>
+      <td>64.3 (49.6 - 79.1)</td>
+      <td>59.7 (48.1 - 75.8)</td>
+    </tr>
+    <tr>
+      <th>Victoria</th>
+      <td>94.9 (87.5 - 99.6)</td>
+      <td>66.3 (44.9 - 81.2)</td>
+      <td>61.3 (39.5 - 75.7)</td>
+    </tr>
+    <tr>
+      <th>TOTAL</th>
+      <td>97.0 (87.3 - 99.5)</td>
+      <td>66.8 (44.2 - 83.5)</td>
+      <td>61.3 (41.5 - 75.7)</td>
+    </tr>
+    <tr>
+      <th rowspan="5" valign="top">500m trk buf</th>
+      <th>Montréal</th>
+      <td>87.5 (77.5 - 94.6)</td>
+      <td>76.1 (54.9 - 90.4)</td>
+      <td>65.1 (47.5 - 77.2)</td>
+    </tr>
+    <tr>
+      <th>Saskatoon</th>
+      <td>94.4 (84.3 - 98.2)</td>
+      <td>82.0 (65.4 - 91.4)</td>
+      <td>71.2 (55.2 - 84.0)</td>
+    </tr>
+    <tr>
+      <th>Vancouver</th>
+      <td>93.9 (83.6 - 97.5)</td>
+      <td>76.2 (60.3 - 90.2)</td>
+      <td>64.7 (54.4 - 80.3)</td>
+    </tr>
+    <tr>
+      <th>Victoria</th>
+      <td>89.4 (81.5 - 97.6)</td>
+      <td>81.3 (49.9 - 90.3)</td>
+      <td>66.7 (42.4 - 79.2)</td>
+    </tr>
+    <tr>
+      <th>TOTAL</th>
+      <td>90.0 (80.4 - 97.1)</td>
+      <td>79.9 (56.2 - 90.6)</td>
+      <td>67.1 (47.9 - 79.7)</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Scatterplots-and-Bland-Altman-plots-of-areas">Scatterplots and Bland-Altman plots of areas<a class="anchor-link" href="#Scatterplots-and-Bland-Altman-plots-of-areas">&#182;</a></h4>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[30]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">relplot</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">tidy_all</span><span class="p">[</span><span class="n">tidy_all</span><span class="o">.</span><span class="n">Sensor</span> <span class="o">==</span> <span class="s1">&#39;Ethica </span><span class="se">\u222a</span><span class="s1"> SenseDoc&#39;</span><span class="p">],</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;scatter&quot;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;areaEthica&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;areaSenseDoc&#39;</span><span class="p">,</span> 
@@ -30262,7 +30401,7 @@ Buffer 500m:
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_198_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_204_0.png"
 >
 </div>
 
@@ -30274,7 +30413,7 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[49]:</div>
+<div class="prompt input_prompt">In&nbsp;[31]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Prepare data fro Bland-Altman graph, i.e. diff vs. mean of measures</span>
@@ -30299,7 +30438,8 @@ Buffer 500m:
     <span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">mean_diff</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
     <span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">mean_diff</span> <span class="o">-</span> <span class="mf">1.96</span><span class="o">*</span><span class="n">sd_diff</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
     <span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">mean_diff</span> <span class="o">+</span> <span class="mf">1.96</span><span class="o">*</span><span class="n">sd_diff</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
-    <span class="c1"># print(f&quot;{ax.get_title()} -&gt; mean ± 1.96xsd:  {round(mean_diff, 1)} ± {round(1.96*sd_diff, 1)}&quot;)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">.9</span><span class="o">*</span><span class="p">(</span><span class="n">xmax</span> <span class="o">+</span> <span class="mi">100</span><span class="p">),</span> <span class="mf">.9</span><span class="o">*</span><span class="p">(</span><span class="n">mean_diff</span><span class="o">+</span><span class="n">sd_diff</span><span class="o">/</span><span class="mi">100</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mean_diff</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ax</span><span class="o">.</span><span class="n">get_title</span><span class="p">()</span><span class="si">}</span><span class="s2"> -&gt; mean ± 1.96xsd:  </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">mean_diff</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2"> ± </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="mf">1.96</span><span class="o">*</span><span class="n">sd_diff</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">legend</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">% o</span><span class="s1">verlap&#39;</span><span class="p">)</span>
 <span class="n">g</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </pre></div>
@@ -30317,10 +30457,24 @@ Buffer 500m:
     <div class="prompt"></div>
 
 
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Convex hull -&gt; mean ± 1.96xsd:  -43.7 ± 390.0
+2SD-Ellipse -&gt; mean ± 1.96xsd:  -21.7 ± 494.6
+500m Buffer around fixes -&gt; mean ± 1.96xsd:  -22.3 ± 65.0
+500m Buffer along tracks -&gt; mean ± 1.96xsd:  -12.8 ± 60.0
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
 
 
 <div class="output_png output_subarea ">
-<img src="SD_vs_Ethica_files/SD_vs_Ethica_199_0.png"
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_205_1.png"
 >
 </div>
 
@@ -30332,7 +30486,80 @@ Buffer 500m:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[50]:</div>
+<div class="prompt input_prompt">In&nbsp;[32]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Prepare data fro Bland-Altman graph, i.e. diff vs. mean of measures</span>
+<span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;mean_area&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;areaEthica&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;areaSenseDoc&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+<span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;diff_area&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">200</span> <span class="o">*</span> <span class="p">(</span><span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;areaEthica&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;areaSenseDoc&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;areaEthica&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;areaSenseDoc&#39;</span><span class="p">])</span>
+
+<span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">relplot</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">tidy_all</span><span class="p">[</span><span class="n">tidy_all</span><span class="o">.</span><span class="n">Sensor</span> <span class="o">==</span> <span class="s1">&#39;Ethica </span><span class="se">\u222a</span><span class="s1"> SenseDoc&#39;</span><span class="p">],</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;scatter&quot;</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;mean_area&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;diff_area&#39;</span><span class="p">,</span> 
+    <span class="n">size</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;pct_overlap&#39;</span><span class="p">,</span> <span class="n">sizes</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span>
+    <span class="n">col</span><span class="o">=</span><span class="s1">&#39;Activity space&#39;</span><span class="p">,</span> <span class="n">col_wrap</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">facet_kws</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;sharex&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;sharey&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">.5</span><span class="p">)</span>
+<span class="n">g</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">set_axis_labels</span><span class="p">(</span><span class="s1">&#39;Average of Ethica and SenseDoc activity space areas&#39;</span><span class="p">,</span> <span class="s1">&#39;Difference of Ethica and Sensedoc activity space areas (%)&#39;</span><span class="p">)</span>
+<span class="n">g</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">set_titles</span><span class="p">(</span><span class="n">col_template</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{col_name}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bland-Altman plot of agreement between activity space areas, by activity space type&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
+    <span class="c1"># Rescale axes to discard outliers</span>
+    <span class="n">xmax</span> <span class="o">=</span> <span class="n">tidy_all</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">tidy_all</span><span class="o">.</span><span class="n">Sensor</span> <span class="o">==</span> <span class="s1">&#39;Ethica </span><span class="se">\u222a</span><span class="s1"> SenseDoc&#39;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;Activity space&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_title</span><span class="p">()),</span> <span class="s1">&#39;mean_area&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">.95</span><span class="p">)</span>
+    <span class="n">ymin</span> <span class="o">=</span> <span class="n">tidy_all</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">tidy_all</span><span class="o">.</span><span class="n">Sensor</span> <span class="o">==</span> <span class="s1">&#39;Ethica </span><span class="se">\u222a</span><span class="s1"> SenseDoc&#39;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;Activity space&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_title</span><span class="p">()),</span> <span class="s1">&#39;diff_area&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">.05</span><span class="p">)</span>
+    <span class="n">ymax</span> <span class="o">=</span> <span class="n">tidy_all</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">tidy_all</span><span class="o">.</span><span class="n">Sensor</span> <span class="o">==</span> <span class="s1">&#39;Ethica </span><span class="se">\u222a</span><span class="s1"> SenseDoc&#39;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;Activity space&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_title</span><span class="p">()),</span> <span class="s1">&#39;diff_area&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">.95</span><span class="p">)</span>
+    <span class="n">mean_diff</span> <span class="o">=</span> <span class="n">tidy_all</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">tidy_all</span><span class="o">.</span><span class="n">Sensor</span> <span class="o">==</span> <span class="s1">&#39;Ethica </span><span class="se">\u222a</span><span class="s1"> SenseDoc&#39;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;Activity space&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_title</span><span class="p">()),</span> <span class="s1">&#39;diff_area&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">sd_diff</span> <span class="o">=</span> <span class="n">tidy_all</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">tidy_all</span><span class="o">.</span><span class="n">Sensor</span> <span class="o">==</span> <span class="s1">&#39;Ethica </span><span class="se">\u222a</span><span class="s1"> SenseDoc&#39;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">tidy_all</span><span class="p">[</span><span class="s1">&#39;Activity space&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_title</span><span class="p">()),</span> <span class="s1">&#39;diff_area&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">xmin</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="n">xmax</span><span class="o">+</span><span class="mi">100</span><span class="p">)</span> 
+    <span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ymin</span><span class="o">=</span><span class="mf">1.05</span> <span class="o">*</span> <span class="p">(</span><span class="n">mean_diff</span> <span class="o">-</span> <span class="mf">1.96</span><span class="o">*</span><span class="n">sd_diff</span><span class="p">),</span> <span class="n">ymax</span><span class="o">=</span><span class="mf">1.05</span> <span class="o">*</span> <span class="p">(</span><span class="n">mean_diff</span> <span class="o">+</span> <span class="mf">1.96</span><span class="o">*</span><span class="n">sd_diff</span><span class="p">))</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">mean_diff</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">mean_diff</span> <span class="o">-</span> <span class="mf">1.96</span><span class="o">*</span><span class="n">sd_diff</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">mean_diff</span> <span class="o">+</span> <span class="mf">1.96</span><span class="o">*</span><span class="n">sd_diff</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">.9</span><span class="o">*</span><span class="p">(</span><span class="n">xmax</span> <span class="o">+</span> <span class="mi">100</span><span class="p">),</span> <span class="n">mean_diff</span><span class="o">+</span><span class="mi">5</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">mean_diff</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ax</span><span class="o">.</span><span class="n">get_title</span><span class="p">()</span><span class="si">}</span><span class="s2"> -&gt; mean ± 1.96xsd:  </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">mean_diff</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2"> ± </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="mf">1.96</span><span class="o">*</span><span class="n">sd_diff</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">legend</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">% o</span><span class="s1">verlap&#39;</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Convex hull -&gt; mean ± 1.96xsd:  -25.4 ± 136.6
+2SD-Ellipse -&gt; mean ± 1.96xsd:  -10.6 ± 161.0
+500m Buffer around fixes -&gt; mean ± 1.96xsd:  -44.5 ± 105.7
+500m Buffer along tracks -&gt; mean ± 1.96xsd:  -26.6 ± 107.0
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_206_1.png"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[33]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">as_tab</span> <span class="o">=</span> <span class="n">tidy_all</span><span class="p">[[</span><span class="s1">&#39;Activity space&#39;</span><span class="p">,</span> <span class="s1">&#39;Sensor&#39;</span><span class="p">,</span> <span class="s1">&#39;areaEthica&#39;</span><span class="p">,</span> <span class="s1">&#39;areaSenseDoc&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_overlap&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -30356,7 +30583,7 @@ Buffer 500m:
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[50]:</div>
+    <div class="prompt output_prompt">Out[33]:</div>
 
 
 
@@ -30406,17 +30633,17 @@ Buffer 500m:
     <tr>
       <th rowspan="8" valign="top">Activity space area</th>
       <th>count</th>
-      <td>337.00</td>
-      <td>337.00</td>
+      <td>674.00</td>
+      <td>674.00</td>
       <td>0.00</td>
-      <td>337.00</td>
-      <td>337.00</td>
+      <td>674.00</td>
+      <td>674.00</td>
       <td>0.00</td>
-      <td>337.00</td>
-      <td>337.00</td>
+      <td>674.00</td>
+      <td>674.00</td>
       <td>0.00</td>
-      <td>337.00</td>
-      <td>337.00</td>
+      <td>674.00</td>
+      <td>674.00</td>
       <td>0.00</td>
     </tr>
     <tr>
@@ -30436,17 +30663,17 @@ Buffer 500m:
     </tr>
     <tr>
       <th>std</th>
-      <td>242.00</td>
-      <td>300.52</td>
+      <td>241.82</td>
+      <td>300.30</td>
       <td>NaN</td>
-      <td>179.70</td>
-      <td>266.40</td>
+      <td>179.57</td>
+      <td>266.20</td>
       <td>NaN</td>
-      <td>31.27</td>
+      <td>31.25</td>
+      <td>44.04</td>
+      <td>NaN</td>
+      <td>38.90</td>
       <td>44.07</td>
-      <td>NaN</td>
-      <td>38.93</td>
-      <td>44.10</td>
       <td>NaN</td>
     </tr>
     <tr>
@@ -30527,18 +30754,18 @@ Buffer 500m:
     <tr>
       <th rowspan="8" valign="top">% Overlap Ethica ∩ SenseDoc</th>
       <th>count</th>
-      <td>337.00</td>
-      <td>337.00</td>
-      <td>337.00</td>
-      <td>337.00</td>
-      <td>337.00</td>
-      <td>337.00</td>
-      <td>337.00</td>
-      <td>337.00</td>
-      <td>337.00</td>
-      <td>337.00</td>
-      <td>337.00</td>
-      <td>337.00</td>
+      <td>674.00</td>
+      <td>674.00</td>
+      <td>674.00</td>
+      <td>674.00</td>
+      <td>674.00</td>
+      <td>674.00</td>
+      <td>674.00</td>
+      <td>674.00</td>
+      <td>674.00</td>
+      <td>674.00</td>
+      <td>674.00</td>
+      <td>674.00</td>
     </tr>
     <tr>
       <th>mean</th>
@@ -30557,18 +30784,18 @@ Buffer 500m:
     </tr>
     <tr>
       <th>std</th>
-      <td>21.23</td>
-      <td>31.83</td>
-      <td>31.71</td>
-      <td>26.50</td>
-      <td>30.34</td>
-      <td>24.00</td>
-      <td>13.42</td>
-      <td>26.34</td>
-      <td>24.08</td>
-      <td>14.83</td>
-      <td>26.61</td>
-      <td>24.08</td>
+      <td>21.21</td>
+      <td>31.81</td>
+      <td>31.69</td>
+      <td>26.48</td>
+      <td>30.31</td>
+      <td>23.99</td>
+      <td>13.41</td>
+      <td>26.32</td>
+      <td>24.06</td>
+      <td>14.81</td>
+      <td>26.59</td>
+      <td>24.06</td>
     </tr>
     <tr>
       <th>min</th>
@@ -30648,6 +30875,51 @@ Buffer 500m:
   </tbody>
 </table>
 </div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="CC-vs.-AS-overlap">CC vs. AS overlap<a class="anchor-link" href="#CC-vs.-AS-overlap">&#182;</a></h3><p>We look at the relation between cross-correlation and activity space areas</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[46]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">cc_results3_stats_w_iid</span> <span class="o">=</span> <span class="n">cc_results3_stats</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+<span class="n">tidy_all_w_cc</span> <span class="o">=</span> <span class="n">tidy_all</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">cc_results3_stats_w_iid</span><span class="p">[[</span><span class="s1">&#39;iid&#39;</span><span class="p">,</span> <span class="s1">&#39;125_Survey&#39;</span><span class="p">]],</span> <span class="n">left_on</span><span class="o">=</span><span class="s1">&#39;interact_id&#39;</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s1">&#39;iid&#39;</span><span class="p">)</span>
+<span class="n">graph_df</span> <span class="o">=</span> <span class="n">tidy_all_w_cc</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">tidy_all_w_cc</span><span class="p">[</span><span class="s1">&#39;city_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;TOTAL&#39;</span><span class="p">,]</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">relplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">graph_df</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s1">&#39;125_Survey&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;pct_overlap&#39;</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s1">&#39;Sensor&#39;</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="s1">&#39;Activity space&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="SD_vs_Ethica_files/SD_vs_Ethica_209_0.png"
+>
 </div>
 
 </div>
