@@ -262,7 +262,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">BEI and equity paper analyses | FINAL | Hurdle models</h1>
 <h4 class="author">B. Thierry, Spherelab</h4>
-<h4 class="date">26 August, 2022</h4>
+<h4 class="date">27 September, 2022</h4>
 
 </div>
 
@@ -1245,19 +1245,19 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 ##  ------------- Likelihood values  -------------
 ##                       logLik
 ## p_v(h) (marginal L): -354.34</code></pre>
-<pre class="r"><code>ci.lmm.0 &lt;- confint(res.lmm.zero, &#39;wSCOREMAT.2011.Q&#39;)</code></pre>
+<pre class="r"><code>ci.lmm.zero &lt;- confint(res.lmm.zero, &#39;wSCOREMAT.2011.Q&#39;)</code></pre>
 <pre><code>## lower wSCOREMAT.2011.Q upper wSCOREMAT.2011.Q 
 ##            -0.44869647            -0.04680899</code></pre>
 <pre class="r"><code>res.lmm.0 &lt;- update(res.lmm.zero, . ~ . -wSCOREMAT.2011.Q)
 LRT(res.lmm.0, res.lmm.zero)</code></pre>
 <pre><code>##      chi2_LR df    p_value
-## p_v 6.028834  1 0.01407403</code></pre>
+## p_v 6.028834  1 0.01407402</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.zero, plot = F)
   plot(simout, title = &quot;DHARMa residual | Logit&quot;)
-}</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-1-1.png" width="1152" /></p>
-<pre class="r"><code># Count model (Poisson)
+}
+
+# Count model (Poisson)
 clean_bei.cnt &lt;- bei_df_aoi %&gt;%
   filter(Bike_lane_total.hm.2011ct != 0) %&gt;%
   tidy_df(CT16, f)
@@ -1298,9 +1298,9 @@ LRT(res.lmm.0, res.lmm.cnt)</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.cnt, plot = F)
   plot(simout, title = &quot;DHARMa residual | Count (truncated Poisson)&quot;)
-}</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-1-2.png" width="1152" /></p>
-<pre class="r"><code># AIC
+}
+
+# AIC
 AIC(res.lmm.zero)
 AIC(res.lmm.cnt)
 
@@ -1338,6 +1338,26 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>round(exp(ci.lmm.zero$interval), 3)%&gt;%
+  data.frame(wSCOREMAT.2011.Q = ., row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Zero model confidence interval&quot;)</code></pre>
+<table>
+<caption>Zero model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q</td>
+<td align="right">0.638</td>
+<td align="right">0.954</td>
+</tr>
+</tbody>
+</table>
 <pre class="r"><code># Count model
 smy.cnt.bt &lt;- data.frame(smy.cnt$beta_table)
 round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
@@ -1362,6 +1382,26 @@ round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
 <td align="left">wSCOREMAT.2011.Q</td>
 <td align="right">0.941</td>
 <td align="right">0.031</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>round(exp(ci.lmm.cnt$interval), 3)%&gt;%
+  data.frame(wSCOREMAT.2011.Q = ., row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Count model confidence interval&quot;)</code></pre>
+<table>
+<caption>Count model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q</td>
+<td align="right">0.89</td>
+<td align="right">0.995</td>
 </tr>
 </tbody>
 </table>
@@ -1440,6 +1480,26 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>round(exp(ci.lmm$interval), 3)%&gt;%
+  data.frame(wSCOREMAT.2011.Q = ., row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q</td>
+<td align="right">0.892</td>
+<td align="right">0.931</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="canopy-trees" class="section level3" number="4.1.3">
 <h3><span class="header-section-number">4.1.3</span> Canopy (trees)</h3>
@@ -1515,6 +1575,26 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>round(exp(ci.lmm$interval), 3)%&gt;%
+  data.frame(wSCOREMAT.2011.Q = ., row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q</td>
+<td align="right">0.851</td>
+<td align="right">0.908</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div id="uc-vs-visible-minority" class="section level2 tabset" number="4.2">
@@ -1553,7 +1633,7 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -354.9056</code></pre>
-<pre class="r"><code>ci.lmm.0 &lt;- confint(res.lmm.zero, &#39;vis_minority_2011.Q&#39;)</code></pre>
+<pre class="r"><code>ci.lmm.zero &lt;- confint(res.lmm.zero, &#39;vis_minority_2011.Q&#39;)</code></pre>
 <pre><code>## lower vis_minority_2011.Q upper vis_minority_2011.Q 
 ##               -0.40490772               -0.02914871</code></pre>
 <pre class="r"><code>res.lmm.0 &lt;- update(res.lmm.zero, . ~ . - vis_minority_2011.Q)
@@ -1563,9 +1643,9 @@ LRT(res.lmm.0, res.lmm.zero)</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.zero, plot = F)
   plot(simout, title = &quot;DHARMa residual | Logit&quot;)
-}</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-7-1.png" width="1152" /></p>
-<pre class="r"><code># Count model (Poisson)
+}
+
+# Count model (Poisson)
 clean_bei.cnt &lt;- bei_df_aoi %&gt;%
   filter(Bike_lane_total.hm.2011ct != 0) %&gt;%
   tidy_df(CT16, f)
@@ -1606,9 +1686,9 @@ LRT(res.lmm.0, res.lmm.cnt)</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.cnt, plot = F)
   plot(simout, title = &quot;DHARMa residual | Count (truncated Poisson)&quot;)
-}</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-7-2.png" width="1152" /></p>
-<pre class="r"><code># AIC
+}
+
+# AIC
 AIC(res.lmm.zero)
 AIC(res.lmm.cnt)
 
@@ -1646,6 +1726,26 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>round(exp(ci.lmm.zero$interval), 3)%&gt;%
+  data.frame(vis_minority_2011.Q = ., row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Zero model confidence interval&quot;)</code></pre>
+<table>
+<caption>Zero model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q</td>
+<td align="right">0.667</td>
+<td align="right">0.971</td>
+</tr>
+</tbody>
+</table>
 <pre class="r"><code># Count model
 smy.cnt.bt &lt;- data.frame(smy.cnt$beta_table)
 round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
@@ -1670,6 +1770,26 @@ round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
 <td align="left">vis_minority_2011.Q</td>
 <td align="right">0.933</td>
 <td align="right">0.016</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>round(exp(ci.lmm.cnt$interval), 3)%&gt;%
+  data.frame(vis_minority_2011.Q = ., row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Count model confidence interval&quot;)</code></pre>
+<table>
+<caption>Count model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q</td>
+<td align="right">0.882</td>
+<td align="right">0.988</td>
 </tr>
 </tbody>
 </table>
@@ -1743,6 +1863,26 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>round(exp(ci.lmm$interval), 3)%&gt;%
+  data.frame(vis_minority_2011.Q = ., row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q</td>
+<td align="right">0.913</td>
+<td align="right">0.955</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="canopy-trees-1" class="section level3" number="4.2.3">
 <h3><span class="header-section-number">4.2.3</span> Canopy (trees)</h3>
@@ -1813,6 +1953,26 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>round(exp(ci.lmm$interval), 3)%&gt;%
+  data.frame(vis_minority_2011.Q = ., row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q</td>
+<td align="right">0.867</td>
+<td align="right">0.927</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div id="uc-vs-gentrified-ct" class="section level2 tabset" number="4.3">
@@ -1852,7 +2012,7 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -357.4465</code></pre>
-<pre class="r"><code>ci.lmm.0 &lt;- confint(res.lmm.zero, &#39;gentrified_2016_2011TRUE&#39;)</code></pre>
+<pre class="r"><code>ci.lmm.zero &lt;- confint(res.lmm.zero, &#39;gentrified_2016_2011TRUE&#39;)</code></pre>
 <pre><code>## lower gentrified_2016_2011TRUE upper gentrified_2016_2011TRUE 
 ##                     -0.6062718                      0.4522833</code></pre>
 <pre class="r"><code>res.lmm.0 &lt;- update(res.lmm.zero, . ~ . - gentrified_2016_2011)
@@ -1862,9 +2022,9 @@ LRT(res.lmm.0, res.lmm.zero)</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.zero, plot = F)
   plot(simout, title = &quot;DHARMa residual | Logit&quot;)
-}</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-13-1.png" width="1152" /></p>
-<pre class="r"><code># Count model (Poisson)
+}
+
+# Count model (Poisson)
 clean_bei.cnt &lt;- bei_df_aoi %&gt;%
   filter(Bike_lane_total.hm.2011ct != 0) %&gt;%
   tidy_df(CT16, f)
@@ -1905,9 +2065,9 @@ LRT(res.lmm.0, res.lmm.cnt)</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.cnt, plot = F)
   plot(simout, title = &quot;DHARMa residual | Count (truncated Poisson)&quot;)
-}</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-13-2.png" width="1152" /></p>
-<pre class="r"><code># AIC
+}
+
+# AIC
 AIC(res.lmm.zero)
 AIC(res.lmm.cnt)
 
@@ -1945,6 +2105,26 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>round(exp(ci.lmm.zero$interval), 3)%&gt;%
+  data.frame(gentrified_2016_2011TRUE = ., row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Zero model confidence interval&quot;)</code></pre>
+<table>
+<caption>Zero model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">gentrified_2016_2011TRUE</td>
+<td align="right">0.545</td>
+<td align="right">1.572</td>
+</tr>
+</tbody>
+</table>
 <pre class="r"><code># Count model
 smy.cnt.bt &lt;- data.frame(smy.cnt$beta_table)
 round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
@@ -1969,6 +2149,26 @@ round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
 <td align="left">gentrified_2016_2011TRUE</td>
 <td align="right">1.100</td>
 <td align="right">0.235</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>round(exp(ci.lmm.cnt$interval), 3)%&gt;%
+  data.frame(gentrified_2016_2011TRUE = ., row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Count model confidence interval&quot;)</code></pre>
+<table>
+<caption>Count model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">gentrified_2016_2011TRUE</td>
+<td align="right">0.933</td>
+<td align="right">1.296</td>
 </tr>
 </tbody>
 </table>
@@ -2047,6 +2247,26 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>round(exp(ci.lmm$interval), 3)%&gt;%
+  data.frame(gentrified_2016_2011TRUE = ., row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">gentrified_2016_2011TRUE</td>
+<td align="right">0.769</td>
+<td align="right">0.878</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="canopy-trees-2" class="section level3" number="4.3.3">
 <h3><span class="header-section-number">4.3.3</span> Canopy (trees)</h3>
@@ -2122,6 +2342,26 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>round(exp(ci.lmm$interval), 3)%&gt;%
+  data.frame(gentrified_2016_2011TRUE = ., row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">gentrified_2016_2011TRUE</td>
+<td align="right">0.78</td>
+<td align="right">0.949</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>
@@ -2166,16 +2406,28 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -352.3199</code></pre>
+<pre class="r"><code>ci.lmm.zero.2 &lt;- confint(res.lmm.zero, &#39;factor(wSCOREMAT.2011.Q)2&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)2 upper factor(wSCOREMAT.2011.Q)2 
+##                       -1.244626                        0.384718</code></pre>
+<pre class="r"><code>ci.lmm.zero.3 &lt;- confint(res.lmm.zero, &#39;factor(wSCOREMAT.2011.Q)3&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)3 upper factor(wSCOREMAT.2011.Q)3 
+##                      -1.0310502                       0.6543743</code></pre>
+<pre class="r"><code>ci.lmm.zero.4 &lt;- confint(res.lmm.zero, &#39;factor(wSCOREMAT.2011.Q)4&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)4 upper factor(wSCOREMAT.2011.Q)4 
+##                       -1.211796                        0.494154</code></pre>
+<pre class="r"><code>ci.lmm.zero.5 &lt;- confint(res.lmm.zero, &#39;factor(wSCOREMAT.2011.Q)5&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)5 upper factor(wSCOREMAT.2011.Q)5 
+##                      -2.1145351                      -0.3256704</code></pre>
 <pre class="r"><code>res.lmm.0 &lt;- update(res.lmm.zero, . ~ . -factor(wSCOREMAT.2011.Q))
 LRT(res.lmm.0, res.lmm.zero)</code></pre>
 <pre><code>##      chi2_LR df    p_value
-## p_v 10.06913  4 0.03927914</code></pre>
+## p_v 10.06913  4 0.03927913</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.zero, plot = F)
   plot(simout, title = &quot;DHARMa residual | Logit&quot;)
-}</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-19-1.png" width="1152" /></p>
-<pre class="r"><code># Count model (Poisson)
+}
+
+# Count model (Poisson)
 clean_bei.cnt &lt;- bei_df_aoi %&gt;%
   filter(Bike_lane_total.hm.2011ct != 0) %&gt;%
   tidy_df(CT16, f)
@@ -2209,6 +2461,18 @@ smy.cnt &lt;- summary(res.lmm.cnt, details = c(p_value=&quot;Wald&quot;))</code>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -1733.093</code></pre>
+<pre class="r"><code>ci.lmm.cnt.2 &lt;- confint(res.lmm.zero, &#39;factor(wSCOREMAT.2011.Q)2&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)2 upper factor(wSCOREMAT.2011.Q)2 
+##                       -1.244626                        0.384718</code></pre>
+<pre class="r"><code>ci.lmm.cnt.3 &lt;- confint(res.lmm.zero, &#39;factor(wSCOREMAT.2011.Q)3&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)3 upper factor(wSCOREMAT.2011.Q)3 
+##                      -1.0310502                       0.6543743</code></pre>
+<pre class="r"><code>ci.lmm.cnt.4 &lt;- confint(res.lmm.zero, &#39;factor(wSCOREMAT.2011.Q)4&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)4 upper factor(wSCOREMAT.2011.Q)4 
+##                       -1.211796                        0.494154</code></pre>
+<pre class="r"><code>ci.lmm.cnt.5 &lt;- confint(res.lmm.zero, &#39;factor(wSCOREMAT.2011.Q)5&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)5 upper factor(wSCOREMAT.2011.Q)5 
+##                      -2.1145351                      -0.3256704</code></pre>
 <pre class="r"><code>res.lmm.0 &lt;- update(res.lmm.cnt, . ~ . -factor(wSCOREMAT.2011.Q))
 LRT(res.lmm.0, res.lmm.cnt)</code></pre>
 <pre><code>##      chi2_LR df    p_value
@@ -2216,9 +2480,9 @@ LRT(res.lmm.0, res.lmm.cnt)</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.cnt, plot = F)
   plot(simout, title = &quot;DHARMa residual | Count (truncated Poisson)&quot;)
-}</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-19-2.png" width="1152" /></p>
-<pre class="r"><code># AIC
+}
+
+# AIC
 AIC(res.lmm.zero)
 AIC(res.lmm.cnt)
 
@@ -2270,6 +2534,44 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>data.frame(wSCOREMAT.2011.Q.2 = round(exp(ci.lmm.zero.2$interval), 3),
+           wSCOREMAT.2011.Q.3 = round(exp(ci.lmm.zero.3$interval), 3),
+           wSCOREMAT.2011.Q.4 = round(exp(ci.lmm.zero.4$interval), 3),
+           wSCOREMAT.2011.Q.5 = round(exp(ci.lmm.zero.5$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Zero model confidence interval&quot;)</code></pre>
+<table>
+<caption>Zero model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q.2</td>
+<td align="right">0.288</td>
+<td align="right">1.469</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q.3</td>
+<td align="right">0.357</td>
+<td align="right">1.924</td>
+</tr>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q.4</td>
+<td align="right">0.298</td>
+<td align="right">1.639</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q.5</td>
+<td align="right">0.121</td>
+<td align="right">0.722</td>
+</tr>
+</tbody>
+</table>
 <pre class="r"><code># Count model
 smy.cnt.bt &lt;- data.frame(smy.cnt$beta_table)
 round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
@@ -2312,6 +2614,44 @@ round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>data.frame(wSCOREMAT.2011.Q.2 = round(exp(ci.lmm.cnt.2$interval), 3),
+           wSCOREMAT.2011.Q.3 = round(exp(ci.lmm.cnt.3$interval), 3),
+           wSCOREMAT.2011.Q.4 = round(exp(ci.lmm.cnt.4$interval), 3),
+           wSCOREMAT.2011.Q.5 = round(exp(ci.lmm.cnt.5$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Count model confidence interval&quot;)</code></pre>
+<table>
+<caption>Count model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q.2</td>
+<td align="right">0.288</td>
+<td align="right">1.469</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q.3</td>
+<td align="right">0.357</td>
+<td align="right">1.924</td>
+</tr>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q.4</td>
+<td align="right">0.298</td>
+<td align="right">1.639</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q.5</td>
+<td align="right">0.121</td>
+<td align="right">0.722</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="greenness-3" class="section level3" number="5.1.2">
 <h3><span class="header-section-number">5.1.2</span> Greenness</h3>
@@ -2349,6 +2689,18 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -2406.448</code></pre>
+<pre class="r"><code>ci.lmm.2 &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)2&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)2 upper factor(wSCOREMAT.2011.Q)2 
+##                    -0.160000773                    -0.002943404</code></pre>
+<pre class="r"><code>ci.lmm.3 &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)3&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)3 upper factor(wSCOREMAT.2011.Q)3 
+##                     -0.20460622                     -0.03810086</code></pre>
+<pre class="r"><code>ci.lmm.4 &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)4&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)4 upper factor(wSCOREMAT.2011.Q)4 
+##                      -0.3076191                      -0.1372878</code></pre>
+<pre class="r"><code>ci.lmm.5 &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)5&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)5 upper factor(wSCOREMAT.2011.Q)5 
+##                      -0.5015133                      -0.3130480</code></pre>
 <pre class="r"><code># Testing main effect
 res.lmm.0 &lt;- update(res.lmm, . ~ . - factor(wSCOREMAT.2011.Q))
 LRT(res.lmm.0, res.lmm)</code></pre>
@@ -2358,7 +2710,6 @@ LRT(res.lmm.0, res.lmm)</code></pre>
   simout &lt;- simulateResiduals(fittedModel = res.lmm, plot = F)
   plot(simout)
 }</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-21-1.png" width="1152" /></p>
 <p>Transforming the model coefficients:</p>
 <pre class="r"><code>smy.bt &lt;- data.frame(smy$beta_table)
 round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;% 
@@ -2401,6 +2752,44 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>data.frame(wSCOREMAT.2011.Q.2 = round(exp(ci.lmm.2$interval), 3),
+           wSCOREMAT.2011.Q.3 = round(exp(ci.lmm.3$interval), 3),
+           wSCOREMAT.2011.Q.4 = round(exp(ci.lmm.4$interval), 3),
+           wSCOREMAT.2011.Q.5 = round(exp(ci.lmm.5$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q.2</td>
+<td align="right">0.852</td>
+<td align="right">0.997</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q.3</td>
+<td align="right">0.815</td>
+<td align="right">0.963</td>
+</tr>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q.4</td>
+<td align="right">0.735</td>
+<td align="right">0.872</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q.5</td>
+<td align="right">0.606</td>
+<td align="right">0.731</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="canopy-trees-3" class="section level3" number="5.1.3">
 <h3><span class="header-section-number">5.1.3</span> Canopy (trees)</h3>
@@ -2438,6 +2827,18 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -2151.268</code></pre>
+<pre class="r"><code>ci.lmm.2 &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)2&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)2 upper factor(wSCOREMAT.2011.Q)2 
+##                     -0.25116942                     -0.01457303</code></pre>
+<pre class="r"><code>ci.lmm.3 &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)3&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)3 upper factor(wSCOREMAT.2011.Q)3 
+##                     -0.28974531                     -0.03897335</code></pre>
+<pre class="r"><code>ci.lmm.4 &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)4&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)4 upper factor(wSCOREMAT.2011.Q)4 
+##                      -0.4656693                      -0.2071780</code></pre>
+<pre class="r"><code>ci.lmm.5 &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)5&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)5 upper factor(wSCOREMAT.2011.Q)5 
+##                      -0.7035105                      -0.4168070</code></pre>
 <pre class="r"><code># Testing main effect
 res.lmm.0 &lt;- update(res.lmm, . ~ . - factor(wSCOREMAT.2011.Q))
 LRT(res.lmm.0, res.lmm)</code></pre>
@@ -2447,7 +2848,6 @@ LRT(res.lmm.0, res.lmm)</code></pre>
   simout &lt;- simulateResiduals(fittedModel = res.lmm, plot = F)
   plot(simout)
 }</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-23-1.png" width="1152" /></p>
 <p>Transforming the model coefficients:</p>
 <pre class="r"><code>smy.bt &lt;- data.frame(smy$beta_table)
 round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;% 
@@ -2490,6 +2890,44 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>data.frame(wSCOREMAT.2011.Q.2 = round(exp(ci.lmm.2$interval), 3),
+           wSCOREMAT.2011.Q.3 = round(exp(ci.lmm.3$interval), 3),
+           wSCOREMAT.2011.Q.4 = round(exp(ci.lmm.4$interval), 3),
+           wSCOREMAT.2011.Q.5 = round(exp(ci.lmm.5$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q.2</td>
+<td align="right">0.778</td>
+<td align="right">0.986</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q.3</td>
+<td align="right">0.748</td>
+<td align="right">0.962</td>
+</tr>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q.4</td>
+<td align="right">0.628</td>
+<td align="right">0.813</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q.5</td>
+<td align="right">0.495</td>
+<td align="right">0.659</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div id="uc-vs-visible-minority-1" class="section level2 tabset" number="5.2">
@@ -2514,7 +2952,7 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 ## family: binomial( link = logit ) 
 ##  ------------ Fixed effects (beta) ------------
 ##                               Estimate Cond. SE   t-value p-value
-## (Intercept)                  -2.967596   0.3115 -9.526583 0.00000
+## (Intercept)                  -2.967596   0.3115 -9.526581 0.00000
 ## factor(vis_minority_2011.Q)2  0.248334   0.3889  0.638534 0.52313
 ## factor(vis_minority_2011.Q)3 -0.308090   0.3714 -0.829448 0.40685
 ## factor(vis_minority_2011.Q)4  0.003795   0.3925  0.009668 0.99229
@@ -2531,6 +2969,18 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -352.3024</code></pre>
+<pre class="r"><code>ci.lmm.zero.2 &lt;- confint(res.lmm.zero, &#39;factor(vis_minority_2011.Q)2&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)2 upper factor(vis_minority_2011.Q)2 
+##                         -0.5371896                          1.0628442</code></pre>
+<pre class="r"><code>ci.lmm.zero.3 &lt;- confint(res.lmm.zero, &#39;factor(vis_minority_2011.Q)3&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)3 upper factor(vis_minority_2011.Q)3 
+##                         -1.0785302                          0.4685876</code></pre>
+<pre class="r"><code>ci.lmm.zero.4 &lt;- confint(res.lmm.zero, &#39;factor(vis_minority_2011.Q)4&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)4 upper factor(vis_minority_2011.Q)4 
+##                         -0.7968960                          0.8246401</code></pre>
+<pre class="r"><code>ci.lmm.zero.5 &lt;- confint(res.lmm.zero, &#39;factor(vis_minority_2011.Q)5&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)5 upper factor(vis_minority_2011.Q)5 
+##                         -1.7532658                         -0.1163933</code></pre>
 <pre class="r"><code>res.lmm.0 &lt;- update(res.lmm.zero, . ~ . - factor(vis_minority_2011.Q))
 LRT(res.lmm.0, res.lmm.zero)</code></pre>
 <pre><code>##      chi2_LR df    p_value
@@ -2538,9 +2988,9 @@ LRT(res.lmm.0, res.lmm.zero)</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.zero, plot = F)
   plot(simout, title = &quot;DHARMa residual | Logit&quot;)
-}</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-25-1.png" width="1152" /></p>
-<pre class="r"><code># Count model (Poisson)
+}
+
+# Count model (Poisson)
 clean_bei.cnt &lt;- bei_df_aoi %&gt;%
   filter(Bike_lane_total.hm.2011ct != 0) %&gt;%
   tidy_df(CT16, f)
@@ -2574,6 +3024,18 @@ smy.cnt &lt;- summary(res.lmm.cnt, details = c(p_value=&quot;Wald&quot;))</code>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -1728.974</code></pre>
+<pre class="r"><code>ci.lmm.cnt.2 &lt;- confint(res.lmm.cnt, &#39;factor(vis_minority_2011.Q)2&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)2 upper factor(vis_minority_2011.Q)2 
+##                         -0.1388829                          0.2613569</code></pre>
+<pre class="r"><code>ci.lmm.cnt.3 &lt;- confint(res.lmm.cnt, &#39;factor(vis_minority_2011.Q)3&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)3 upper factor(vis_minority_2011.Q)3 
+##                        -0.37140903                         0.05456562</code></pre>
+<pre class="r"><code>ci.lmm.cnt.4 &lt;- confint(res.lmm.cnt, &#39;factor(vis_minority_2011.Q)4&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)4 upper factor(vis_minority_2011.Q)4 
+##                        -0.41100205                         0.02583196</code></pre>
+<pre class="r"><code>ci.lmm.cnt.5 &lt;- confint(res.lmm.cnt, &#39;factor(vis_minority_2011.Q)5&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)5 upper factor(vis_minority_2011.Q)5 
+##                        -0.45721754                         0.04213952</code></pre>
 <pre class="r"><code>res.lmm.0 &lt;- update(res.lmm.cnt, . ~ . - factor(vis_minority_2011.Q))
 LRT(res.lmm.0, res.lmm.cnt)</code></pre>
 <pre><code>##      chi2_LR df    p_value
@@ -2581,9 +3043,9 @@ LRT(res.lmm.0, res.lmm.cnt)</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.cnt, plot = F)
   plot(simout, title = &quot;DHARMa residual | Count (truncated Poisson)&quot;)
-}</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-25-2.png" width="1152" /></p>
-<pre class="r"><code># AIC
+}
+
+# AIC
 AIC(res.lmm.zero)
 AIC(res.lmm.cnt)
 
@@ -2635,6 +3097,44 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>data.frame(vis_minority_2011.Q.2 = round(exp(ci.lmm.zero.2$interval), 3),
+           vis_minority_2011.Q.3 = round(exp(ci.lmm.zero.3$interval), 3),
+           vis_minority_2011.Q.4 = round(exp(ci.lmm.zero.4$interval), 3),
+           vis_minority_2011.Q.5 = round(exp(ci.lmm.zero.5$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Zero model confidence interval&quot;)</code></pre>
+<table>
+<caption>Zero model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q.2</td>
+<td align="right">0.584</td>
+<td align="right">2.895</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q.3</td>
+<td align="right">0.340</td>
+<td align="right">1.598</td>
+</tr>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q.4</td>
+<td align="right">0.451</td>
+<td align="right">2.281</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q.5</td>
+<td align="right">0.173</td>
+<td align="right">0.890</td>
+</tr>
+</tbody>
+</table>
 <pre class="r"><code># Count model
 smy.cnt.bt &lt;- data.frame(smy.cnt$beta_table)
 round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
@@ -2677,6 +3177,44 @@ round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>data.frame(vis_minority_2011.Q.2 = round(exp(ci.lmm.cnt.2$interval), 3),
+           vis_minority_2011.Q.3 = round(exp(ci.lmm.cnt.3$interval), 3),
+           vis_minority_2011.Q.4 = round(exp(ci.lmm.cnt.4$interval), 3),
+           vis_minority_2011.Q.5 = round(exp(ci.lmm.cnt.5$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Count model confidence interval&quot;)</code></pre>
+<table>
+<caption>Count model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q.2</td>
+<td align="right">0.870</td>
+<td align="right">1.299</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q.3</td>
+<td align="right">0.690</td>
+<td align="right">1.056</td>
+</tr>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q.4</td>
+<td align="right">0.663</td>
+<td align="right">1.026</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q.5</td>
+<td align="right">0.633</td>
+<td align="right">1.043</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="greenness-4" class="section level3" number="5.2.2">
 <h3><span class="header-section-number">5.2.2</span> Greenness</h3>
@@ -2714,11 +3252,22 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -2418.952</code></pre>
+<pre class="r"><code>ci.lmm.2 &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)2&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)2 upper factor(vis_minority_2011.Q)2 
+##                        -0.13539469                         0.02713588</code></pre>
+<pre class="r"><code>ci.lmm.3 &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)3&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)3 upper factor(vis_minority_2011.Q)3 
+##                         -0.1898758                         -0.0209057</code></pre>
+<pre class="r"><code>ci.lmm.4 &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)4&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)4 upper factor(vis_minority_2011.Q)4 
+##                        -0.23006697                        -0.05450114</code></pre>
+<pre class="r"><code>ci.lmm.5 &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)5&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)5 upper factor(vis_minority_2011.Q)5 
+##                         -0.4025241                         -0.2086047</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm, plot = F)
   plot(simout)
 }</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-27-1.png" width="1152" /></p>
 <p>Transforming the model coefficients:</p>
 <pre class="r"><code>smy.bt &lt;- data.frame(smy$beta_table)
 round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;% 
@@ -2761,6 +3310,44 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>data.frame(vis_minority_2011.Q.2 = round(exp(ci.lmm.2$interval), 3),
+           vis_minority_2011.Q.3 = round(exp(ci.lmm.3$interval), 3),
+           vis_minority_2011.Q.4 = round(exp(ci.lmm.4$interval), 3),
+           vis_minority_2011.Q.5 = round(exp(ci.lmm.5$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q.2</td>
+<td align="right">0.873</td>
+<td align="right">1.028</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q.3</td>
+<td align="right">0.827</td>
+<td align="right">0.979</td>
+</tr>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q.4</td>
+<td align="right">0.794</td>
+<td align="right">0.947</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q.5</td>
+<td align="right">0.669</td>
+<td align="right">0.812</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="canopy-trees-4" class="section level3" number="5.2.3">
 <h3><span class="header-section-number">5.2.3</span> Canopy (trees)</h3>
@@ -2798,11 +3385,22 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -2159.165</code></pre>
+<pre class="r"><code>ci.lmm.2 &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)2&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)2 upper factor(vis_minority_2011.Q)2 
+##                        -0.21818348                         0.02454645</code></pre>
+<pre class="r"><code>ci.lmm.3 &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)3&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)3 upper factor(vis_minority_2011.Q)3 
+##                        -0.30238120                        -0.05012778</code></pre>
+<pre class="r"><code>ci.lmm.4 &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)4&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)4 upper factor(vis_minority_2011.Q)4 
+##                         -0.4263212                         -0.1623752</code></pre>
+<pre class="r"><code>ci.lmm.5 &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)5&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)5 upper factor(vis_minority_2011.Q)5 
+##                         -0.6006902                         -0.3095494</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm, plot = F)
   plot(simout)
 }</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-29-1.png" width="1152" /></p>
 <p>Transforming the model coefficients:</p>
 <pre class="r"><code>smy.bt &lt;- data.frame(smy$beta_table)
 round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;% 
@@ -2845,6 +3443,44 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>data.frame(vis_minority_2011.Q.2 = round(exp(ci.lmm.2$interval), 3),
+           vis_minority_2011.Q.3 = round(exp(ci.lmm.3$interval), 3),
+           vis_minority_2011.Q.4 = round(exp(ci.lmm.4$interval), 3),
+           vis_minority_2011.Q.5 = round(exp(ci.lmm.5$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q.2</td>
+<td align="right">0.804</td>
+<td align="right">1.025</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q.3</td>
+<td align="right">0.739</td>
+<td align="right">0.951</td>
+</tr>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q.4</td>
+<td align="right">0.653</td>
+<td align="right">0.850</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q.5</td>
+<td align="right">0.548</td>
+<td align="right">0.734</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div id="uc-vs-gentrified-ct-1" class="section level2 tabset" number="5.3">
@@ -2869,7 +3505,7 @@ clean_bei &lt;- tidy_df(bei_df_aoi, CT16, f)
 
 res.lmm.zero &lt;- fitme(I(Bike_lane_total.hm.2016ct != 0) ~ wSCOREMAT.2011.Q * Bike_lane.by.street.2011ct + offset(log(street_length.hm)) + adjacency(1|ct_no),
                  data = clean_bei$df, adjMatrix = clean_bei$nbmatx,
-                 family = binomial())
+                 family = binomial()) #, verbose=c(TRACE=TRUE), init=list(lambda=NaN))
 smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</code></pre>
 <pre><code>## formula: I(Bike_lane_total.hm.2016ct != 0) ~ wSCOREMAT.2011.Q * Bike_lane.by.street.2011ct + 
 ##     offset(log(street_length.hm)) + adjacency(1 | ct_no)
@@ -2879,9 +3515,9 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 ## family: binomial( link = logit ) 
 ##  ------------ Fixed effects (beta) ------------
 ##                                             Estimate Cond. SE t-value   p-value
-## (Intercept)                                 -5.12247   0.8914 -5.7468 9.094e-09
+## (Intercept)                                 -5.12248   0.8914 -5.7468 9.095e-09
 ## wSCOREMAT.2011.Q                             0.05264   0.2153  0.2445 8.069e-01
-## Bike_lane.by.street.2011ct                   3.93126   2.5484  1.5426 1.229e-01
+## Bike_lane.by.street.2011ct                   3.93127   2.5484  1.5426 1.229e-01
 ## wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct -0.39374   0.5959 -0.6607 5.088e-01
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
@@ -2895,7 +3531,10 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -149.3657</code></pre>
-<pre class="r"><code>if (plot.resid) {
+<pre class="r"><code># ci.lmm.zero &lt;- confint(res.lmm.zero, &#39;wSCOREMAT.2011.Q&#39;) # Not converging
+# ci.lmm.zero.i &lt;- confint(res.lmm.zero, &#39;wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct&#39;)
+
+if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.zero, plot = F)
   plot(simout)
 }
@@ -2938,6 +3577,14 @@ smy.cnt &lt;- smy.cnt &lt;- summary(res.lmm.cnt, details = c(p_value=&quot;Wald&
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -1884.428</code></pre>
+<pre class="r"><code>ci.lmm.cnt &lt;- confint(res.lmm.cnt, &#39;wSCOREMAT.2011.Q&#39;)</code></pre>
+<pre><code>## lower wSCOREMAT.2011.Q upper wSCOREMAT.2011.Q 
+##            -0.05548160             0.03858686</code></pre>
+<pre class="r"><code>ci.lmm.cnt.i &lt;- confint(res.lmm.cnt, &#39;wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct&#39;)</code></pre>
+<pre><code>## lower wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct 
+##                                      -0.002667704 
+## upper wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct 
+##                                       0.002866161</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.cnt, plot = F)
   plot(simout)
@@ -2995,7 +3642,7 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 <tr class="odd">
 <td align="left">Bike_lane.by.street.2011ct</td>
-<td align="right">50.971</td>
+<td align="right">50.972</td>
 <td align="right">0.123</td>
 </tr>
 <tr class="even">
@@ -3005,7 +3652,12 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
-<pre class="r"><code># Count model
+<pre class="r"><code># data.frame(wSCOREMAT.2011.Q = round(exp(ci.lmm.zero$interval), 3),
+#            `wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct` = round(exp(ci.lmm.zero.i$interval), 3),
+#            row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+#   knitr::kable(caption=&quot;Zero model confidence interval&quot;)
+
+# Count model
 smy.cnt.bt &lt;- data.frame(smy.cnt$beta_table)
 round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
   data.frame(fixef = ., p.value = round(smy.cnt.bt$p.value, 3)) %&gt;%
@@ -3039,6 +3691,32 @@ round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
 <td align="left">wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct</td>
 <td align="right">1.000</td>
 <td align="right">0.939</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>data.frame(wSCOREMAT.2011.Q = round(exp(ci.lmm.cnt$interval), 3),
+           `wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct` = round(exp(ci.lmm.cnt.i$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Count model confidence interval&quot;)</code></pre>
+<table>
+<caption>Count model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q</td>
+<td align="right">0.946</td>
+<td align="right">1.039</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q.Bike_lane.by.street.2011ct</td>
+<td align="right">0.997</td>
+<td align="right">1.003</td>
 </tr>
 </tbody>
 </table>
@@ -3078,13 +3756,10 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -2010.108</code></pre>
-<pre class="r"><code>ci.lmm.1 &lt;- confint(res.lmm, &quot;wSCOREMAT.2011.Q&quot;)</code></pre>
+<pre class="r"><code>ci.lmm &lt;- confint(res.lmm, &quot;wSCOREMAT.2011.Q&quot;)</code></pre>
 <pre><code>## lower wSCOREMAT.2011.Q upper wSCOREMAT.2011.Q 
 ##            -0.09102817            -0.03232794</code></pre>
-<pre class="r"><code>ci.lmm.2 &lt;- confint(res.lmm, &quot;pct_esp_vert_2011ct&quot;)</code></pre>
-<pre><code>## lower pct_esp_vert_2011ct upper pct_esp_vert_2011ct 
-##                0.01421609                0.01772789</code></pre>
-<pre class="r"><code>ci.lmm.3 &lt;- confint(res.lmm, &quot;wSCOREMAT.2011.Q:pct_esp_vert_2011ct&quot;)</code></pre>
+<pre class="r"><code>ci.lmm.i &lt;- confint(res.lmm, &quot;wSCOREMAT.2011.Q:pct_esp_vert_2011ct&quot;)</code></pre>
 <pre><code>## lower wSCOREMAT.2011.Q:pct_esp_vert_2011ct 
 ##                               0.0005235603 
 ## upper wSCOREMAT.2011.Q:pct_esp_vert_2011ct 
@@ -3164,6 +3839,32 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>data.frame(wSCOREMAT.2011.Q = round(exp(ci.lmm$interval), 3),
+           `wSCOREMAT.2011.Q:pct_esp_vert_2011ct` = round(exp(ci.lmm.i$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Count model confidence interval&quot;)</code></pre>
+<table>
+<caption>Count model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q</td>
+<td align="right">0.913</td>
+<td align="right">0.968</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q.pct_esp_vert_2011ct</td>
+<td align="right">1.001</td>
+<td align="right">1.002</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="canopy-trees-change" class="section level3" number="6.1.3">
 <h3><span class="header-section-number">6.1.3</span> Canopy (trees) change</h3>
@@ -3200,13 +3901,10 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ##  ------------- Likelihood values  -------------
 ##                        logLik
 ## p_v(h) (marginal L): -1791.84</code></pre>
-<pre class="r"><code>ci.lmm.1 &lt;- confint(res.lmm, &quot;wSCOREMAT.2011.Q&quot;)</code></pre>
+<pre class="r"><code>ci.lmm &lt;- confint(res.lmm, &quot;wSCOREMAT.2011.Q&quot;)</code></pre>
 <pre><code>## lower wSCOREMAT.2011.Q upper wSCOREMAT.2011.Q 
 ##             -0.1506624             -0.0875829</code></pre>
-<pre class="r"><code>ci.lmm.2 &lt;- confint(res.lmm, &quot;pct_esp_vert_high_2011ct&quot;)</code></pre>
-<pre><code>## lower pct_esp_vert_high_2011ct upper pct_esp_vert_high_2011ct 
-##                     0.02502735                     0.03147717</code></pre>
-<pre class="r"><code>ci.lmm.3 &lt;- confint(res.lmm, &quot;wSCOREMAT.2011.Q:pct_esp_vert_high_2011ct&quot;)</code></pre>
+<pre class="r"><code>ci.lmm.i &lt;- confint(res.lmm, &quot;wSCOREMAT.2011.Q:pct_esp_vert_high_2011ct&quot;)</code></pre>
 <pre><code>## lower wSCOREMAT.2011.Q:pct_esp_vert_high_2011ct 
 ##                                     0.004235836 
 ## upper wSCOREMAT.2011.Q:pct_esp_vert_high_2011ct 
@@ -3246,7 +3944,7 @@ i_e[&quot;SES.relative.risk&quot;] &lt;- exp(i_e[&quot;SES.effect&quot;])
 i_e</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["pct_esp_vert_high_2011ct"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["SES.effect"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["SES.relative.risk"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"11.875","2":"-0.052663563","3":"0.9486991","_rn_":"25%"},{"1":"16.400","2":"-0.027359092","3":"0.9730118","_rn_":"50%"},{"1":"22.525","2":"0.006892816","3":"1.0069166","_rn_":"75%"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["pct_esp_vert_high_2011ct"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["SES.effect"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["SES.relative.risk"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"11.875","2":"-0.05266356","3":"0.9486991","_rn_":"25%"},{"1":"16.400","2":"-0.02735909","3":"0.9730118","_rn_":"50%"},{"1":"22.525","2":"0.00689282","3":"1.0069166","_rn_":"75%"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 <p>Transforming the model coefficients:</p>
@@ -3283,6 +3981,32 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 <td align="left">wSCOREMAT.2011.Q:pct_esp_vert_high_2011ct</td>
 <td align="right">1.006</td>
 <td align="right">0</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>data.frame(wSCOREMAT.2011.Q = round(exp(ci.lmm$interval), 3),
+           `wSCOREMAT.2011.Q:pct_esp_vert_high_2011ct` = round(exp(ci.lmm.i$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Count model confidence interval&quot;)</code></pre>
+<table>
+<caption>Count model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q</td>
+<td align="right">0.860</td>
+<td align="right">0.916</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q.pct_esp_vert_high_2011ct</td>
+<td align="right">1.004</td>
+<td align="right">1.007</td>
 </tr>
 </tbody>
 </table>
@@ -3330,7 +4054,10 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -145.4209</code></pre>
-<pre class="r"><code># p-value not far from 0.05, use LRT to refine test
+<pre class="r"><code># ci.lmm.zero &lt;- confint(res.lmm.zero, &#39;vis_minority_2011.Q&#39;)
+# ci.lmm.zero.i &lt;- confint(res.lmm.zero, &#39;vis_minority_2011.Q:Bike_lane.by.street.2011ct&#39;)
+
+# p-value not far from 0.05, use LRT to refine test
 res.lmm.0 &lt;- update(res.lmm.zero, . ~ . - vis_minority_2011.Q)
 LRT(res.lmm.0, res.lmm.zero)</code></pre>
 <pre><code>##      chi2_LR df    p_value
@@ -3378,6 +4105,14 @@ smy.cnt &lt;- summary(res.lmm.cnt, details = c(p_value=&quot;Wald&quot;))</code>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -1880.959</code></pre>
+<pre class="r"><code>ci.lmm.cnt &lt;- confint(res.lmm.cnt, &#39;vis_minority_2011.Q&#39;) # Not converging</code></pre>
+<pre><code>## lower vis_minority_2011.Q upper vis_minority_2011.Q 
+##               -0.06952733                0.02784814</code></pre>
+<pre class="r"><code>ci.lmm.cnt.i &lt;- confint(res.lmm.cnt, &#39;vis_minority_2011.Q:Bike_lane.by.street.2011ct&#39;)</code></pre>
+<pre><code>## lower vis_minority_2011.Q:Bike_lane.by.street.2011ct 
+##                                         -0.002967372 
+## upper vis_minority_2011.Q:Bike_lane.by.street.2011ct 
+##                                          0.002900382</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.cnt, plot = F)
   plot(simout)
@@ -3442,7 +4177,12 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
-<pre class="r"><code># Count model
+<pre class="r"><code># data.frame(vis_minority_2011.Q = round(exp(ci.lmm.zero$interval), 3),
+#            `vis_minority_2011.Q:Bike_lane.by.street.2011ct` = round(exp(ci.lmm.zero.i$interval), 3),
+#            row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+#   knitr::kable(caption=&quot;Zero model confidence interval&quot;)
+
+# Count model
 smy.cnt.bt &lt;- data.frame(smy.cnt$beta_table)
 round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
   data.frame(fixef = ., p.value = round(smy.cnt.bt$p.value, 3)) %&gt;%
@@ -3476,6 +4216,32 @@ round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
 <td align="left">vis_minority_2011.Q:Bike_lane.by.street.2011ct</td>
 <td align="right">1.000</td>
 <td align="right">0.987</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>data.frame(vis_minority_2011.Q = round(exp(ci.lmm.cnt$interval), 3),
+           `vis_minority_2011.Q:Bike_lane.by.street.2011ct` = round(exp(ci.lmm.cnt.i$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Count model confidence interval&quot;)</code></pre>
+<table>
+<caption>Count model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q</td>
+<td align="right">0.933</td>
+<td align="right">1.028</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q.Bike_lane.by.street.2011ct</td>
+<td align="right">0.997</td>
+<td align="right">1.003</td>
 </tr>
 </tbody>
 </table>
@@ -3515,13 +4281,10 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -2009.835</code></pre>
-<pre class="r"><code>ci.lmm.1 &lt;- confint(res.lmm, &quot;vis_minority_2011.Q&quot;)</code></pre>
+<pre class="r"><code>ci.lmm &lt;- confint(res.lmm, &quot;vis_minority_2011.Q&quot;)</code></pre>
 <pre><code>## lower vis_minority_2011.Q upper vis_minority_2011.Q 
 ##               -0.08777005               -0.02998448</code></pre>
-<pre class="r"><code>ci.lmm.2 &lt;- confint(res.lmm, &quot;pct_esp_vert_2011ct&quot;)</code></pre>
-<pre><code>## lower pct_esp_vert_2011ct upper pct_esp_vert_2011ct 
-##                0.01449601                0.01788267</code></pre>
-<pre class="r"><code>ci.lmm.3 &lt;- confint(res.lmm, &quot;vis_minority_2011.Q:pct_esp_vert_2011ct&quot;)</code></pre>
+<pre class="r"><code>ci.lmm.i &lt;- confint(res.lmm, &quot;vis_minority_2011.Q:pct_esp_vert_2011ct&quot;)</code></pre>
 <pre><code>## lower vis_minority_2011.Q:pct_esp_vert_2011ct 
 ##                                  0.0005204252 
 ## upper vis_minority_2011.Q:pct_esp_vert_2011ct 
@@ -3601,6 +4364,32 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>data.frame(vis_minority_2011.Q = round(exp(ci.lmm$interval), 3),
+           `vis_minority_2011.Q:pct_esp_vert_2011ct` = round(exp(ci.lmm.i$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q</td>
+<td align="right">0.916</td>
+<td align="right">0.970</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q.pct_esp_vert_2011ct</td>
+<td align="right">1.001</td>
+<td align="right">1.002</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="canopy-trees-change-1" class="section level3" number="6.2.3">
 <h3><span class="header-section-number">6.2.3</span> Canopy (trees) change</h3>
@@ -3642,13 +4431,10 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -1808.484</code></pre>
-<pre class="r"><code>ci.lmm.1 &lt;- confint(res.lmm, &quot;vis_minority_2011.Q&quot;)</code></pre>
+<pre class="r"><code>ci.lmm &lt;- confint(res.lmm, &quot;vis_minority_2011.Q&quot;)</code></pre>
 <pre><code>## lower vis_minority_2011.Q upper vis_minority_2011.Q 
 ##               -0.10934259               -0.04405318</code></pre>
-<pre class="r"><code>ci.lmm.2 &lt;- confint(res.lmm, &quot;pct_esp_vert_high_2011ct&quot;)</code></pre>
-<pre><code>## lower pct_esp_vert_high_2011ct upper pct_esp_vert_high_2011ct 
-##                     0.02828030                     0.03533605</code></pre>
-<pre class="r"><code>ci.lmm.3 &lt;- confint(res.lmm, &quot;vis_minority_2011.Q:pct_esp_vert_high_2011ct&quot;)</code></pre>
+<pre class="r"><code>ci.lmm.i &lt;- confint(res.lmm, &quot;vis_minority_2011.Q:pct_esp_vert_high_2011ct&quot;)</code></pre>
 <pre><code>## lower vis_minority_2011.Q:pct_esp_vert_high_2011ct 
 ##                                        0.002081562 
 ## upper vis_minority_2011.Q:pct_esp_vert_high_2011ct 
@@ -3688,7 +4474,7 @@ i_e[&quot;SES.relative.risk&quot;] &lt;- exp(i_e[&quot;SES.effect&quot;])
 i_e</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["pct_esp_vert_high_2011ct"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["SES.effect"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["SES.relative.risk"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"11.8","2":"-0.037314358","3":"0.9633732","_rn_":"25%"},{"1":"16.4","2":"-0.021969562","3":"0.9782700","_rn_":"50%"},{"1":"22.5","2":"-0.001621027","3":"0.9983803","_rn_":"75%"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["pct_esp_vert_high_2011ct"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["SES.effect"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["SES.relative.risk"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"11.8","2":"-0.037314358","3":"0.9633732","_rn_":"25%"},{"1":"16.4","2":"-0.021969561","3":"0.9782700","_rn_":"50%"},{"1":"22.5","2":"-0.001621027","3":"0.9983803","_rn_":"75%"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 <p>Transforming the model coefficients:</p>
@@ -3728,6 +4514,32 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>data.frame(vis_minority_2011.Q = round(exp(ci.lmm$interval), 3),
+           `vis_minority_2011.Q:pct_esp_vert_high_2011ct` = round(exp(ci.lmm.i$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q</td>
+<td align="right">0.896</td>
+<td align="right">0.957</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q.pct_esp_vert_high_2011ct</td>
+<td align="right">1.002</td>
+<td align="right">1.005</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div id="ui-vs-gentrified-ct" class="section level2 tabset" number="6.3">
@@ -3752,20 +4564,20 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 ## family: binomial( link = logit ) 
 ##  ------------ Fixed effects (beta) ------------
 ##                                                     Estimate Cond. SE t-value
-## (Intercept)                                          -4.9124   0.5014 -9.7983
-## gentrified_2016_2011TRUE                              0.1917   0.5945  0.3225
-## Bike_lane.by.street.2011ct                            3.4695   1.4204  2.4426
-## gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct  -1.6035   1.6956 -0.9457
+## (Intercept)                                          -4.9125   0.5014 -9.7980
+## gentrified_2016_2011TRUE                              0.1916   0.5945  0.3223
+## Bike_lane.by.street.2011ct                            3.4720   1.4214  2.4426
+## gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct  -1.6042   1.6969 -0.9454
 ##                                                     p-value
 ## (Intercept)                                         0.00000
-## gentrified_2016_2011TRUE                            0.74711
+## gentrified_2016_2011TRUE                            0.74726
 ## Bike_lane.by.street.2011ct                          0.01458
-## gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct 0.34431
+## gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct 0.34445
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
 ##     1.rho 
-## 0.1379976 
+## 0.1379985 
 ##            --- Variance parameters (&#39;lambda&#39;):
 ## lambda = var(u) for u ~ Gaussian; 
 ##    ct_no  :  6.358  
@@ -3774,16 +4586,15 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 ##                         logLik
 ## p_v(h) (marginal L): -146.8066</code></pre>
 <pre class="r"><code># NB: not converging
-# ci.lmm.0.1 &lt;- confint(res.lmm.zero, &quot;gentrified_2016_2011TRUE&quot;)
-# ci.lmm.0.2 &lt;- confint(res.lmm.zero, &quot;Bike_lane.by.street.2011ct&quot;)
-# ci.lmm.0.3 &lt;- confint(res.lmm.zero, &quot;gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct&quot;)
+# ci.lmm.zero &lt;- confint(res.lmm.zero, &quot;gentrified_2016_2011TRUE&quot;)
+# ci.lmm.zero.i &lt;- confint(res.lmm.zero, &quot;gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct&quot;)
 
 if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.zero, plot = F)
   plot(simout)
-}</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/test-hurdle-0-1.png" width="1152" /></p>
-<pre class="r"><code># Plotting interaction || MEANINGLESS
+}
+
+# Plotting interaction || MEANINGLESS
 # .t &lt;- clean_bei$df
 # .t[&quot;predict&quot;] &lt;- as.vector(predict(res.lmm.zero))
 # 
@@ -3829,16 +4640,20 @@ smy.cnt &lt;- summary(res.lmm.cnt, details = c(p_value=&quot;Wald&quot;))</code>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -1877.541</code></pre>
-<pre class="r"><code># ci.lmm.cnt.1 &lt;- confint(res.lmm.cnt, &quot;gentrified_2016_2011TRUE&quot;)
-# ci.lmm.cnt.2 &lt;- confint(res.lmm.cnt, &quot;Bike_lane.by.street.2011ct&quot;)
-# ci.lmm.cnt.3 &lt;- confint(res.lmm.cnt, &quot;gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct&quot;)
-
-if (plot.resid) {
+<pre class="r"><code>ci.lmm.cnt &lt;- confint(res.lmm.cnt, &quot;gentrified_2016_2011TRUE&quot;)</code></pre>
+<pre><code>## lower gentrified_2016_2011TRUE upper gentrified_2016_2011TRUE 
+##                     0.05956701                     0.34312556</code></pre>
+<pre class="r"><code>ci.lmm.cnt.i &lt;- confint(res.lmm.cnt, &quot;gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct&quot;)</code></pre>
+<pre><code>## lower gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct 
+##                                              -0.020172990 
+## upper gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct 
+##                                              -0.002964552</code></pre>
+<pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.cnt, plot = F)
   plot(simout)
-}</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/test-hurdle-0-2.png" width="1152" /></p>
-<pre class="r"><code># Plotting interaction
+}
+
+# Plotting interaction
 .t &lt;- clean_bei.cnt$df
 .t[&quot;predict&quot;] &lt;- as.vector(predict(res.lmm.cnt))
 
@@ -3846,7 +4661,7 @@ g_gen_bk.hrdl &lt;- ggplot(.t, aes(y=100*predict/street_length.hm, x=Bike_lane.b
   geom_smooth(method = &quot;lm&quot;, alpha=.1) +
   labs(colour=&#39;gentrified_2016_2011&#39;, fill=&#39;gentrified_2016_2011&#39;)
 g_gen_bk.hrdl</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/test-hurdle-0-3.png" width="1152" /></p>
+<p><img src="BEI_equity_paper.final_files/figure-html/test-hurdle-0-1.png" width="1152" /></p>
 <pre class="r"><code># AIC
 AIC(res.lmm.zero)
 AIC(res.lmm.cnt)
@@ -3885,7 +4700,7 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 <tr class="odd">
 <td align="left">Bike_lane.by.street.2011ct</td>
-<td align="right">32.120</td>
+<td align="right">32.202</td>
 <td align="right">0.015</td>
 </tr>
 <tr class="even">
@@ -3895,7 +4710,12 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
-<pre class="r"><code># Count model
+<pre class="r"><code># data.frame(gentrified_2016_2011TRUE = round(exp(ci.lmm.zero$interval), 3),
+#            `gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct` = round(exp(ci.lmm.zero.i$interval), 3),
+#            row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+#   knitr::kable(caption=&quot;Zero model confidence interval&quot;)
+
+# Count model
 smy.cnt.bt &lt;- data.frame(smy.cnt$beta_table)
 round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
   data.frame(fixef = ., p.value = round(smy.cnt.bt$p.value, 3)) %&gt;%
@@ -3929,6 +4749,32 @@ round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
 <td align="left">gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct</td>
 <td align="right">0.988</td>
 <td align="right">0.008</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>data.frame(gentrified_2016_2011TRUE = round(exp(ci.lmm.cnt$interval), 3),
+           `gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct` = round(exp(ci.lmm.cnt.i$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Count model confidence interval&quot;)</code></pre>
+<table>
+<caption>Count model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">gentrified_2016_2011TRUE</td>
+<td align="right">1.061</td>
+<td align="right">1.409</td>
+</tr>
+<tr class="even">
+<td align="left">gentrified_2016_2011TRUE.Bike_lane.by.street.2011ct</td>
+<td align="right">0.980</td>
+<td align="right">0.997</td>
 </tr>
 </tbody>
 </table>
@@ -3973,13 +4819,10 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -2012.743</code></pre>
-<pre class="r"><code>ci.lmm.1 &lt;- confint(res.lmm, &quot;gentrified_2016_2011TRUE&quot;)</code></pre>
+<pre class="r"><code>ci.lmm &lt;- confint(res.lmm, &quot;gentrified_2016_2011TRUE&quot;)</code></pre>
 <pre><code>## lower gentrified_2016_2011TRUE upper gentrified_2016_2011TRUE 
 ##                    -0.32923088                    -0.07618816</code></pre>
-<pre class="r"><code>ci.lmm.2 &lt;- confint(res.lmm, &quot;pct_esp_vert_2011ct&quot;)</code></pre>
-<pre><code>## lower pct_esp_vert_2011ct upper pct_esp_vert_2011ct 
-##                0.01782709                0.01968210</code></pre>
-<pre class="r"><code>ci.lmm.3 &lt;- confint(res.lmm, &quot;gentrified_2016_2011TRUE:pct_esp_vert_2011ct&quot;)</code></pre>
+<pre class="r"><code>ci.lmm.i &lt;- confint(res.lmm, &quot;gentrified_2016_2011TRUE:pct_esp_vert_2011ct&quot;)</code></pre>
 <pre><code>## lower gentrified_2016_2011TRUE:pct_esp_vert_2011ct 
 ##                                        0.001944267 
 ## upper gentrified_2016_2011TRUE:pct_esp_vert_2011ct 
@@ -3987,9 +4830,9 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm, plot = F)
   plot(simout)
-}</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-46-1.png" width="1152" /></p>
-<pre class="r"><code># Plotting interaction
+}
+
+# Plotting interaction
 .t &lt;- clean_bei$df
 .t[&quot;predict&quot;] &lt;- as.vector(predict(res.lmm))
 
@@ -3997,7 +4840,7 @@ g_gen_gr &lt;- ggplot(.t, aes(y=100*predict/ct_area_hct, x=pct_esp_vert_2011ct, 
   geom_smooth(method = &quot;lm&quot;, alpha=.1) +
   labs(colour=&#39;gentrified_2016_2011&#39;, fill=&#39;gentrified_2016_2011&#39;)
 g_gen_gr</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-46-2.png" width="1152" /></p>
+<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-46-1.png" width="1152" /></p>
 <p>Interpretation of the <code>gentrified_2016_2011</code> coefficient (significant): we have <span class="math inline">\(e^{-0.203}\)</span> = 0.817 (95%CI: 0.719 – 0.927)</p>
 <p>Coefficient interpretation (marginal + interaction) as relative risk.</p>
 <pre class="r"><code># Compute combined effects (marginal + interaction) for each quintile of SES:
@@ -4057,6 +4900,32 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>data.frame(gentrified_2016_2011TRUE = round(exp(ci.lmm$interval), 3),
+           `gentrified_2016_2011TRUE:pct_esp_vert_2011ct` = round(exp(ci.lmm.i$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">gentrified_2016_2011TRUE</td>
+<td align="right">0.719</td>
+<td align="right">0.927</td>
+</tr>
+<tr class="even">
+<td align="left">gentrified_2016_2011TRUE.pct_esp_vert_2011ct</td>
+<td align="right">1.002</td>
+<td align="right">1.009</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="canopy-trees-change-2" class="section level3" number="6.3.3">
 <h3><span class="header-section-number">6.3.3</span> Canopy (trees) change</h3>
@@ -4098,13 +4967,10 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -1814.314</code></pre>
-<pre class="r"><code>ci.lmm.1 &lt;- confint(res.lmm, &quot;gentrified_2016_2011TRUE&quot;)</code></pre>
+<pre class="r"><code>ci.lmm &lt;- confint(res.lmm, &quot;gentrified_2016_2011TRUE&quot;)</code></pre>
 <pre><code>## lower gentrified_2016_2011TRUE upper gentrified_2016_2011TRUE 
 ##                    -0.34539306                    -0.06456076</code></pre>
-<pre class="r"><code>ci.lmm.2 &lt;- confint(res.lmm, &quot;pct_esp_vert_high_2011ct&quot;)</code></pre>
-<pre><code>## lower pct_esp_vert_high_2011ct upper pct_esp_vert_high_2011ct 
-##                     0.03756862                     0.04126454</code></pre>
-<pre class="r"><code>ci.lmm.3 &lt;- confint(res.lmm, &quot;gentrified_2016_2011TRUE:pct_esp_vert_high_2011ct&quot;)</code></pre>
+<pre class="r"><code>ci.lmm.i &lt;- confint(res.lmm, &quot;gentrified_2016_2011TRUE:pct_esp_vert_high_2011ct&quot;)</code></pre>
 <pre><code>## lower gentrified_2016_2011TRUE:pct_esp_vert_high_2011ct 
 ##                                             0.006232907 
 ## upper gentrified_2016_2011TRUE:pct_esp_vert_high_2011ct 
@@ -4112,9 +4978,9 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm, plot = F)
   plot(simout)
-}</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-49-1.png" width="1152" /></p>
-<pre class="r"><code># Plotting interaction
+}
+
+# Plotting interaction
 .t &lt;- clean_bei$df
 .t[&quot;predict&quot;] &lt;- as.vector(predict(res.lmm))
 
@@ -4122,7 +4988,7 @@ g_gen_tc &lt;- ggplot(.t, aes(y=100*predict/ct_area_hct, x=pct_esp_vert_high_201
   geom_smooth(method = &quot;lm&quot;, alpha=.1) +
   labs(colour=&#39;gentrified_2016_2011&#39;, fill=&#39;gentrified_2016_2011&#39;)
 g_gen_tc</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-49-2.png" width="1152" /></p>
+<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-49-1.png" width="1152" /></p>
 <p>Interpretation of the <code>gentrified_2016_2011</code> coefficient (significant): we have <span class="math inline">\(e^{-0.205}\)</span> = 0.815 (95%CI: 0.708 – 0.937)</p>
 <p>Coefficient interpretation (marginal + interaction) as relative risk.</p>
 <pre class="r"><code># Compute combined effects (marginal + interaction) for each quintile of SES:
@@ -4142,7 +5008,7 @@ i_e[&quot;SES.relative.risk&quot;] &lt;- exp(i_e[&quot;SES.effect&quot;])
 i_e</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["pct_esp_vert_high_2011ct"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["SES.effect"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["SES.relative.risk"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"11.8","2":"-0.04862429","3":"0.9525389","_rn_":"25%"},{"1":"16.4","2":"0.01217485","3":"1.0122493","_rn_":"50%"},{"1":"22.5","2":"0.09279979","3":"1.0972420","_rn_":"75%"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["pct_esp_vert_high_2011ct"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["SES.effect"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["SES.relative.risk"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"11.8","2":"-0.04862431","3":"0.9525389","_rn_":"25%"},{"1":"16.4","2":"0.01217482","3":"1.0122492","_rn_":"50%"},{"1":"22.5","2":"0.09279976","3":"1.0972420","_rn_":"75%"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 <p>Transforming the model coefficients:</p>
@@ -4182,6 +5048,32 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>data.frame(gentrified_2016_2011TRUE = round(exp(ci.lmm$interval), 3),
+           `gentrified_2016_2011TRUE:pct_esp_vert_high_2011ct` = round(exp(ci.lmm.i$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">gentrified_2016_2011TRUE</td>
+<td align="right">0.708</td>
+<td align="right">0.937</td>
+</tr>
+<tr class="even">
+<td align="left">gentrified_2016_2011TRUE.pct_esp_vert_high_2011ct</td>
+<td align="right">1.006</td>
+<td align="right">1.020</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>
@@ -4210,40 +5102,50 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 ## family: binomial( link = logit ) 
 ##  ------------ Fixed effects (beta) ------------
 ##                                                      Estimate  Cond. SE t-value
-## (Intercept)                                            -6.438 9.722e-01 -6.6221
-## factor(wSCOREMAT.2011.Q)2                               1.926 1.005e+00  1.9166
-## factor(wSCOREMAT.2011.Q)3                               1.830 1.084e+00  1.6888
-## factor(wSCOREMAT.2011.Q)4                               1.713 1.083e+00  1.5818
-## factor(wSCOREMAT.2011.Q)5                               1.119 1.025e+00  1.0914
-## Bike_lane.by.street.2011ct                             54.449 1.422e+02  0.3830
-## factor(wSCOREMAT.2011.Q)2:Bike_lane.by.street.2011ct  -52.827 1.422e+02 -0.3716
-## factor(wSCOREMAT.2011.Q)3:Bike_lane.by.street.2011ct 6167.512 3.011e+04  0.2048
-## factor(wSCOREMAT.2011.Q)4:Bike_lane.by.street.2011ct  170.856 9.721e+02  0.1758
-## factor(wSCOREMAT.2011.Q)5:Bike_lane.by.street.2011ct  -52.766 1.422e+02 -0.3712
+## (Intercept)                                            -6.439 9.728e-01 -6.6197
+## factor(wSCOREMAT.2011.Q)2                               1.927 1.005e+00  1.9166
+## factor(wSCOREMAT.2011.Q)3                               1.831 1.084e+00  1.6892
+## factor(wSCOREMAT.2011.Q)4                               1.714 1.083e+00  1.5822
+## factor(wSCOREMAT.2011.Q)5                               1.120 1.026e+00  1.0919
+## Bike_lane.by.street.2011ct                             54.449 1.421e+02  0.3832
+## factor(wSCOREMAT.2011.Q)2:Bike_lane.by.street.2011ct  -52.826 1.421e+02 -0.3718
+## factor(wSCOREMAT.2011.Q)3:Bike_lane.by.street.2011ct 6070.646 2.874e+04  0.2113
+## factor(wSCOREMAT.2011.Q)4:Bike_lane.by.street.2011ct  169.074 9.593e+02  0.1762
+## factor(wSCOREMAT.2011.Q)5:Bike_lane.by.street.2011ct  -52.766 1.421e+02 -0.3714
 ##                                                        p-value
-## (Intercept)                                          3.541e-11
+## (Intercept)                                          3.600e-11
 ## factor(wSCOREMAT.2011.Q)2                            5.529e-02
-## factor(wSCOREMAT.2011.Q)3                            9.126e-02
-## factor(wSCOREMAT.2011.Q)4                            1.137e-01
-## factor(wSCOREMAT.2011.Q)5                            2.751e-01
-## Bike_lane.by.street.2011ct                           7.017e-01
-## factor(wSCOREMAT.2011.Q)2:Bike_lane.by.street.2011ct 7.102e-01
-## factor(wSCOREMAT.2011.Q)3:Bike_lane.by.street.2011ct 8.377e-01
-## factor(wSCOREMAT.2011.Q)4:Bike_lane.by.street.2011ct 8.605e-01
-## factor(wSCOREMAT.2011.Q)5:Bike_lane.by.street.2011ct 7.105e-01
+## factor(wSCOREMAT.2011.Q)3                            9.118e-02
+## factor(wSCOREMAT.2011.Q)4                            1.136e-01
+## factor(wSCOREMAT.2011.Q)5                            2.749e-01
+## Bike_lane.by.street.2011ct                           7.015e-01
+## factor(wSCOREMAT.2011.Q)2:Bike_lane.by.street.2011ct 7.100e-01
+## factor(wSCOREMAT.2011.Q)3:Bike_lane.by.street.2011ct 8.327e-01
+## factor(wSCOREMAT.2011.Q)4:Bike_lane.by.street.2011ct 8.601e-01
+## factor(wSCOREMAT.2011.Q)5:Bike_lane.by.street.2011ct 7.104e-01
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
-##    1.rho 
-## 0.137743 
+##     1.rho 
+## 0.1377524 
 ##            --- Variance parameters (&#39;lambda&#39;):
 ## lambda = var(u) for u ~ Gaussian; 
-##    ct_no  :  5.117  
+##    ct_no  :  5.121  
 ## # of obs: 688; # of groups: ct_no, 688 
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -142.7656</code></pre>
-<pre class="r"><code>if (plot.resid) {
+<pre class="r"><code># Not converging...
+# ci.lmm.zero.2 &lt;- confint(res.lmm.zero, &#39;factor(wSCOREMAT.2011.Q)2&#39;)
+# ci.lmm.zero.3 &lt;- confint(res.lmm.zero, &#39;factor(wSCOREMAT.2011.Q)3&#39;)
+# ci.lmm.zero.4 &lt;- confint(res.lmm.zero, &#39;factor(wSCOREMAT.2011.Q)4&#39;)
+# ci.lmm.zero.5 &lt;- confint(res.lmm.zero, &#39;factor(wSCOREMAT.2011.Q)5&#39;)
+# ci.lmm.zero.2.i &lt;- confint(res.lmm.zero, &#39;factor(wSCOREMAT.2011.Q)2:Bike_lane.by.street.2011ct&#39;)
+# ci.lmm.zero.3.i &lt;- confint(res.lmm.zero, &#39;factor(wSCOREMAT.2011.Q)3:Bike_lane.by.street.2011ct&#39;)
+# ci.lmm.zero.4.i &lt;- confint(res.lmm.zero, &#39;factor(wSCOREMAT.2011.Q)4:Bike_lane.by.street.2011ct&#39;)
+# ci.lmm.zero.5.i &lt;- confint(res.lmm.zero, &#39;factor(wSCOREMAT.2011.Q)5:Bike_lane.by.street.2011ct&#39;)
+
+if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.zero, plot = F)
   plot(simout)
 }
@@ -4298,6 +5200,38 @@ smy.cnt &lt;- summary(res.lmm.cnt, details = c(p_value=&quot;Wald&quot;))</code>
 ##  ------------- Likelihood values  -------------
 ##                        logLik
 ## p_v(h) (marginal L): -1874.29</code></pre>
+<pre class="r"><code>ci.lmm.cnt.2 &lt;- confint(res.lmm.cnt, &#39;factor(wSCOREMAT.2011.Q)2&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)2 upper factor(wSCOREMAT.2011.Q)2 
+##                      -0.2696977                       0.1049481</code></pre>
+<pre class="r"><code>ci.lmm.cnt.3 &lt;- confint(res.lmm.cnt, &#39;factor(wSCOREMAT.2011.Q)3&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)3 upper factor(wSCOREMAT.2011.Q)3 
+##                      -0.5430797                      -0.1454734</code></pre>
+<pre class="r"><code>ci.lmm.cnt.4 &lt;- confint(res.lmm.cnt, &#39;factor(wSCOREMAT.2011.Q)4&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)4 upper factor(wSCOREMAT.2011.Q)4 
+##                     -0.36852267                      0.02910342</code></pre>
+<pre class="r"><code>ci.lmm.cnt.5 &lt;- confint(res.lmm.cnt, &#39;factor(wSCOREMAT.2011.Q)5&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)5 upper factor(wSCOREMAT.2011.Q)5 
+##                      -0.1850356                       0.2239169</code></pre>
+<pre class="r"><code>ci.lmm.cnt.2.i &lt;- confint(res.lmm.cnt, &#39;factor(wSCOREMAT.2011.Q)2:Bike_lane.by.street.2011ct&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)2:Bike_lane.by.street.2011ct 
+##                                               -0.008848285 
+## upper factor(wSCOREMAT.2011.Q)2:Bike_lane.by.street.2011ct 
+##                                                0.012836609</code></pre>
+<pre class="r"><code>ci.lmm.cnt.3.i &lt;- confint(res.lmm.cnt, &#39;factor(wSCOREMAT.2011.Q)3:Bike_lane.by.street.2011ct&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)3:Bike_lane.by.street.2011ct 
+##                                                 0.01070183 
+## upper factor(wSCOREMAT.2011.Q)3:Bike_lane.by.street.2011ct 
+##                                                 0.03556322</code></pre>
+<pre class="r"><code>ci.lmm.cnt.4.i &lt;- confint(res.lmm.cnt, &#39;factor(wSCOREMAT.2011.Q)4:Bike_lane.by.street.2011ct&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)4:Bike_lane.by.street.2011ct 
+##                                               -0.004678878 
+## upper factor(wSCOREMAT.2011.Q)4:Bike_lane.by.street.2011ct 
+##                                                0.018077030</code></pre>
+<pre class="r"><code>ci.lmm.cnt.5.i &lt;- confint(res.lmm.cnt, &#39;factor(wSCOREMAT.2011.Q)5:Bike_lane.by.street.2011ct&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)5:Bike_lane.by.street.2011ct 
+##                                               -0.017448643 
+## upper factor(wSCOREMAT.2011.Q)5:Bike_lane.by.street.2011ct 
+##                                                0.007977303</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.cnt, plot = F)
   plot(simout)
@@ -4347,27 +5281,27 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 <tr class="even">
 <td align="left">factor(wSCOREMAT.2011.Q)2</td>
-<td align="right">6.862000e+00</td>
+<td align="right">6.867000e+00</td>
 <td align="right">0.055</td>
 </tr>
 <tr class="odd">
 <td align="left">factor(wSCOREMAT.2011.Q)3</td>
-<td align="right">6.236000e+00</td>
+<td align="right">6.243000e+00</td>
 <td align="right">0.091</td>
 </tr>
 <tr class="even">
 <td align="left">factor(wSCOREMAT.2011.Q)4</td>
-<td align="right">5.546000e+00</td>
+<td align="right">5.553000e+00</td>
 <td align="right">0.114</td>
 </tr>
 <tr class="odd">
 <td align="left">factor(wSCOREMAT.2011.Q)5</td>
-<td align="right">3.061000e+00</td>
+<td align="right">3.064000e+00</td>
 <td align="right">0.275</td>
 </tr>
 <tr class="even">
 <td align="left">Bike_lane.by.street.2011ct</td>
-<td align="right">4.434542e+23</td>
+<td align="right">4.435675e+23</td>
 <td align="right">0.702</td>
 </tr>
 <tr class="odd">
@@ -4378,17 +5312,17 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 <tr class="even">
 <td align="left">factor(wSCOREMAT.2011.Q)3:Bike_lane.by.street.2011ct</td>
 <td align="right">Inf</td>
-<td align="right">0.838</td>
+<td align="right">0.833</td>
 </tr>
 <tr class="odd">
 <td align="left">factor(wSCOREMAT.2011.Q)4:Bike_lane.by.street.2011ct</td>
-<td align="right">1.591008e+74</td>
+<td align="right">2.677813e+73</td>
 <td align="right">0.860</td>
 </tr>
 <tr class="even">
 <td align="left">factor(wSCOREMAT.2011.Q)5:Bike_lane.by.street.2011ct</td>
 <td align="right">0.000000e+00</td>
-<td align="right">0.711</td>
+<td align="right">0.710</td>
 </tr>
 </tbody>
 </table>
@@ -4459,6 +5393,68 @@ round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>data.frame(wSCOREMAT.2011.Q.2 = round(exp(ci.lmm.cnt.2$interval), 3),
+           wSCOREMAT.2011.Q.3 = round(exp(ci.lmm.cnt.3$interval), 3),
+           wSCOREMAT.2011.Q.4 = round(exp(ci.lmm.cnt.4$interval), 3),
+           wSCOREMAT.2011.Q.5 = round(exp(ci.lmm.cnt.5$interval), 3),
+           `wSCOREMAT.2011.Q.2:Bike_lane.by.street.2011ct` = round(exp(ci.lmm.cnt.2.i$interval), 3),
+           `wSCOREMAT.2011.Q.3:Bike_lane.by.street.2011ct` = round(exp(ci.lmm.cnt.3.i$interval), 3),
+           `wSCOREMAT.2011.Q.4:Bike_lane.by.street.2011ct` = round(exp(ci.lmm.cnt.4.i$interval), 3),
+           `wSCOREMAT.2011.Q.5:Bike_lane.by.street.2011ct` = round(exp(ci.lmm.cnt.5.i$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Count model confidence interval&quot;)</code></pre>
+<table>
+<caption>Count model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q.2</td>
+<td align="right">0.764</td>
+<td align="right">1.111</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q.3</td>
+<td align="right">0.581</td>
+<td align="right">0.865</td>
+</tr>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q.4</td>
+<td align="right">0.692</td>
+<td align="right">1.030</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q.5</td>
+<td align="right">0.831</td>
+<td align="right">1.251</td>
+</tr>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q.2.Bike_lane.by.street.2011ct</td>
+<td align="right">0.991</td>
+<td align="right">1.013</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q.3.Bike_lane.by.street.2011ct</td>
+<td align="right">1.011</td>
+<td align="right">1.036</td>
+</tr>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q.4.Bike_lane.by.street.2011ct</td>
+<td align="right">0.995</td>
+<td align="right">1.018</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q.5.Bike_lane.by.street.2011ct</td>
+<td align="right">0.983</td>
+<td align="right">1.008</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="greenness-change-3" class="section level3" number="7.1.2">
 <h3><span class="header-section-number">7.1.2</span> Greenness change</h3>
@@ -4479,11 +5475,11 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ## family: poisson( link = log ) 
 ##  ------------ Fixed effects (beta) ------------
 ##                                                 Estimate  Cond. SE  t-value
-## (Intercept)                                   -1.4971345 0.0460467 -32.5134
-## factor(wSCOREMAT.2011.Q)2                     -0.1162630 0.0618502  -1.8797
+## (Intercept)                                   -1.4971346 0.0460467 -32.5134
+## factor(wSCOREMAT.2011.Q)2                     -0.1162630 0.0618502  -1.8798
 ## factor(wSCOREMAT.2011.Q)3                     -0.0825597 0.0634354  -1.3015
-## factor(wSCOREMAT.2011.Q)4                     -0.1729265 0.0685627  -2.5222
-## factor(wSCOREMAT.2011.Q)5                     -0.4873195 0.0840536  -5.7977
+## factor(wSCOREMAT.2011.Q)4                     -0.1729264 0.0685627  -2.5222
+## factor(wSCOREMAT.2011.Q)5                     -0.4873194 0.0840536  -5.7977
 ## pct_esp_vert_2011ct                            0.0171251 0.0007596  22.5460
 ## factor(wSCOREMAT.2011.Q)2:pct_esp_vert_2011ct  0.0014829 0.0010502   1.4119
 ## factor(wSCOREMAT.2011.Q)3:pct_esp_vert_2011ct  0.0009409 0.0011150   0.8438
@@ -4512,6 +5508,38 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -2000.254</code></pre>
+<pre class="r"><code>ci.lmm.2 &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)2&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)2 upper factor(wSCOREMAT.2011.Q)2 
+##                    -0.237516755                     0.005817628</code></pre>
+<pre class="r"><code>ci.lmm.3 &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)3&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)3 upper factor(wSCOREMAT.2011.Q)3 
+##                     -0.20695607                      0.04282354</code></pre>
+<pre class="r"><code>ci.lmm.4 &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)4&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)4 upper factor(wSCOREMAT.2011.Q)4 
+##                     -0.30771808                     -0.03714639</code></pre>
+<pre class="r"><code>ci.lmm.5 &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)5&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)5 upper factor(wSCOREMAT.2011.Q)5 
+##                      -0.6527902                      -0.3216119</code></pre>
+<pre class="r"><code>ci.lmm.2.i &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)2:pct_esp_vert_2011ct&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)2:pct_esp_vert_2011ct 
+##                                       -0.0005896124 
+## upper factor(wSCOREMAT.2011.Q)2:pct_esp_vert_2011ct 
+##                                        0.0035413566</code></pre>
+<pre class="r"><code>ci.lmm.3.i &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)3:pct_esp_vert_2011ct&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)3:pct_esp_vert_2011ct 
+##                                        -0.001261122 
+## upper factor(wSCOREMAT.2011.Q)3:pct_esp_vert_2011ct 
+##                                         0.003126086</code></pre>
+<pre class="r"><code>ci.lmm.4.i &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)4:pct_esp_vert_2011ct&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)4:pct_esp_vert_2011ct 
+##                                        0.0002926797 
+## upper factor(wSCOREMAT.2011.Q)4:pct_esp_vert_2011ct 
+##                                        0.0056769258</code></pre>
+<pre class="r"><code>ci.lmm.5.i &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)5:pct_esp_vert_2011ct&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)5:pct_esp_vert_2011ct 
+##                                         0.007519445 
+## upper factor(wSCOREMAT.2011.Q)5:pct_esp_vert_2011ct 
+##                                         0.016427716</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm, plot = F)
   plot(simout)
@@ -4600,9 +5628,74 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 res.lmm.0 &lt;- update(res.lmm, . ~ . - factor(wSCOREMAT.2011.Q))</code></pre>
 <pre><code>## Warning in .sym_checked(adjMatrix, &quot;adjMatrix&quot;): Forcing colnames(mMatrix) &lt;-
 ## rownames(mMatrix) before calling isSymmetric().</code></pre>
+<pre><code>## Warning: as(&lt;dgeMatrix&gt;, &quot;dgCMatrix&quot;) is deprecated since Matrix 1.5-0; do as(.,
+## &quot;CsparseMatrix&quot;) instead</code></pre>
 <pre class="r"><code>LRT(res.lmm.0, res.lmm)</code></pre>
 <pre><code>##      chi2_LR df      p_value
 ## p_v 34.78184  4 5.150194e-07</code></pre>
+<pre class="r"><code># CI
+data.frame(wSCOREMAT.2011.Q.2 = round(exp(ci.lmm.2$interval), 3),
+           wSCOREMAT.2011.Q.3 = round(exp(ci.lmm.3$interval), 3),
+           wSCOREMAT.2011.Q.4 = round(exp(ci.lmm.4$interval), 3),
+           wSCOREMAT.2011.Q.5 = round(exp(ci.lmm.5$interval), 3),
+           `wSCOREMAT.2011.Q.2:pct_esp_vert_2011ct` = round(exp(ci.lmm.2.i$interval), 3),
+           `wSCOREMAT.2011.Q.3:pct_esp_vert_2011ct` = round(exp(ci.lmm.3.i$interval), 3),
+           `wSCOREMAT.2011.Q.4:pct_esp_vert_2011ct` = round(exp(ci.lmm.4.i$interval), 3),
+           `wSCOREMAT.2011.Q.5:pct_esp_vert_2011ct` = round(exp(ci.lmm.5.i$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q.2</td>
+<td align="right">0.789</td>
+<td align="right">1.006</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q.3</td>
+<td align="right">0.813</td>
+<td align="right">1.044</td>
+</tr>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q.4</td>
+<td align="right">0.735</td>
+<td align="right">0.964</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q.5</td>
+<td align="right">0.521</td>
+<td align="right">0.725</td>
+</tr>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q.2.pct_esp_vert_2011ct</td>
+<td align="right">0.999</td>
+<td align="right">1.004</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q.3.pct_esp_vert_2011ct</td>
+<td align="right">0.999</td>
+<td align="right">1.003</td>
+</tr>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q.4.pct_esp_vert_2011ct</td>
+<td align="right">1.000</td>
+<td align="right">1.006</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q.5.pct_esp_vert_2011ct</td>
+<td align="right">1.008</td>
+<td align="right">1.017</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="canopy-trees-change-3" class="section level3" number="7.1.3">
 <h3><span class="header-section-number">7.1.3</span> Canopy (trees) change</h3>
@@ -4656,6 +5749,38 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -1780.152</code></pre>
+<pre class="r"><code>ci.lmm.2 &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)2&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)2 upper factor(wSCOREMAT.2011.Q)2 
+##                     -0.29389080                     -0.04820567</code></pre>
+<pre class="r"><code>ci.lmm.3 &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)3&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)3 upper factor(wSCOREMAT.2011.Q)3 
+##                      -0.3053963                      -0.0469948</code></pre>
+<pre class="r"><code>ci.lmm.4 &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)4&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)4 upper factor(wSCOREMAT.2011.Q)4 
+##                      -0.4701021                      -0.1929442</code></pre>
+<pre class="r"><code>ci.lmm.5 &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)5&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)5 upper factor(wSCOREMAT.2011.Q)5 
+##                      -0.9254962                      -0.5743052</code></pre>
+<pre class="r"><code>ci.lmm.2.i &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)2:pct_esp_vert_high_2011ct&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)2:pct_esp_vert_high_2011ct 
+##                                              0.002990983 
+## upper factor(wSCOREMAT.2011.Q)2:pct_esp_vert_high_2011ct 
+##                                              0.011150496</code></pre>
+<pre class="r"><code>ci.lmm.3.i &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)3:pct_esp_vert_high_2011ct&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)3:pct_esp_vert_high_2011ct 
+##                                              0.001841799 
+## upper factor(wSCOREMAT.2011.Q)3:pct_esp_vert_high_2011ct 
+##                                              0.011225989</code></pre>
+<pre class="r"><code>ci.lmm.4.i &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)4:pct_esp_vert_high_2011ct&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)4:pct_esp_vert_high_2011ct 
+##                                              0.009650004 
+## upper factor(wSCOREMAT.2011.Q)4:pct_esp_vert_high_2011ct 
+##                                              0.021413575</code></pre>
+<pre class="r"><code>ci.lmm.5.i &lt;- confint(res.lmm, &#39;factor(wSCOREMAT.2011.Q)5:pct_esp_vert_high_2011ct&#39;)</code></pre>
+<pre><code>## lower factor(wSCOREMAT.2011.Q)5:pct_esp_vert_high_2011ct 
+##                                               0.03204849 
+## upper factor(wSCOREMAT.2011.Q)5:pct_esp_vert_high_2011ct 
+##                                               0.05311535</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm, plot = F)
   plot(simout)
@@ -4743,9 +5868,74 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 res.lmm.0 &lt;- update(res.lmm, . ~ . - factor(wSCOREMAT.2011.Q))</code></pre>
 <pre><code>## Warning in .sym_checked(adjMatrix, &quot;adjMatrix&quot;): Forcing colnames(mMatrix) &lt;-
 ## rownames(mMatrix) before calling isSymmetric().</code></pre>
+<pre><code>## Warning: as(&lt;dgeMatrix&gt;, &quot;dgCMatrix&quot;) is deprecated since Matrix 1.5-0; do as(.,
+## &quot;CsparseMatrix&quot;) instead</code></pre>
 <pre class="r"><code>LRT(res.lmm.0, res.lmm)</code></pre>
 <pre><code>##      chi2_LR df      p_value
 ## p_v 72.71203  4 6.106227e-15</code></pre>
+<pre class="r"><code># CI
+data.frame(wSCOREMAT.2011.Q.2 = round(exp(ci.lmm.2$interval), 3),
+           wSCOREMAT.2011.Q.3 = round(exp(ci.lmm.3$interval), 3),
+           wSCOREMAT.2011.Q.4 = round(exp(ci.lmm.4$interval), 3),
+           wSCOREMAT.2011.Q.5 = round(exp(ci.lmm.5$interval), 3),
+           `wSCOREMAT.2011.Q.2:pct_esp_vert_high_2011ct` = round(exp(ci.lmm.2.i$interval), 3),
+           `wSCOREMAT.2011.Q.3:pct_esp_vert_high_2011ct` = round(exp(ci.lmm.3.i$interval), 3),
+           `wSCOREMAT.2011.Q.4:pct_esp_vert_high_2011ct` = round(exp(ci.lmm.4.i$interval), 3),
+           `wSCOREMAT.2011.Q.5:pct_esp_vert_high_2011ct` = round(exp(ci.lmm.5.i$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q.2</td>
+<td align="right">0.745</td>
+<td align="right">0.953</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q.3</td>
+<td align="right">0.737</td>
+<td align="right">0.954</td>
+</tr>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q.4</td>
+<td align="right">0.625</td>
+<td align="right">0.825</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q.5</td>
+<td align="right">0.396</td>
+<td align="right">0.563</td>
+</tr>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q.2.pct_esp_vert_high_2011ct</td>
+<td align="right">1.003</td>
+<td align="right">1.011</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q.3.pct_esp_vert_high_2011ct</td>
+<td align="right">1.002</td>
+<td align="right">1.011</td>
+</tr>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q.4.pct_esp_vert_high_2011ct</td>
+<td align="right">1.010</td>
+<td align="right">1.022</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q.5.pct_esp_vert_high_2011ct</td>
+<td align="right">1.033</td>
+<td align="right">1.055</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div id="ui-vs-visible-minority-1" class="section level2 tabset" number="7.2">
@@ -4759,51 +5949,65 @@ clean_bei &lt;- tidy_df(bei_df_aoi, CT16, f)
 
 res.lmm.zero &lt;- fitme(I(Bike_lane_total.hm.2016ct != 0) ~ factor(vis_minority_2011.Q) * Bike_lane.by.street.2011ct + offset(log(street_length.hm)) + adjacency(1|ct_no),
                  data = clean_bei$df, adjMatrix = clean_bei$nbmatx,
-                 family = binomial())
+                 family = binomial(), 
+                 init=list(lambda=NaN)) # Outer optimization not working, forcing inner iterative solving...
 smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</code></pre>
 <pre><code>## formula: I(Bike_lane_total.hm.2016ct != 0) ~ factor(vis_minority_2011.Q) * 
 ##     Bike_lane.by.street.2011ct + offset(log(street_length.hm)) + 
 ##     adjacency(1 | ct_no)
-## Estimation of corrPars and lambda by Laplace ML approximation (p_v).
+## Estimation of lambda and corrPars by Laplace ML approximation (p_v).
 ## Estimation of fixed effects by Laplace ML approximation (p_v).
-## Estimation of lambda by &#39;outer&#39; ML, maximizing p_v.
 ## family: binomial( link = logit ) 
 ##  ------------ Fixed effects (beta) ------------
-##                                                          Estimate  Cond. SE
-## (Intercept)                                              -13.9607     10.17
-## factor(vis_minority_2011.Q)2                              20.2464     14.52
-## factor(vis_minority_2011.Q)3                              19.7623     13.53
-## factor(vis_minority_2011.Q)4                              -0.8851     15.46
-## factor(vis_minority_2011.Q)5                              -1.8677     13.42
-## Bike_lane.by.street.2011ct                               152.5867   3715.10
-## factor(vis_minority_2011.Q)2:Bike_lane.by.street.2011ct 1014.5241  87610.49
-## factor(vis_minority_2011.Q)3:Bike_lane.by.street.2011ct -150.7880   3715.17
-## factor(vis_minority_2011.Q)4:Bike_lane.by.street.2011ct 1178.3340 208526.16
-## factor(vis_minority_2011.Q)5:Bike_lane.by.street.2011ct -136.5326   3715.13
+##                                                         Estimate  Cond. SE
+## (Intercept)                                              -13.586 8.983e+00
+## factor(vis_minority_2011.Q)2                              19.512 1.290e+01
+## factor(vis_minority_2011.Q)3                              19.081 1.201e+01
+## factor(vis_minority_2011.Q)4                              -0.933 1.376e+01
+## factor(vis_minority_2011.Q)5                              -1.661 1.187e+01
+## Bike_lane.by.street.2011ct                               148.376 3.363e+03
+## factor(vis_minority_2011.Q)2:Bike_lane.by.street.2011ct  319.851 7.888e+04
+## factor(vis_minority_2011.Q)3:Bike_lane.by.street.2011ct -146.815 3.363e+03
+## factor(vis_minority_2011.Q)4:Bike_lane.by.street.2011ct 1202.580 1.657e+05
+## factor(vis_minority_2011.Q)5:Bike_lane.by.street.2011ct -133.155 3.363e+03
 ##                                                           t-value p-value
-## (Intercept)                                             -1.372703  0.1698
-## factor(vis_minority_2011.Q)2                             1.394013  0.1633
-## factor(vis_minority_2011.Q)3                             1.460121  0.1443
-## factor(vis_minority_2011.Q)4                            -0.057259  0.9543
-## factor(vis_minority_2011.Q)5                            -0.139177  0.8893
-## Bike_lane.by.street.2011ct                               0.041072  0.9672
-## factor(vis_minority_2011.Q)2:Bike_lane.by.street.2011ct  0.011580  0.9908
-## factor(vis_minority_2011.Q)3:Bike_lane.by.street.2011ct -0.040587  0.9676
-## factor(vis_minority_2011.Q)4:Bike_lane.by.street.2011ct  0.005651  0.9955
-## factor(vis_minority_2011.Q)5:Bike_lane.by.street.2011ct -0.036750  0.9707
+## (Intercept)                                             -1.512379  0.1304
+## factor(vis_minority_2011.Q)2                             1.512909  0.1303
+## factor(vis_minority_2011.Q)3                             1.588992  0.1121
+## factor(vis_minority_2011.Q)4                            -0.067823  0.9459
+## factor(vis_minority_2011.Q)5                            -0.139928  0.8887
+## Bike_lane.by.street.2011ct                               0.044127  0.9648
+## factor(vis_minority_2011.Q)2:Bike_lane.by.street.2011ct  0.004055  0.9968
+## factor(vis_minority_2011.Q)3:Bike_lane.by.street.2011ct -0.043662  0.9652
+## factor(vis_minority_2011.Q)4:Bike_lane.by.street.2011ct  0.007258  0.9942
+## factor(vis_minority_2011.Q)5:Bike_lane.by.street.2011ct -0.039599  0.9684
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
-##     1.rho 
-## 0.0533459 
+##      1.rho 
+## 0.04449121 
 ##            --- Variance parameters (&#39;lambda&#39;):
 ## lambda = var(u) for u ~ Gaussian; 
-##    ct_no  :  1493  
+##    ct_no  :  1202  
+##              --- Coefficients for log(lambda):
+##  Group        Term Estimate Cond.SE
+##  ct_no (Intercept)    7.092  0.3668
 ## # of obs: 688; # of groups: ct_no, 688 
 ##  ------------- Likelihood values  -------------
 ##                         logLik
-## p_v(h) (marginal L): -125.9122</code></pre>
-<pre class="r"><code>if (plot.resid) {
+## p_v(h) (marginal L): -126.0251
+## lambda leverages numerically 1 were replaced by 1- 1e-16 (as controlled by option &#39;regul_lev_lambda&#39;)</code></pre>
+<pre class="r"><code># Not converging...
+# ci.lmm.zero.2 &lt;- confint(res.lmm.zero, &#39;factor(vis_minority_2011.Q)2&#39;)
+# ci.lmm.zero.3 &lt;- confint(res.lmm.zero, &#39;factor(vis_minority_2011.Q)3&#39;)
+# ci.lmm.zero.4 &lt;- confint(res.lmm.zero, &#39;factor(vis_minority_2011.Q)4&#39;)
+# ci.lmm.zero.5 &lt;- confint(res.lmm.zero, &#39;factor(vis_minority_2011.Q)5&#39;)
+# ci.lmm.zero.2.i &lt;- confint(res.lmm.zero, &#39;factor(vis_minority_2011.Q)2:Bike_lane.by.street.2011ct&#39;)
+# ci.lmm.zero.3.i &lt;- confint(res.lmm.zero, &#39;factor(vis_minority_2011.Q)3:Bike_lane.by.street.2011ct&#39;)
+# ci.lmm.zero.4.i &lt;- confint(res.lmm.zero, &#39;factor(vis_minority_2011.Q)4:Bike_lane.by.street.2011ct&#39;)
+# ci.lmm.zero.5.i &lt;- confint(res.lmm.zero, &#39;factor(vis_minority_2011.Q)5:Bike_lane.by.street.2011ct&#39;)
+
+if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.zero, plot = F)
   plot(simout)
 }
@@ -4858,6 +6062,38 @@ smy.cnt &lt;- summary(res.lmm.cnt, details = c(p_value=&quot;Wald&quot;))</code>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -1876.529</code></pre>
+<pre class="r"><code>ci.lmm.cnt.2 &lt;- confint(res.lmm.cnt, &#39;factor(vis_minority_2011.Q)2&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)2 upper factor(vis_minority_2011.Q)2 
+##                         -0.3050290                          0.0756494</code></pre>
+<pre class="r"><code>ci.lmm.cnt.3 &lt;- confint(res.lmm.cnt, &#39;factor(vis_minority_2011.Q)3&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)3 upper factor(vis_minority_2011.Q)3 
+##                         -0.3273350                          0.0685651</code></pre>
+<pre class="r"><code>ci.lmm.cnt.4 &lt;- confint(res.lmm.cnt, &#39;factor(vis_minority_2011.Q)4&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)4 upper factor(vis_minority_2011.Q)4 
+##                         -0.4565054                         -0.0459811</code></pre>
+<pre class="r"><code>ci.lmm.cnt.5 &lt;- confint(res.lmm.cnt, &#39;factor(vis_minority_2011.Q)5&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)5 upper factor(vis_minority_2011.Q)5 
+##                         -0.2403362                          0.1823285</code></pre>
+<pre class="r"><code>ci.lmm.cnt.2.i &lt;- confint(res.lmm.cnt, &#39;factor(vis_minority_2011.Q)2:Bike_lane.by.street.2011ct&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)2:Bike_lane.by.street.2011ct 
+##                                                  -0.007992053 
+## upper factor(vis_minority_2011.Q)2:Bike_lane.by.street.2011ct 
+##                                                   0.014343709</code></pre>
+<pre class="r"><code>ci.lmm.cnt.3.i &lt;- confint(res.lmm.cnt, &#39;factor(vis_minority_2011.Q)3:Bike_lane.by.street.2011ct&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)3:Bike_lane.by.street.2011ct 
+##                                                  -0.006995662 
+## upper factor(vis_minority_2011.Q)3:Bike_lane.by.street.2011ct 
+##                                                   0.019321688</code></pre>
+<pre class="r"><code>ci.lmm.cnt.4.i &lt;- confint(res.lmm.cnt, &#39;factor(vis_minority_2011.Q)4:Bike_lane.by.street.2011ct&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)4:Bike_lane.by.street.2011ct 
+##                                                 -0.0002689137 
+## upper factor(vis_minority_2011.Q)4:Bike_lane.by.street.2011ct 
+##                                                  0.0258552730</code></pre>
+<pre class="r"><code>ci.lmm.cnt.5.i &lt;- confint(res.lmm.cnt, &#39;factor(vis_minority_2011.Q)5:Bike_lane.by.street.2011ct&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)5:Bike_lane.by.street.2011ct 
+##                                                  -0.019441373 
+## upper factor(vis_minority_2011.Q)5:Bike_lane.by.street.2011ct 
+##                                                   0.007318475</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.cnt, plot = F)
   plot(simout)
@@ -4883,7 +6119,7 @@ AIC(res.lmm.cnt)
 &quot;Combined Hurdle AIC:&quot;</code></pre>
 <pre><code>## [1] &quot;Combined Hurdle AIC:&quot;</code></pre>
 <pre class="r"><code>-2 * res.lmm.zero$APHLs$p_v - 2 * res.lmm.cnt$APHLs$p_v + 2 * Reduce(sum, res.lmm.cnt$dfs)</code></pre>
-<pre><code>## [1] 4028.882</code></pre>
+<pre><code>## [1] 4029.108</code></pre>
 <p>Transforming the model coefficients:</p>
 <pre class="r"><code># Zero model
 smy.zero.bt &lt;- data.frame(smy.zero$beta_table)
@@ -4892,6 +6128,11 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
   knitr::kable(caption=&quot;Zero model transformed coeffs&quot;)</code></pre>
 <table>
 <caption>Zero model transformed coeffs</caption>
+<colgroup>
+<col width="71%" />
+<col width="17%" />
+<col width="10%" />
+</colgroup>
 <thead>
 <tr class="header">
 <th align="left"></th>
@@ -4903,52 +6144,52 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 <tr class="odd">
 <td align="left">(Intercept)</td>
 <td align="right">0.000000e+00</td>
-<td align="right">0.170</td>
+<td align="right">0.130</td>
 </tr>
 <tr class="even">
 <td align="left">factor(vis_minority_2011.Q)2</td>
-<td align="right">6.207505e+08</td>
-<td align="right">0.163</td>
+<td align="right">2.979432e+08</td>
+<td align="right">0.130</td>
 </tr>
 <tr class="odd">
 <td align="left">factor(vis_minority_2011.Q)3</td>
-<td align="right">3.825125e+08</td>
-<td align="right">0.144</td>
+<td align="right">1.935979e+08</td>
+<td align="right">0.112</td>
 </tr>
 <tr class="even">
 <td align="left">factor(vis_minority_2011.Q)4</td>
-<td align="right">4.130000e-01</td>
-<td align="right">0.954</td>
+<td align="right">3.930000e-01</td>
+<td align="right">0.946</td>
 </tr>
 <tr class="odd">
 <td align="left">factor(vis_minority_2011.Q)5</td>
-<td align="right">1.540000e-01</td>
+<td align="right">1.900000e-01</td>
 <td align="right">0.889</td>
 </tr>
 <tr class="even">
 <td align="left">Bike_lane.by.street.2011ct</td>
-<td align="right">1.851656e+66</td>
-<td align="right">0.967</td>
+<td align="right">2.748317e+64</td>
+<td align="right">0.965</td>
 </tr>
 <tr class="odd">
 <td align="left">factor(vis_minority_2011.Q)2:Bike_lane.by.street.2011ct</td>
-<td align="right">Inf</td>
-<td align="right">0.991</td>
+<td align="right">8.119894e+138</td>
+<td align="right">0.997</td>
 </tr>
 <tr class="even">
 <td align="left">factor(vis_minority_2011.Q)3:Bike_lane.by.street.2011ct</td>
 <td align="right">0.000000e+00</td>
-<td align="right">0.968</td>
+<td align="right">0.965</td>
 </tr>
 <tr class="odd">
 <td align="left">factor(vis_minority_2011.Q)4:Bike_lane.by.street.2011ct</td>
 <td align="right">Inf</td>
-<td align="right">0.995</td>
+<td align="right">0.994</td>
 </tr>
 <tr class="even">
 <td align="left">factor(vis_minority_2011.Q)5:Bike_lane.by.street.2011ct</td>
 <td align="right">0.000000e+00</td>
-<td align="right">0.971</td>
+<td align="right">0.968</td>
 </tr>
 </tbody>
 </table>
@@ -5019,6 +6260,68 @@ round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>data.frame(vis_minority_2011.Q.2 = round(exp(ci.lmm.cnt.2$interval), 3),
+           vis_minority_2011.Q.3 = round(exp(ci.lmm.cnt.3$interval), 3),
+           vis_minority_2011.Q.4 = round(exp(ci.lmm.cnt.4$interval), 3),
+           vis_minority_2011.Q.5 = round(exp(ci.lmm.cnt.5$interval), 3),
+           `vis_minority_2011.Q.2:Bike_lane.by.street.2011ct` = round(exp(ci.lmm.cnt.2.i$interval), 3),
+           `vis_minority_2011.Q.3:Bike_lane.by.street.2011ct` = round(exp(ci.lmm.cnt.3.i$interval), 3),
+           `vis_minority_2011.Q.4:Bike_lane.by.street.2011ct` = round(exp(ci.lmm.cnt.4.i$interval), 3),
+           `vis_minority_2011.Q.5:Bike_lane.by.street.2011ct` = round(exp(ci.lmm.cnt.5.i$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Count model confidence interval&quot;)</code></pre>
+<table>
+<caption>Count model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q.2</td>
+<td align="right">0.737</td>
+<td align="right">1.079</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q.3</td>
+<td align="right">0.721</td>
+<td align="right">1.071</td>
+</tr>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q.4</td>
+<td align="right">0.633</td>
+<td align="right">0.955</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q.5</td>
+<td align="right">0.786</td>
+<td align="right">1.200</td>
+</tr>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q.2.Bike_lane.by.street.2011ct</td>
+<td align="right">0.992</td>
+<td align="right">1.014</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q.3.Bike_lane.by.street.2011ct</td>
+<td align="right">0.993</td>
+<td align="right">1.020</td>
+</tr>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q.4.Bike_lane.by.street.2011ct</td>
+<td align="right">1.000</td>
+<td align="right">1.026</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q.5.Bike_lane.by.street.2011ct</td>
+<td align="right">0.981</td>
+<td align="right">1.007</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="greenness-change-4" class="section level3" number="7.2.2">
 <h3><span class="header-section-number">7.2.2</span> Greenness change</h3>
@@ -5042,7 +6345,7 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ## (Intercept)                                      -1.501387 0.0461251 -32.550
 ## factor(vis_minority_2011.Q)2                     -0.126758 0.0617600  -2.052
 ## factor(vis_minority_2011.Q)3                     -0.119219 0.0673443  -1.770
-## factor(vis_minority_2011.Q)4                     -0.150542 0.0621047  -2.424
+## factor(vis_minority_2011.Q)4                     -0.150541 0.0621047  -2.424
 ## factor(vis_minority_2011.Q)5                     -0.327300 0.0697281  -4.694
 ## pct_esp_vert_2011ct                               0.017003 0.0007648  22.233
 ## factor(vis_minority_2011.Q)2:pct_esp_vert_2011ct  0.001859 0.0010595   1.755
@@ -5072,6 +6375,38 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -2006.416</code></pre>
+<pre class="r"><code>ci.lmm.2 &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)2&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)2 upper factor(vis_minority_2011.Q)2 
+##                       -0.248035799                       -0.004142809</code></pre>
+<pre class="r"><code>ci.lmm.3 &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)3&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)3 upper factor(vis_minority_2011.Q)3 
+##                        -0.25154611                         0.01414031</code></pre>
+<pre class="r"><code>ci.lmm.4 &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)4&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)4 upper factor(vis_minority_2011.Q)4 
+##                        -0.27237516                        -0.02737984</code></pre>
+<pre class="r"><code>ci.lmm.5 &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)5&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)5 upper factor(vis_minority_2011.Q)5 
+##                         -0.4640839                         -0.1897351</code></pre>
+<pre class="r"><code>ci.lmm.2.i &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)2:pct_esp_vert_2011ct&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)2:pct_esp_vert_2011ct 
+##                                          -0.0002382994 
+## upper factor(vis_minority_2011.Q)2:pct_esp_vert_2011ct 
+##                                           0.0039355853</code></pre>
+<pre class="r"><code>ci.lmm.3.i &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)3:pct_esp_vert_2011ct&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)3:pct_esp_vert_2011ct 
+##                                          -0.0004609402 
+## upper factor(vis_minority_2011.Q)3:pct_esp_vert_2011ct 
+##                                           0.0045906817</code></pre>
+<pre class="r"><code>ci.lmm.4.i &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)4:pct_esp_vert_2011ct&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)4:pct_esp_vert_2011ct 
+##                                           0.0001742358 
+## upper factor(vis_minority_2011.Q)4:pct_esp_vert_2011ct 
+##                                           0.0046123538</code></pre>
+<pre class="r"><code>ci.lmm.5.i &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)5:pct_esp_vert_2011ct&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)5:pct_esp_vert_2011ct 
+##                                            0.003585801 
+## upper factor(vis_minority_2011.Q)5:pct_esp_vert_2011ct 
+##                                            0.009419297</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm, plot = F)
   plot(simout)
@@ -5160,9 +6495,74 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 res.lmm.0 &lt;- update(res.lmm, . ~ . - factor(vis_minority_2011.Q))</code></pre>
 <pre><code>## Warning in .sym_checked(adjMatrix, &quot;adjMatrix&quot;): Forcing colnames(mMatrix) &lt;-
 ## rownames(mMatrix) before calling isSymmetric().</code></pre>
+<pre><code>## Warning: as(&lt;dgeMatrix&gt;, &quot;dgCMatrix&quot;) is deprecated since Matrix 1.5-0; do as(.,
+## &quot;CsparseMatrix&quot;) instead</code></pre>
 <pre class="r"><code>LRT(res.lmm.0, res.lmm)</code></pre>
 <pre><code>##     chi2_LR df      p_value
 ## p_v 21.5724  4 0.0002437733</code></pre>
+<pre class="r"><code># CI
+data.frame(vis_minority_2011.Q.2 = round(exp(ci.lmm.2$interval), 3),
+           vis_minority_2011.Q.3 = round(exp(ci.lmm.3$interval), 3),
+           vis_minority_2011.Q.4 = round(exp(ci.lmm.4$interval), 3),
+           vis_minority_2011.Q.5 = round(exp(ci.lmm.5$interval), 3),
+           `vis_minority_2011.Q.2:pct_esp_vert_2011ct` = round(exp(ci.lmm.2.i$interval), 3),
+           `vis_minority_2011.Q.3:pct_esp_vert_2011ct` = round(exp(ci.lmm.3.i$interval), 3),
+           `vis_minority_2011.Q.4:pct_esp_vert_2011ct` = round(exp(ci.lmm.4.i$interval), 3),
+           `vis_minority_2011.Q.5:pct_esp_vert_2011ct` = round(exp(ci.lmm.5.i$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q.2</td>
+<td align="right">0.780</td>
+<td align="right">0.996</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q.3</td>
+<td align="right">0.778</td>
+<td align="right">1.014</td>
+</tr>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q.4</td>
+<td align="right">0.762</td>
+<td align="right">0.973</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q.5</td>
+<td align="right">0.629</td>
+<td align="right">0.827</td>
+</tr>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q.2.pct_esp_vert_2011ct</td>
+<td align="right">1.000</td>
+<td align="right">1.004</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q.3.pct_esp_vert_2011ct</td>
+<td align="right">1.000</td>
+<td align="right">1.005</td>
+</tr>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q.4.pct_esp_vert_2011ct</td>
+<td align="right">1.000</td>
+<td align="right">1.005</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q.5.pct_esp_vert_2011ct</td>
+<td align="right">1.004</td>
+<td align="right">1.009</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="canopy-trees-change-4" class="section level3" number="7.2.3">
 <h3><span class="header-section-number">7.2.3</span> Canopy (trees) change</h3>
@@ -5216,6 +6616,38 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -1799.683</code></pre>
+<pre class="r"><code>ci.lmm.2 &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)2&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)2 upper factor(vis_minority_2011.Q)2 
+##                       -0.248623032                        0.004894876</code></pre>
+<pre class="r"><code>ci.lmm.3 &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)3&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)3 upper factor(vis_minority_2011.Q)3 
+##                         -0.1160866                          0.1451637</code></pre>
+<pre class="r"><code>ci.lmm.4 &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)4&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)4 upper factor(vis_minority_2011.Q)4 
+##                         -0.4072472                         -0.1478843</code></pre>
+<pre class="r"><code>ci.lmm.5 &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)5&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)5 upper factor(vis_minority_2011.Q)5 
+##                         -0.5143553                         -0.2107081</code></pre>
+<pre class="r"><code>ci.lmm.2.i &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)2:pct_esp_vert_high_2011ct&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)2:pct_esp_vert_high_2011ct 
+##                                               -9.775779e-05 
+## upper factor(vis_minority_2011.Q)2:pct_esp_vert_high_2011ct 
+##                                                8.457533e-03</code></pre>
+<pre class="r"><code>ci.lmm.3.i &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)3:pct_esp_vert_high_2011ct&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)3:pct_esp_vert_high_2011ct 
+##                                                -0.005640425 
+## upper factor(vis_minority_2011.Q)3:pct_esp_vert_high_2011ct 
+##                                                 0.004148508</code></pre>
+<pre class="r"><code>ci.lmm.4.i &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)4:pct_esp_vert_high_2011ct&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)4:pct_esp_vert_high_2011ct 
+##                                                 0.005979256 
+## upper factor(vis_minority_2011.Q)4:pct_esp_vert_high_2011ct 
+##                                                 0.015648277</code></pre>
+<pre class="r"><code>ci.lmm.5.i &lt;- confint(res.lmm, &#39;factor(vis_minority_2011.Q)5:pct_esp_vert_high_2011ct&#39;)</code></pre>
+<pre><code>## lower factor(vis_minority_2011.Q)5:pct_esp_vert_high_2011ct 
+##                                                  0.01055652 
+## upper factor(vis_minority_2011.Q)5:pct_esp_vert_high_2011ct 
+##                                                  0.02366984</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm, plot = F)
   plot(simout)
@@ -5304,9 +6736,74 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 res.lmm.0 &lt;- update(res.lmm, . ~ . - factor(vis_minority_2011.Q))</code></pre>
 <pre><code>## Warning in .sym_checked(adjMatrix, &quot;adjMatrix&quot;): Forcing colnames(mMatrix) &lt;-
 ## rownames(mMatrix) before calling isSymmetric().</code></pre>
+<pre><code>## Warning: as(&lt;dgeMatrix&gt;, &quot;dgCMatrix&quot;) is deprecated since Matrix 1.5-0; do as(.,
+## &quot;CsparseMatrix&quot;) instead</code></pre>
 <pre class="r"><code>LRT(res.lmm.0, res.lmm)</code></pre>
 <pre><code>##      chi2_LR df      p_value
 ## p_v 38.00913  4 1.115708e-07</code></pre>
+<pre class="r"><code># CI
+data.frame(vis_minority_2011.Q.2 = round(exp(ci.lmm.2$interval), 3),
+           vis_minority_2011.Q.3 = round(exp(ci.lmm.3$interval), 3),
+           vis_minority_2011.Q.4 = round(exp(ci.lmm.4$interval), 3),
+           vis_minority_2011.Q.5 = round(exp(ci.lmm.5$interval), 3),
+           `vis_minority_2011.Q.2:pct_esp_vert_high_2011ct` = round(exp(ci.lmm.2.i$interval), 3),
+           `vis_minority_2011.Q.3:pct_esp_vert_high_2011ct` = round(exp(ci.lmm.3.i$interval), 3),
+           `vis_minority_2011.Q.4:pct_esp_vert_high_2011ct` = round(exp(ci.lmm.4.i$interval), 3),
+           `vis_minority_2011.Q.5:pct_esp_vert_high_2011ct` = round(exp(ci.lmm.5.i$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q.2</td>
+<td align="right">0.780</td>
+<td align="right">1.005</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q.3</td>
+<td align="right">0.890</td>
+<td align="right">1.156</td>
+</tr>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q.4</td>
+<td align="right">0.665</td>
+<td align="right">0.863</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q.5</td>
+<td align="right">0.598</td>
+<td align="right">0.810</td>
+</tr>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q.2.pct_esp_vert_high_2011ct</td>
+<td align="right">1.000</td>
+<td align="right">1.008</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q.3.pct_esp_vert_high_2011ct</td>
+<td align="right">0.994</td>
+<td align="right">1.004</td>
+</tr>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q.4.pct_esp_vert_high_2011ct</td>
+<td align="right">1.006</td>
+<td align="right">1.016</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q.5.pct_esp_vert_high_2011ct</td>
+<td align="right">1.011</td>
+<td align="right">1.024</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div id="ui-vs-gentrified-ct-1" class="section level2" number="7.3">
@@ -8170,16 +9667,17 @@ Tree canopy area (ha)
 <h2><span class="header-section-number">11.3</span> Interactions in UI associations</h2>
 <div id="continuous-ses-variables" class="section level3" number="11.3.1">
 <h3><span class="header-section-number">11.3.1</span> Continuous SES variables</h3>
-<pre class="r"><code># extract the legend from one of the plots
+<pre class="r"><code>base_size_all = 20
+# extract the legend from one of the plots
 legend.row1 &lt;- get_legend(
   # create some space to the left of the legend
-  g_mat_gr + labs(colour=&#39;Material score\n(Quintiles)&#39;, fill=&#39;Material score\n(Quintiles)&#39;) + theme(legend.box.margin = margin(0, 0, 0, 12))
+  g_mat_gr + labs(colour=&#39;Material score\n(Quintiles)&#39;, fill=&#39;Material score\n(Quintiles)&#39;) + theme(legend.box.margin = margin(0, 0, 0, 12)) + theme_classic(base_size = base_size_all)
 )
 
 prow1.1 &lt;- plot_grid(
-  g_mat_bk.hrdl + xlab(&quot;% Bike lane to streets 2011&quot;) + ylab(&quot;% Bike lane to streets 2016&quot;) + theme(legend.position = &quot;none&quot;),
-  g_mat_gr + xlab(&quot;% green space within CT 2011&quot;) + ylab(&quot;% green space within CT 2016&quot;) + theme(legend.position = &quot;none&quot;),
-  g_mat_tc + xlab(&quot;% tree canopy within CT 2011&quot;) + ylab(&quot;% tree canopy within CT 2016&quot;) + theme(legend.position = &quot;none&quot;),
+  g_mat_bk.hrdl + xlab(&quot;% Bike lane to streets 2011&quot;) + ylab(&quot;% Bike lane to streets 2016&quot;) + theme_classic(base_size = base_size_all) + theme(legend.position = &quot;none&quot;),
+  g_mat_gr + xlab(&quot;% green space within CT 2011&quot;) + ylab(&quot;% green space within CT 2016&quot;) + theme_classic(base_size = base_size_all) + theme(legend.position = &quot;none&quot;),
+  g_mat_tc + xlab(&quot;% tree canopy within CT 2011&quot;) + ylab(&quot;% tree canopy within CT 2016&quot;) + theme_classic(base_size = base_size_all) + theme(legend.position = &quot;none&quot;),
   align = &quot;vh&quot;,
   labels = c(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;),
   hjust = -1,
@@ -8191,13 +9689,13 @@ prow1 &lt;- plot_grid(prow1.1, legend.row1, rel_widths = c(3, .4))
 # extract the legend from one of the plots
 legend.row2 &lt;- get_legend(
   # create some space to the left of the legend
-  g_vis_gr + labs(colour=&#39;Visible minorities\n(Quintiles)&#39;, fill=&#39;Visible minorities\n(Quintiles)&#39;) + theme(legend.box.margin = margin(0, 0, 0, 12))
+  g_vis_gr + labs(colour=&#39;Visible minorities\n(Quintiles)&#39;, fill=&#39;Visible minorities\n(Quintiles)&#39;) + theme(legend.box.margin = margin(0, 0, 0, 12)) + theme_classic(base_size = base_size_all)
 )
 
 prow2.1 &lt;- plot_grid(
-  g_vis_bk.hrdl + xlab(&quot;% Bike lane to streets 2011&quot;) + ylab(&quot;% Bike lane to streets 2016&quot;) + theme(legend.position = &quot;none&quot;),
-  g_vis_gr + xlab(&quot;% green space within CT 2011&quot;) + ylab(&quot;% green space within CT 2016&quot;) + theme(legend.position = &quot;none&quot;),
-  g_vis_tc + xlab(&quot;% tree canopy within CT 2011&quot;) + ylab(&quot;% tree canopy within CT 2016&quot;) + theme(legend.position = &quot;none&quot;),
+  g_vis_bk.hrdl + xlab(&quot;% Bike lane to streets 2011&quot;) + ylab(&quot;% Bike lane to streets 2016&quot;) + theme_classic(base_size = base_size_all) + theme(legend.position = &quot;none&quot;),
+  g_vis_gr + xlab(&quot;% green space within CT 2011&quot;) + ylab(&quot;% green space within CT 2016&quot;) + theme_classic(base_size = base_size_all) + theme(legend.position = &quot;none&quot;),
+  g_vis_tc + xlab(&quot;% tree canopy within CT 2011&quot;) + ylab(&quot;% tree canopy within CT 2016&quot;) + theme_classic(base_size = base_size_all) + theme(legend.position = &quot;none&quot;),
   align = &quot;vh&quot;,
   labels = c(&quot;D&quot;, &quot;E&quot;, &quot;F&quot;),
   hjust = -1,
@@ -8209,13 +9707,13 @@ prow2 &lt;- plot_grid(prow2.1, legend.row2, rel_widths = c(3, .4))
 # extract the legend from one of the plots
 legend.row3 &lt;- get_legend(
   # create some space to the left of the legend
-  g_gen_gr + labs(colour=&#39;Gentrified&#39;, fill=&#39;Gentrified&#39;) + theme(legend.box.margin = margin(0, 0, 0, 12))
+  g_gen_gr + labs(colour=&#39;Gentrified&#39;, fill=&#39;Gentrified&#39;) + theme(legend.box.margin = margin(0, 0, 0, 12)) + theme_classic(base_size = base_size_all)
 )
 
 prow3.1 &lt;- plot_grid(
-  g_gen_bk.hrdl + xlab(&quot;% Bike lane to streets 2011&quot;) + ylab(&quot;% Bike lane to streets 2016&quot;) + theme(legend.position = &quot;none&quot;),
-  g_gen_gr + xlab(&quot;% green space within CT 2011&quot;) + ylab(&quot;% green space within CT 2016&quot;) + theme(legend.position = &quot;none&quot;),
-  g_gen_tc + xlab(&quot;% tree canopy within CT 2011&quot;) + ylab(&quot;% tree canopy within CT 2016&quot;) + theme(legend.position = &quot;none&quot;),
+  g_gen_bk.hrdl + xlab(&quot;% Bike lane to streets 2011&quot;) + ylab(&quot;% Bike lane to streets 2016&quot;) + theme_classic(base_size = base_size_all) + theme(legend.position = &quot;none&quot;),
+  g_gen_gr + xlab(&quot;% green space within CT 2011&quot;) + ylab(&quot;% green space within CT 2016&quot;) + theme_classic(base_size = base_size_all) + theme(legend.position = &quot;none&quot;),
+  g_gen_tc + xlab(&quot;% tree canopy within CT 2011&quot;) + ylab(&quot;% tree canopy within CT 2016&quot;) + theme_classic(base_size = base_size_all) + theme(legend.position = &quot;none&quot;),
   align = &quot;vh&quot;,
   labels = c(&quot;G&quot;, &quot;H&quot;, &quot;I&quot;),
   hjust = -1,
@@ -8231,16 +9729,17 @@ plot_grid(prow1, prow2, prow3, ncol=1)</code></pre>
 <div id="categorical-ses-variables" class="section level3" number="11.3.2">
 <h3><span class="header-section-number">11.3.2</span> Categorical SES variables</h3>
 <p><em>NB</em> Gentrification models are the same as the ones displayed above (continuous SES models)</p>
-<pre class="r"><code># extract the legend from one of the plots
+<pre class="r"><code>base_size_all = 20
+# extract the legend from one of the plots
 legend.row1 &lt;- get_legend(
   # create some space to the left of the legend
-  g_mat_tc.categ + labs(colour=&#39;Material score\n(Quintiles) as\ncategorical variables&#39;, fill=&#39;Material score\n(Quintiles) as\ncategorical variables&#39;) + theme(legend.box.margin = margin(0, 0, 0, 12))
+  g_mat_tc.categ + labs(colour=&#39;Material score\n(Quintiles) as\ncategorical variables&#39;, fill=&#39;Material score\n(Quintiles) as\ncategorical variables&#39;) + theme(legend.box.margin = margin(0, 0, 0, 12))+ theme_classic(base_size = base_size_all)
 )
 
 prow1.1 &lt;- plot_grid(
-  g_mat_bk.hrdl.categ + xlab(&quot;% Bike lane to streets 2011&quot;) + ylab(&quot;% Bike lane to streets 2016&quot;) + theme(legend.position = &quot;none&quot;),
-  g_mat_gr.categ + xlab(&quot;% green space within CT 2011&quot;) + ylab(&quot;% green space within CT 2016&quot;) + theme(legend.position = &quot;none&quot;),
-  g_mat_tc.categ + xlab(&quot;% tree canopy within CT 2011&quot;) + ylab(&quot;% tree canopy within CT 2016&quot;) + theme(legend.position = &quot;none&quot;),
+  g_mat_bk.hrdl.categ + xlab(&quot;% Bike lane to streets 2011&quot;) + ylab(&quot;% Bike lane to streets 2016&quot;) + theme_classic(base_size = base_size_all) + theme(legend.position = &quot;none&quot;),
+  g_mat_gr.categ + xlab(&quot;% green space within CT 2011&quot;) + ylab(&quot;% green space within CT 2016&quot;)  + theme_classic(base_size = base_size_all) + theme(legend.position = &quot;none&quot;),
+  g_mat_tc.categ + xlab(&quot;% tree canopy within CT 2011&quot;) + ylab(&quot;% tree canopy within CT 2016&quot;) + theme_classic(base_size = base_size_all) + theme(legend.position = &quot;none&quot;),
   align = &quot;vh&quot;,
   labels = c(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;),
   hjust = -1,
@@ -8252,13 +9751,13 @@ prow1 &lt;- plot_grid(prow1.1, legend.row1, rel_widths = c(3, .4))
 # extract the legend from one of the plots
 legend.row2 &lt;- get_legend(
   # create some space to the left of the legend
-  g_vis_tc.categ + labs(colour=&#39;Visible minorities\n(Quintiles) as\ncategorical variables&#39;, fill=&#39;Visible minorities\n(Quintiles) as\ncategorical variables&#39;) + theme(legend.box.margin = margin(0, 0, 0, 12))
+  g_vis_tc.categ + labs(colour=&#39;Visible minorities\n(Quintiles) as\ncategorical variables&#39;, fill=&#39;Visible minorities\n(Quintiles) as\ncategorical variables&#39;) + theme(legend.box.margin = margin(0, 0, 0, 12))+ theme_classic(base_size = base_size_all)
 )
 
 prow2.1 &lt;- plot_grid(
-  g_vis_bk.hrdl.categ + xlab(&quot;% Bike lane to streets 2011&quot;) + ylab(&quot;% Bike lane to streets 2016&quot;) + theme(legend.position = &quot;none&quot;),
-  g_vis_gr.categ + xlab(&quot;% green space within CT 2011&quot;) + ylab(&quot;% green space within CT 2016&quot;) + theme(legend.position = &quot;none&quot;),
-  g_vis_tc.categ + xlab(&quot;% tree canopy within CT 2011&quot;) + ylab(&quot;% tree canopy within CT 2016&quot;) + theme(legend.position = &quot;none&quot;),
+  g_vis_bk.hrdl.categ + xlab(&quot;% Bike lane to streets 2011&quot;) + ylab(&quot;% Bike lane to streets 2016&quot;) + theme_classic(base_size = base_size_all) + theme(legend.position = &quot;none&quot;),
+  g_vis_gr.categ + xlab(&quot;% green space within CT 2011&quot;) + ylab(&quot;% green space within CT 2016&quot;) + theme_classic(base_size = base_size_all) + theme(legend.position = &quot;none&quot;),
+  g_vis_tc.categ + xlab(&quot;% tree canopy within CT 2011&quot;) + ylab(&quot;% tree canopy within CT 2016&quot;) + theme_classic(base_size = base_size_all) + theme(legend.position = &quot;none&quot;),
   align = &quot;vh&quot;,
   labels = c(&quot;D&quot;, &quot;E&quot;, &quot;F&quot;),
   hjust = -1,
@@ -8270,13 +9769,13 @@ prow2 &lt;- plot_grid(prow2.1, legend.row2, rel_widths = c(3, .4))
 # extract the legend from one of the plots
 legend.row3 &lt;- get_legend(
   # create some space to the left of the legend
-  g_gen_gr + labs(colour=&#39;Gentrified&#39;, fill=&#39;Gentrified&#39;) + theme(legend.box.margin = margin(0, 0, 0, 12))
+  g_gen_gr + labs(colour=&#39;Gentrified&#39;, fill=&#39;Gentrified&#39;) + theme(legend.box.margin = margin(0, 0, 0, 12))+ theme_classic(base_size = base_size_all)
 )
 
 prow3.1 &lt;- plot_grid(
-  g_gen_bk.hrdl + xlab(&quot;% Bike lane to streets 2011&quot;) + ylab(&quot;% Bike lane to streets 2016&quot;) + theme(legend.position = &quot;none&quot;),
-  g_gen_gr + xlab(&quot;% green space within CT 2011&quot;) + ylab(&quot;% green space within CT 2016&quot;) + theme(legend.position = &quot;none&quot;),
-  g_gen_tc + xlab(&quot;% tree canopy within CT 2011&quot;) + ylab(&quot;% tree canopy within CT 2016&quot;) + theme(legend.position = &quot;none&quot;),
+  g_gen_bk.hrdl + xlab(&quot;% Bike lane to streets 2011&quot;) + ylab(&quot;% Bike lane to streets 2016&quot;)  + theme_classic(base_size = base_size_all) + theme(legend.position = &quot;none&quot;),
+  g_gen_gr + xlab(&quot;% green space within CT 2011&quot;) + ylab(&quot;% green space within CT 2016&quot;) + theme_classic(base_size = base_size_all) + theme(legend.position = &quot;none&quot;),
+  g_gen_tc + xlab(&quot;% tree canopy within CT 2011&quot;) + ylab(&quot;% tree canopy within CT 2016&quot;) + theme_classic(base_size = base_size_all) + theme(legend.position = &quot;none&quot;),
   align = &quot;vh&quot;,
   labels = c(&quot;G&quot;, &quot;H&quot;, &quot;I&quot;),
   hjust = -1,
@@ -8312,7 +9811,7 @@ plot_grid(prow1, prow2, prow3, ncol=1)</code></pre>
 ##  [1] cancensus_0.5.2  stringr_1.4.1    DHARMa_0.4.5     stargazer_5.2.3 
 ##  [5] spaMM_3.12.0     cachem_1.0.6     memoise_2.0.1    spatialreg_1.2-5
 ##  [9] spdep_1.2-5      spData_2.0.1     sp_1.5-0         lme4_1.1-30     
-## [13] Matrix_1.4-1     cowplot_1.1.1    biscale_1.0.0    openxlsx_4.2.5  
+## [13] Matrix_1.5-1     cowplot_1.1.1    biscale_1.0.0    openxlsx_4.2.5  
 ## [17] RPostgres_1.4.4  DBI_1.1.3        ggmap_3.0.0      ggplot2_3.3.6   
 ## [21] stars_0.5-5      abind_1.4-5      sf_1.0-7         tidyr_1.2.0     
 ## [25] dplyr_1.0.9     
@@ -8321,38 +9820,39 @@ plot_grid(prow1, prow2, prow3, ncol=1)</code></pre>
 ##   [1] ggnewscale_0.4.7      minqa_1.2.4           colorspace_2.0-3     
 ##   [4] rjson_0.2.21          deldir_1.0-6          ellipsis_0.3.2       
 ##   [7] class_7.3-20          rstudioapi_0.14       proxy_0.4-27         
-##  [10] farver_2.1.1          bit64_4.0.5           fansi_1.0.3          
-##  [13] lubridate_1.8.0       xml2_1.3.3            codetools_0.2-18     
-##  [16] splines_4.1.2         knitr_1.39            jsonlite_1.8.0       
-##  [19] nloptr_2.0.3          png_0.1-7             readr_2.1.2          
-##  [22] compiler_4.1.2        httr_1.4.4            assertthat_0.2.1     
-##  [25] fastmap_1.1.0         cli_3.3.0             s2_1.1.0             
-##  [28] ROI.plugin.glpk_1.0-0 htmltools_0.5.3       tools_4.1.2          
-##  [31] coda_0.19-4           gtable_0.3.0          glue_1.6.2           
-##  [34] wk_0.6.0              gmodels_2.18.1.1      Rcpp_1.0.9           
-##  [37] slam_0.1-50           jquerylib_0.1.4       raster_3.5-21        
-##  [40] vctrs_0.4.1           svglite_2.1.0         gdata_2.18.0.1       
-##  [43] nlme_3.1-159          lwgeom_0.2-8          xfun_0.32            
-##  [46] rvest_1.0.3           lifecycle_1.0.1       gtools_3.9.3         
-##  [49] terra_1.5-21          ROI_1.0-0             LearnBayes_2.15.1    
-##  [52] MASS_7.3-58.1         scales_1.2.1          vroom_1.5.7          
-##  [55] hms_1.1.2             parallel_4.1.2        expm_0.999-6         
-##  [58] RColorBrewer_1.1-3    yaml_2.3.5            pbapply_1.5-0        
-##  [61] sass_0.4.2            stringi_1.7.8         highr_0.9            
-##  [64] e1071_1.7-11          boot_1.3-28           zip_2.2.0            
-##  [67] systemfonts_1.0.4     RgoogleMaps_1.4.5.3   rlang_1.0.4          
-##  [70] pkgconfig_2.0.3       bitops_1.0-7          evaluate_0.16        
-##  [73] lattice_0.20-45       purrr_0.3.4           labeling_0.4.2       
-##  [76] bit_4.0.4             tidyselect_1.1.2      geojsonsf_2.0.3      
-##  [79] plyr_1.8.7            magrittr_2.0.3        R6_2.5.1             
-##  [82] generics_0.1.3        mgcv_1.8-40           pillar_1.8.1         
-##  [85] withr_2.5.0           units_0.8-0           tibble_3.1.8         
-##  [88] crayon_1.5.1          Rglpk_0.6-4           KernSmooth_2.23-20   
-##  [91] utf8_1.2.2            tzdb_0.3.0            rmarkdown_2.15       
-##  [94] jpeg_0.1-9            grid_4.1.2            blob_1.2.3           
-##  [97] webshot_0.5.3         digest_0.6.29         classInt_0.4-7       
-## [100] numDeriv_2016.8-1.1   munsell_0.5.0         viridisLite_0.4.1    
-## [103] kableExtra_1.3.4      registry_0.5-1        bslib_0.4.0</code></pre>
+##  [10] farver_2.1.1          bit64_4.0.5           RSpectra_0.16-1      
+##  [13] fansi_1.0.3           lubridate_1.8.0       xml2_1.3.3           
+##  [16] codetools_0.2-18      splines_4.1.2         knitr_1.39           
+##  [19] jsonlite_1.8.0        nloptr_2.0.3          png_0.1-7            
+##  [22] readr_2.1.2           compiler_4.1.2        httr_1.4.4           
+##  [25] assertthat_0.2.1      fastmap_1.1.0         cli_3.3.0            
+##  [28] s2_1.1.0              ROI.plugin.glpk_1.0-0 htmltools_0.5.3      
+##  [31] tools_4.1.2           coda_0.19-4           gtable_0.3.0         
+##  [34] glue_1.6.2            wk_0.6.0              gmodels_2.18.1.1     
+##  [37] Rcpp_1.0.9            slam_0.1-50           jquerylib_0.1.4      
+##  [40] raster_3.5-21         vctrs_0.4.1           svglite_2.1.0        
+##  [43] gdata_2.18.0.1        nlme_3.1-159          lwgeom_0.2-8         
+##  [46] xfun_0.32             rvest_1.0.3           lifecycle_1.0.1      
+##  [49] gtools_3.9.3          terra_1.5-21          ROI_1.0-0            
+##  [52] LearnBayes_2.15.1     MASS_7.3-58.1         scales_1.2.1         
+##  [55] vroom_1.5.7           hms_1.1.2             parallel_4.1.2       
+##  [58] expm_0.999-6          RColorBrewer_1.1-3    yaml_2.3.5           
+##  [61] pbapply_1.5-0         sass_0.4.2            stringi_1.7.8        
+##  [64] highr_0.9             e1071_1.7-11          boot_1.3-28          
+##  [67] zip_2.2.0             systemfonts_1.0.4     RgoogleMaps_1.4.5.3  
+##  [70] rlang_1.0.4           pkgconfig_2.0.3       bitops_1.0-7         
+##  [73] evaluate_0.16         lattice_0.20-45       purrr_0.3.4          
+##  [76] labeling_0.4.2        bit_4.0.4             tidyselect_1.1.2     
+##  [79] geojsonsf_2.0.3       plyr_1.8.7            magrittr_2.0.3       
+##  [82] R6_2.5.1              generics_0.1.3        mgcv_1.8-40          
+##  [85] pillar_1.8.1          withr_2.5.0           units_0.8-0          
+##  [88] tibble_3.1.8          crayon_1.5.1          Rglpk_0.6-4          
+##  [91] KernSmooth_2.23-20    utf8_1.2.2            tzdb_0.3.0           
+##  [94] rmarkdown_2.15        jpeg_0.1-9            grid_4.1.2           
+##  [97] blob_1.2.3            webshot_0.5.3         digest_0.6.29        
+## [100] classInt_0.4-7        numDeriv_2016.8-1.1   munsell_0.5.0        
+## [103] viridisLite_0.4.1     kableExtra_1.3.4      registry_0.5-1       
+## [106] bslib_0.4.0</code></pre>
 </div>
 
 
