@@ -262,7 +262,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">BEI and equity paper analyses | FINAL | Hurdle models</h1>
 <h4 class="author">B. Thierry, Spherelab</h4>
-<h4 class="date">27 September, 2022</h4>
+<h4 class="date">12 October, 2022</h4>
 
 </div>
 
@@ -923,9 +923,10 @@ ding[[&quot;2006&quot;]] &lt;- st_read(&quot;data/gentrified_5years.gpkg&quot;, 
 
 ggplot(data = .ding_map) + 
   geom_sf(aes(fill = gentrified_2016_2011, colour=gentrifiable_2011)) +
-  scale_fill_manual(values = c(&quot;gray&quot;, &quot;red&quot;, &quot;darkgray&quot;), name = &quot;Gentrified in 2016&quot;) +
-  scale_colour_manual(values = c(&quot;darkgray&quot;, &quot;darkred&quot;, &quot;darkgray&quot;), name = &quot;Gentrifiable in 2011&quot;) +
-  labs(title = &quot;Census tract gentrification status in 2016&quot;)</code></pre>
+  scale_fill_manual(labels = c(&#39;No&#39;, &#39;Yes&#39;, &#39;N/A&#39;), values = c(&quot;gray&quot;, &quot;red&quot;, &quot;darkgray&quot;), name = &quot;Gentrified in 2016&quot;) +
+  scale_colour_manual(labels = c(&#39;No&#39;, &#39;Yes&#39;, &#39;N/A&#39;), values = c(&quot;darkgray&quot;, &quot;darkred&quot;, &quot;darkgray&quot;), name = &quot;Gentrifiable in 2011&quot;) +
+  #labs(title = &quot;Census tract gentrification status in 2016&quot;) +
+  theme_void(base_size = 20)</code></pre>
 <p><img src="BEI_equity_paper.final_files/figure-html/ding-load-1.png" width="1152" /></p>
 </div>
 <div id="equity-metrics-low-income-population-and-visible-minority" class="section level2" number="2.5">
@@ -2461,18 +2462,18 @@ smy.cnt &lt;- summary(res.lmm.cnt, details = c(p_value=&quot;Wald&quot;))</code>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -1733.093</code></pre>
-<pre class="r"><code>ci.lmm.cnt.2 &lt;- confint(res.lmm.zero, &#39;factor(wSCOREMAT.2011.Q)2&#39;)</code></pre>
+<pre class="r"><code>ci.lmm.cnt.2 &lt;- confint(res.lmm.cnt, &#39;factor(wSCOREMAT.2011.Q)2&#39;)</code></pre>
 <pre><code>## lower factor(wSCOREMAT.2011.Q)2 upper factor(wSCOREMAT.2011.Q)2 
-##                       -1.244626                        0.384718</code></pre>
-<pre class="r"><code>ci.lmm.cnt.3 &lt;- confint(res.lmm.zero, &#39;factor(wSCOREMAT.2011.Q)3&#39;)</code></pre>
+##                     -0.37872037                      0.03601714</code></pre>
+<pre class="r"><code>ci.lmm.cnt.3 &lt;- confint(res.lmm.cnt, &#39;factor(wSCOREMAT.2011.Q)3&#39;)</code></pre>
 <pre><code>## lower factor(wSCOREMAT.2011.Q)3 upper factor(wSCOREMAT.2011.Q)3 
-##                      -1.0310502                       0.6543743</code></pre>
-<pre class="r"><code>ci.lmm.cnt.4 &lt;- confint(res.lmm.zero, &#39;factor(wSCOREMAT.2011.Q)4&#39;)</code></pre>
+##                     -0.51144707                     -0.08801317</code></pre>
+<pre class="r"><code>ci.lmm.cnt.4 &lt;- confint(res.lmm.cnt, &#39;factor(wSCOREMAT.2011.Q)4&#39;)</code></pre>
 <pre><code>## lower factor(wSCOREMAT.2011.Q)4 upper factor(wSCOREMAT.2011.Q)4 
-##                       -1.211796                        0.494154</code></pre>
-<pre class="r"><code>ci.lmm.cnt.5 &lt;- confint(res.lmm.zero, &#39;factor(wSCOREMAT.2011.Q)5&#39;)</code></pre>
+##                     -0.37112534                      0.06289214</code></pre>
+<pre class="r"><code>ci.lmm.cnt.5 &lt;- confint(res.lmm.cnt, &#39;factor(wSCOREMAT.2011.Q)5&#39;)</code></pre>
 <pre><code>## lower factor(wSCOREMAT.2011.Q)5 upper factor(wSCOREMAT.2011.Q)5 
-##                      -2.1145351                      -0.3256704</code></pre>
+##                     -0.55434707                     -0.06624171</code></pre>
 <pre class="r"><code>res.lmm.0 &lt;- update(res.lmm.cnt, . ~ . -factor(wSCOREMAT.2011.Q))
 LRT(res.lmm.0, res.lmm.cnt)</code></pre>
 <pre><code>##      chi2_LR df    p_value
@@ -2632,23 +2633,23 @@ round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
 <tbody>
 <tr class="odd">
 <td align="left">wSCOREMAT.2011.Q.2</td>
-<td align="right">0.288</td>
-<td align="right">1.469</td>
+<td align="right">0.685</td>
+<td align="right">1.037</td>
 </tr>
 <tr class="even">
 <td align="left">wSCOREMAT.2011.Q.3</td>
-<td align="right">0.357</td>
-<td align="right">1.924</td>
+<td align="right">0.600</td>
+<td align="right">0.916</td>
 </tr>
 <tr class="odd">
 <td align="left">wSCOREMAT.2011.Q.4</td>
-<td align="right">0.298</td>
-<td align="right">1.639</td>
+<td align="right">0.690</td>
+<td align="right">1.065</td>
 </tr>
 <tr class="even">
 <td align="left">wSCOREMAT.2011.Q.5</td>
-<td align="right">0.121</td>
-<td align="right">0.722</td>
+<td align="right">0.574</td>
+<td align="right">0.936</td>
 </tr>
 </tbody>
 </table>
