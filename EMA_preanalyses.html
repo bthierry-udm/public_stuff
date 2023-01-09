@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="B. Thierry, Spherelab" />
+
+
+<title>EMA | mood pre-analysis</title>
+
+<script src="EMA_preanalyses_files/header-attrs-2.15/header-attrs.js"></script>
+<script src="EMA_preanalyses_files/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="EMA_preanalyses_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="EMA_preanalyses_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="EMA_preanalyses_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="EMA_preanalyses_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="EMA_preanalyses_files/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="EMA_preanalyses_files/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="EMA_preanalyses_files/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="EMA_preanalyses_files/navigation-1.1/tabsets.js"></script>
+<script src="EMA_preanalyses_files/navigation-1.1/codefolding.js"></script>
+<link href="EMA_preanalyses_files/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="EMA_preanalyses_files/highlightjs-9.12.0/highlight.js"></script>
+<link href="EMA_preanalyses_files/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="EMA_preanalyses_files/pagedtable-1.1/js/pagedtable.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">EMA | mood pre-analysis</h1>
+<h4 class="author">B. Thierry, Spherelab</h4>
+<h4 class="date">09 January, 2023</h4>
+
+</div>
+
+
+<div id="context" class="section level1" number="1">
+<h1><span class="header-section-number">1</span> Context</h1>
+<p>Pre-analysis of <code>mood</code> variables collected through Ethica surveys in several studies:</p>
+<ul>
+<li>INTERACT (waves 1 and 2, except for Victoria and Vancouver at wave 1, as well as Victoria wave 3)</li>
+<li>COHESION, phase I</li>
+<li>REM, phase I &amp; II</li>
+</ul>
+<p>The <code>mood</code> variables are the following ones (“At this moment, I feel:”):</p>
+<ul>
+<li><code>mood_a</code>: Unwell (<code>1</code>) / Well (<code>6</code>)</li>
+<li><code>mood_b</code>: Content (<code>1</code>) / Discontent (<code>6</code>)</li>
+<li><code>mood_c</code>: Agitated (<code>1</code>) / Calm (<code>6</code>)</li>
+<li><code>mood_d</code>: Relaxed (<code>1</code>) / Tense (<code>6</code>)</li>
+<li><code>mood_e</code>: Tired (<code>1</code>) / Awake (<code>6</code>)</li>
+<li><code>mood_f</code>: Full of energy (<code>1</code>) / Without energy (<code>6</code>)</li>
+</ul>
+<p>Complementing these 6 mood variables, we also collected information about the people close to the participant when answering the questions.</p>
+<ul>
+<li><code>mood_who</code>:
+<ul>
+<li><code>1</code> | No one, I am alone</li>
+<li><code>2</code> | No one, but there are people around me</li>
+<li><code>3</code> | Friend(s)</li>
+<li><code>4</code> | Family member(s)/spouse/partner</li>
+<li><code>5</code> | Colleague(s)</li>
+<li><code>6</code> | One or more people virtually</li>
+</ul></li>
+</ul>
+<div id="ressources" class="section level2" number="1.1">
+<h2><span class="header-section-number">1.1</span> Ressources</h2>
+<ul>
+<li><a href="https://jruwaard.github.io/aph_ema_handbook/introduction.html" class="uri">https://jruwaard.github.io/aph_ema_handbook/introduction.html</a></li>
+<li><a href="https://www.mdpi.com/1660-4601/19/7/394" class="uri">https://www.mdpi.com/1660-4601/19/7/394</a></li>
+<li><a href="https://mental.jmir.org/2021/8/e29419/" class="uri">https://mental.jmir.org/2021/8/e29419/</a></li>
+</ul>
+</div>
+</div>
+<div id="data-loading" class="section level1" number="2">
+<h1><span class="header-section-number">2</span> Data loading</h1>
+<div id="ema-mood-variables" class="section level2" number="2.1">
+<h2><span class="header-section-number">2.1</span> EMA mood variables</h2>
+<p>Reading individual tables…</p>
+<pre class="r"><code># COHESION
+cohesion_ema &lt;- read_csv(&quot;data/COHESION/cohesion_ema.csv&quot;, show_col_types = FALSE) %&gt;%
+  transmute(study = &#39;COHESION&#39;,
+            pid = as.character(participant_id),
+            locale = locale,
+            scheduled_time = scheduled_time,
+            issued_time = issued_time,
+            response_time = response_time,
+            latency = latency,
+            duration = duration,
+            lat = lat,
+            lng = lng,
+            across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), as.factor)) %&gt;%
+  mutate(across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), ~na_if(., -7))) %&gt;%
+  drop_na(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;))
+
+# REM
+.rem_lut &lt;- read_csv(&quot;data/REM/REM_Ethica_LUT.csv&quot;, show_col_types = FALSE)
+.rem_ema &lt;- read_csv(&quot;data/REM/REM_EMA_flat_table.csv&quot;, show_col_types = FALSE) 
+rem_ema &lt;- .rem_lut %&gt;%
+  inner_join(.rem_ema, by=c(&quot;user_id&quot; = &quot;Name&quot;)) %&gt;%
+  transmute(study = &#39;REM&#39;,
+            pid = unique_id,
+            locale = language,
+            scheduled_time = scheduled_time,
+            issued_time = issued_time,
+            response_time = response_time,
+            latency = case_when(duration_minutes == &quot;Expired&quot; ~ Inf,
+                                duration_minutes == &quot;Canceled&quot; ~ NA_real_,
+                                TRUE ~ as.double(duration_minutes) * 60),
+            duration = NA_real_,
+            lat = as.double(word(location, start=1)),
+            lng = as.double(word(location, start=2)),
+            across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), as.factor)) %&gt;%
+  mutate(across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), ~na_if(., -7))) %&gt;%
+  drop_na(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;))
+
+# REM, wave 2
+rem_ema2 &lt;- read_csv(&quot;data/REM/REM_EMA_flat_table_w2.csv&quot;, show_col_types = FALSE) %&gt;%
+  transmute(study = &#39;REM2&#39;,
+            pid = pid,
+            scheduled_time = `Scheduled Time`,
+            issued_time = na_if(`Issued Time`, &quot;NULL&quot;),
+            response_time = na_if(`Response Time`, &quot;NULL&quot;),
+            latency = case_when(latency == &quot;Expired&quot; ~ Inf,
+                                latency == &quot;Canceled&quot; ~ NA_real_,
+                                TRUE ~ as.double(latency)),
+            duration = case_when(duration == &#39;Uknown&#39; ~ NA_real_,
+                                 TRUE ~ as.double(duration)),
+            lat = as.double(word(Location, start=1)),
+            lng = as.double(word(Location, start=2)),
+            across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), ~na_if(., &quot;NULL&quot;))) %&gt;%
+  mutate(across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), as.integer),
+         across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), as.factor)) %&gt;%
+  drop_na(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;))
+
+# INTERACT | Montreal
+interact_mtl1 &lt;- read_csv(&quot;data/INTERACT/montreal_ethica_EMA_wave1_flat_table.20200701.csv&quot;, show_col_types = FALSE) %&gt;%
+  transmute(study = &#39;INTERACT.1&#39;,
+            pid = as.character(`INTERACT ID`),
+            locale = language,
+            scheduled_time = scheduled_time,
+            issued_time = issued_time,
+            response_time = response_time,
+            latency = case_when(duration_minutes == &quot;Expired&quot; ~ Inf,
+                                duration_minutes == &quot;Canceled&quot; ~ NA_real_,
+                                TRUE ~ as.double(duration_minutes) * 60),
+            duration = NA_real_,
+            lat = as.double(word(location, start=1)),
+            lng = as.double(word(location, start=2)),
+            across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), as.factor)) %&gt;%
+  mutate(across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), ~na_if(., -7))) %&gt;%
+  drop_na(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;))
+
+# INTERACT | Saskatoon
+interact_skt1 &lt;- read_csv(&quot;data/INTERACT/ema_w1_survey_sk_448.csv&quot;, show_col_types = FALSE) %&gt;%
+  transmute(study = &#39;INTERACT.1&#39;,
+            pid = as.character(interact_id),
+            locale = &quot;en&quot;,
+            scheduled_time = strftime(with_tz(scheduled_time, tz=&quot;America/Regina&quot;), &quot;%Y-%m-%d %H:%M:%S %Z&quot;, tz=&quot;America/Regina&quot;), # Read as POSIXct in UTC, cast to char in the proper TZ
+            issued_time = strftime(with_tz(issued_time, tz=&quot;America/Regina&quot;), &quot;%Y-%m-%d %H:%M:%S %Z&quot;, tz=&quot;America/Regina&quot;),
+            response_time = strftime(with_tz(record_time, tz=&quot;America/Regina&quot;), &quot;%Y-%m-%d %H:%M:%S %Z&quot;, tz=&quot;America/Regina&quot;),
+            latency = case_when(duration == -1 ~ Inf,
+                                TRUE ~ duration * 60),
+            duration = NA_real_,
+            lat = lat,
+            lng = lon,
+            across(matches(&#39;mood_(a|b|c|d|e|f)$&#39;), as.factor),
+            mood_who = as.factor(case_when(mood_who == &quot;No one, I am alone&quot; ~ 1,
+                                 mood_who == &quot;No one, but there are people around me&quot; ~ 2,
+                                 mood_who == &quot;Friend(s)&quot; ~ 3,
+                                 mood_who == &quot;Family member(s)/spouse/partner&quot; ~ 4,
+                                 mood_who == &quot;Colleague(s)&quot; ~ 5))) %&gt;%
+  mutate(across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), ~na_if(., -7))) %&gt;%
+  drop_na(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;))
+
+# INTERACT | Montreal | wave 2
+.interact_mtl2.1 &lt;- read_csv(&quot;data/INTERACT/ema_w2_survey_mtl_1082.csv&quot;, col_types = cols(.default = &quot;c&quot;),  show_col_types = FALSE) %&gt;%
+  transmute(study = &#39;INTERACT.2&#39;,
+            pid = `INTERACT ID`,
+            locale = &quot;fr&quot;,
+            scheduled_time = case_when(str_detect(`Scheduled Time`, &quot;\\+04:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;EDT&#39;),
+                                       str_detect(`Scheduled Time`, &quot;\\+05:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;EST&#39;),
+                                       str_detect(`Scheduled Time`, &quot;-07:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;PDT&#39;),
+                                       str_detect(`Scheduled Time`, &quot;-08:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;PST&#39;),
+                                       str_detect(`Scheduled Time`, &quot;\\+06:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;CST&#39;),
+                                       str_detect(`Scheduled Time`, &quot;\\+05:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;CDT&#39;),
+                                       TRUE ~ paste(&#39;!!!&#39;, `Scheduled Time`)),
+            issued_time = `Issued Time`,
+            response_time = `Response Time`,
+            latency = case_when(`Duration (minutes)` == &quot;Expired&quot; ~ Inf,
+                                `Duration (minutes)` == &quot;Canceled&quot; ~ NA_real_,
+                                TRUE ~ as.double(`Duration (minutes)`) * 60),
+            duration = NA_real_,
+            lat = as.double(Latitude),
+            lng = as.double(Longitude),
+            across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), as.factor)) %&gt;%
+  mutate(across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), ~na_if(., -7))) %&gt;%
+  drop_na(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;))
+
+.interact_mtl2.2 &lt;- read_csv(&quot;data/INTERACT/ema_w2_survey_mtl_1083.csv&quot;, col_types = cols(.default = &quot;c&quot;),  show_col_types = FALSE) %&gt;%
+  transmute(study = &#39;INTERACT.2&#39;,
+            pid = `INTERACT ID`,
+            locale = &quot;en&quot;,
+            scheduled_time = case_when(str_detect(`Scheduled Time`, &quot;\\+04:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;EDT&#39;),
+                                       str_detect(`Scheduled Time`, &quot;\\+05:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;EST&#39;),
+                                       str_detect(`Scheduled Time`, &quot;-07:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;PDT&#39;),
+                                       str_detect(`Scheduled Time`, &quot;-08:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;PST&#39;),
+                                       str_detect(`Scheduled Time`, &quot;\\+06:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;CST&#39;),
+                                       str_detect(`Scheduled Time`, &quot;\\+05:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;CDT&#39;),
+                                       TRUE ~ paste(&#39;!!!&#39;, `Scheduled Time`)),
+            issued_time = `Issued Time`,
+            response_time = `Response Time`,
+            latency = case_when(`Duration (minutes)` == &quot;Expired&quot; ~ Inf,
+                                `Duration (minutes)` == &quot;Canceled&quot; ~ NA_real_,
+                                TRUE ~ as.double(`Duration (minutes)`)),
+            duration = NA_real_,
+            lat = as.double(Latitude),
+            lng = as.double(Longitude),
+            across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), as.factor)) %&gt;%
+  mutate(across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), ~na_if(., -7))) %&gt;%
+  drop_na(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;))
+
+interact_mtl2 &lt;- bind_rows(.interact_mtl2.1, .interact_mtl2.2)
+
+# INTERACT | Saskatoon | wave 2
+interact_skt2 &lt;- read_csv(&quot;data/INTERACT/ema_w2_survey_sk_1318.csv&quot;, col_types = cols(.default = &quot;c&quot;),  show_col_types = FALSE) %&gt;%
+  transmute(study = &#39;INTERACT.2&#39;,
+            pid = `INTERACT ID`,
+            locale = &quot;en&quot;,
+            scheduled_time = case_when(str_detect(`Scheduled Time`, &quot;\\+04:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;EDT&#39;),
+                                       str_detect(`Scheduled Time`, &quot;\\+05:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;EST&#39;),
+                                       str_detect(`Scheduled Time`, &quot;-07:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;PDT&#39;),
+                                       str_detect(`Scheduled Time`, &quot;-08:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;PST&#39;),
+                                       str_detect(`Scheduled Time`, &quot;\\+06:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;CST&#39;),
+                                       str_detect(`Scheduled Time`, &quot;\\+05:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;CDT&#39;),
+                                       TRUE ~ paste(&#39;!!!&#39;, `Scheduled Time`)),
+            issued_time = `Issued Time`,
+            response_time = `Response Time`,
+            latency = case_when(`Duration (minutes)` == &quot;Expired&quot; ~ Inf,
+                                `Duration (minutes)` == &quot;Canceled&quot; ~ NA_real_,
+                                TRUE ~ as.double(`Duration (minutes)`)),
+            duration = NA_real_,
+            lat = as.double(Latitude),
+            lng = as.double(Longitude),
+            across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), as.factor)) %&gt;%
+  mutate(across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), ~na_if(., -7))) %&gt;%
+  drop_na(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;))
+
+# INTERACT | Vancouver | wave 2
+interact_van2 &lt;- read_csv(&quot;data/INTERACT/ema_w2_survey_van_1058.csv&quot;, col_types = cols(.default = &quot;c&quot;),  show_col_types = FALSE) %&gt;%
+  transmute(study = &#39;INTERACT.2&#39;,
+            pid = `INTERACT ID`,
+            locale = &quot;en&quot;,
+            scheduled_time = case_when(str_detect(`Scheduled Time`, &quot;\\+04:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;EDT&#39;),
+                                       str_detect(`Scheduled Time`, &quot;\\+05:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;EST&#39;),
+                                       str_detect(`Scheduled Time`, &quot;-07:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;PDT&#39;),
+                                       str_detect(`Scheduled Time`, &quot;-08:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;PST&#39;),
+                                       str_detect(`Scheduled Time`, &quot;\\+06:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;CST&#39;),
+                                       str_detect(`Scheduled Time`, &quot;\\+05:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;CDT&#39;),
+                                       TRUE ~ paste(&#39;!!!&#39;, `Scheduled Time`)),
+            issued_time = `Issued Time`,
+            response_time = `Response Time`,
+            latency = case_when(`Duration (minutes)` == &quot;Expired&quot; ~ Inf,
+                                `Duration (minutes)` == &quot;Canceled&quot; ~ NA_real_,
+                                TRUE ~ as.double(`Duration (minutes)`)),
+            duration = NA_real_,
+            lat = as.double(Latitude),
+            lng = as.double(Longitude),
+            across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), as.factor)) %&gt;%
+  mutate(across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), ~na_if(., -7))) %&gt;%
+  drop_na(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;))
+
+# INTERACT | Victoria | wave 2
+interact_vic2 &lt;- read_csv(&quot;data/INTERACT/ema_w2_survey_vic_730.csv&quot;, col_types = cols(.default = &quot;c&quot;),  show_col_types = FALSE) %&gt;%
+  transmute(study = &#39;INTERACT.2&#39;,
+            pid = `INTERACT ID`,
+            locale = &quot;en&quot;,
+            scheduled_time = case_when(str_detect(`Scheduled Time`, &quot;\\+04:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;EDT&#39;),
+                                       str_detect(`Scheduled Time`, &quot;\\+05:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;EST&#39;),
+                                       str_detect(`Scheduled Time`, &quot;-07:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;PDT&#39;),
+                                       str_detect(`Scheduled Time`, &quot;-08:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;PST&#39;),
+                                       str_detect(`Scheduled Time`, &quot;\\+06:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;CST&#39;),
+                                       str_detect(`Scheduled Time`, &quot;\\+05:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;CDT&#39;),
+                                       TRUE ~ paste(&#39;!!!&#39;, `Scheduled Time`)),
+            issued_time = `Issued Time`,
+            response_time = `Response Time`,
+            latency = case_when(`Duration (minutes)` == &quot;Expired&quot; ~ Inf,
+                                `Duration (minutes)` == &quot;Canceled&quot; ~ NA_real_,
+                                TRUE ~ as.double(`Duration (minutes)`)),
+            duration = NA_real_,
+            lat = as.double(Latitude),
+            lng = as.double(Longitude),
+            across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), as.factor)) %&gt;%
+  mutate(across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), ~na_if(., -7))) %&gt;%
+  drop_na(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;))</code></pre>
+<pre><code>## New names:
+## • `` -&gt; `...10`</code></pre>
+<pre class="r"><code># INTERACT | Victoria | wave 3
+interact_vic3 &lt;- read_csv(&quot;data/INTERACT/ema_w3_survey_vic_1655.csv&quot;, col_types = cols(.default = &quot;c&quot;),  show_col_types = FALSE) %&gt;%
+  transmute(study = &#39;INTERACT.3&#39;,
+            pid = `INTERACT ID`,
+            locale = &quot;en&quot;,
+            scheduled_time = case_when(str_detect(`Scheduled Time`, &quot;\\+04:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;EDT&#39;),
+                                       str_detect(`Scheduled Time`, &quot;\\+05:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;EST&#39;),
+                                       str_detect(`Scheduled Time`, &quot;-07:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;PDT&#39;),
+                                       str_detect(`Scheduled Time`, &quot;-08:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;PST&#39;),
+                                       str_detect(`Scheduled Time`, &quot;\\+06:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;CST&#39;),
+                                       str_detect(`Scheduled Time`, &quot;\\+05:00&quot;) ~ paste(substr(`Scheduled Time`, 1, 10+1+8), &#39;CDT&#39;),
+                                       TRUE ~ paste(&#39;!!!&#39;, `Scheduled Time`)),
+            issued_time = `Issued Time`,
+            response_time = `Response Time`,
+            latency = case_when(`Duration (minutes)` == &quot;Expired&quot; ~ Inf,
+                                `Duration (minutes)` == &quot;Canceled&quot; ~ NA_real_,
+                                TRUE ~ as.double(`Duration (minutes)`)),
+            duration = NA_real_,
+            lat = as.double(Latitude),
+            lng = as.double(Longitude),
+            across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), as.factor)) %&gt;%
+  mutate(across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), ~na_if(., -7))) %&gt;%
+  drop_na(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;))</code></pre>
+<pre><code>## New names:
+## • `` -&gt; `...10`</code></pre>
+<p>Merge and clean…</p>
+<pre class="r"><code>ema_full &lt;- bind_rows(cohesion_ema,
+                      rem_ema,
+                      rem_ema2,
+                      interact_mtl1, interact_skt1,
+                      interact_mtl2, interact_skt2, interact_van2, interact_vic2,
+                      interact_vic3) %&gt;%
+  mutate(tz_code = substr(scheduled_time, 21, 40)) %&gt;%
+  distinct() # some rows are duplicated in COHESION study
+
+# Add geometry
+ema_full &lt;- st_as_sf(ema_full, coords = c(&quot;lng&quot;, &quot;lat&quot;), crs = 4326, na.fail = F, remove = F)
+
+# Check all existing TZ code in our database and recode to valid TZ
+tz_lut &lt;- ema_full %&gt;%
+  data.frame() %&gt;%
+  group_by(tz_code) %&gt;%
+  summarise(n = n(),
+            mean_lat = mean(lat, na.rm = T),
+            mean_lng = mean(lng, na.rm = T)) %&gt;%
+  inner_join(data.frame(tz_code = c(&quot;ADT&quot;, &quot;AEDT&quot;, &quot;AEST&quot;, &quot;AST&quot;, &quot;CDT&quot;, &quot;CEST&quot;, &quot;CET&quot;, &quot;CST&quot;, &quot;EDT&quot;, &quot;EET&quot;, &quot;EST&quot;, &quot;MDT&quot;, &quot;MST&quot;, &quot;NDT&quot;, &quot;NST&quot;, &quot;PDT&quot;, &quot;PST&quot;),
+                        tz_name = c(&quot;Canada/Atlantic&quot;, # ADT
+                                    &quot;Australia/Victoria&quot;, # AEDT
+                                    &quot;Australia/Victoria&quot;, # AEST
+                                    &quot;Canada/Atlantic&quot;, # AST
+                                    &quot;Canada/Central&quot;, # CDT
+                                    &quot;Europe/Paris&quot;, # CEST
+                                    &quot;Europe/Paris&quot;, # CET
+                                    &quot;Canada/Saskatchewan&quot;, # CST
+                                    &quot;Canada/Eastern&quot;, # EDT
+                                    &quot;Europe/Athens&quot;, # EET
+                                    &quot;Canada/Eastern&quot;, # EST
+                                    &quot;Canada/Mountain&quot;, # MDT
+                                    &quot;Canada/Mountain&quot;, # MST
+                                    &quot;Canada/Newfoundland&quot;, # NDT
+                                    &quot;Canada/Newfoundland&quot;, # NST
+                                    &quot;Canada/Pacific&quot;, # PDT
+                                    &quot;Canada/Pacific&quot; # PST
+                                    ),
+                        # hour shift compared to UTC is needed instead of named TZ
+                        tz_shift = c(&quot;-0300&quot;, # ADT
+                                    &quot;+1100&quot;, # AEDT
+                                    &quot;+1000&quot;, # AEST
+                                    &quot;-0400&quot;, # AST
+                                    &quot;-0500&quot;, # CDT
+                                    &quot;+0200&quot;, # CEST
+                                    &quot;+0100&quot;, # CET
+                                    &quot;-0600&quot;, # CST
+                                    &quot;-0400&quot;, # EDT
+                                    &quot;+0200&quot;, # EET
+                                    &quot;-0500&quot;, # EST
+                                    &quot;-0600&quot;, # MDT
+                                    &quot;-0700&quot;, # MST
+                                    &quot;-0230&quot;, # NDT
+                                    &quot;-0330&quot;, # NST
+                                    &quot;-0700&quot;, # PDT
+                                    &quot;-0800&quot; # PST
+                                    )), by=&quot;tz_code&quot;)
+
+# Control where tz clusters
+#factpal &lt;- colorFactor(&quot;Paired&quot;, tz_lut$tz_code)
+#leaflet() %&gt;% 
+#  addProviderTiles(&quot;Stamen.Toner&quot;) %&gt;% 
+#  addCircleMarkers(data = ema_full, radius = 3, opacity = .3, color = ~factpal(factor(tz_code)))
+
+# Convert datetime to POSIXct objects, accounting for TZ time shifts
+ema_full &lt;- ema_full %&gt;%
+  left_join(select(tz_lut, tz_code, tz_name, tz_shift), by=&quot;tz_code&quot;) %&gt;%
+  mutate(scheduled_time = ymd_hms(paste(substr(scheduled_time, 1, 10+1+8), tz_shift), tz=&quot;UTC&quot;),
+         issued_time = ymd_hms(paste(substr(issued_time, 1, 10+1+8), tz_shift), tz=&quot;UTC&quot;),
+         response_time = ymd_hms(paste(substr(response_time, 1, 10+1+8), tz_shift), tz=&quot;UTC&quot;)) %&gt;%
+  select(!tz_shift)</code></pre>
+</div>
+<div id="participants-personal-data" class="section level2" number="2.2">
+<h2><span class="header-section-number">2.2</span> Participants’ personal data</h2>
+<p>Includes recoding/harmonizing the various data.</p>
+<pre class="r"><code>cohesion_lut &lt;- read_csv(&quot;data/COHESION/cohesion_ema_user.csv&quot;, show_col_types = FALSE) %&gt;%
+  transmute(study = &quot;COHESION&quot;,
+            pid = as.character(participant_id),
+            prov = province,
+            postal_code = str_replace(postal_code, &quot; &quot;, &quot;&quot;),
+            age = age,
+            gender = case_when(gender == &quot;Man&quot; ~ &quot;Man&quot;,
+                               gender == &quot;Woman&quot; ~ &quot;Woman&quot;,
+                               TRUE ~ &quot;Other&quot;),
+            educ = case_when(education == &quot;Primary/Elementary School&quot; ~ &quot;Primary/Secondary School&quot;,
+                             education == &quot;Secondary School&quot; ~ &quot;Primary/Secondary School&quot;,
+                             education == &quot;Trade/Technical School or College Diploma&quot; ~ &quot;Trade/Technical School or College Diploma&quot;,
+                             education == &quot;University Degree&quot; ~ &quot;University Degree and higher&quot;,
+                             education == &quot;Graduate Degree&quot; ~ &quot;University Degree and higher&quot;,
+                             education == &quot;Post-Graduate Degree&quot; ~ &quot;University Degree and higher&quot;,
+                             TRUE ~ &quot;Other&quot;),
+            ethnic_group = case_when(ethnic_group == &quot;White&quot; ~ &quot;White&quot;,
+                                     TRUE ~ &quot;Other&quot;),
+            income = case_when(income_pre_covid == &quot;No income&quot; ~ &quot;$0 to $19,999&quot;,
+                               income_pre_covid == &quot;$1 to $9,999&quot; ~ &quot;$0 to $19,999&quot;,
+                               income_pre_covid == &quot;$10,000 to $14,999&quot; ~ &quot;$0 to $19,999&quot;,
+                               income_pre_covid == &quot;$15,000 to $19,999&quot; ~ &quot;$0 to $19,999&quot;,
+                               income_pre_covid == &quot;$20,000 to $29,999&quot; ~ &quot;$20,000 to $49,999&quot;,
+                               income_pre_covid == &quot;$30,000 to $39,999&quot; ~ &quot;$20,000 to $49,999&quot;,
+                               income_pre_covid == &quot;$40,000 to $49,999&quot; ~ &quot;$20,000 to $49,999&quot;,
+                               income_pre_covid == &quot;$50,000 to $99,999&quot; ~ &quot;$50,000 to $99,999&quot;,
+                               income_pre_covid == &quot;$100,000 to $149,999&quot; ~ &quot;$100,000 to $149,999&quot;,
+                               income_pre_covid == &quot;$150,000 to $199,999&quot; ~ &quot;$150,000 to $199,999&quot;,
+                               income_pre_covid == &quot;$200,000 or more&quot; ~ &quot;$200,000 or more&quot;,
+                               TRUE ~ &quot;I don’t know/Prefer not to answer&quot;))
+
+interact_lut &lt;- read_csv(&quot;data/INTERACT/INTERACT_essence_2021-11-08_health.csv&quot;, show_col_types = FALSE) %&gt;%
+  transmute(study = paste0(&quot;INTERACT.&quot;, wave_id),
+            pid = as.character(interact_id),
+            prov = case_when(city_id == &quot;Montréal&quot; ~ &quot;QC&quot;,
+                             city_id == &quot;Saskatoon&quot; ~ &quot;SK&quot;,
+                             city_id == &quot;Vancouver&quot; ~ &quot;BC&quot;,
+                             city_id == &quot;Victoria&quot; ~ &quot;BC&quot;),
+            postal_code = NA_character_, # Could be retrieved from raw data
+            age = age,
+            gender = case_when(gender == 1 ~ &quot;Man&quot;,
+                               gender == 2 ~ &quot;Woman&quot;,
+                               gender &gt; 2 ~ &quot;Other&quot; ),
+            educ = case_when(education == 1 ~ &quot;Primary/Secondary School&quot;,
+                             education == 2 ~ &quot;Primary/Secondary School&quot;,
+                             education == 3 ~ &quot;Trade/Technical School or College Diploma&quot;,
+                             education == 4 ~ &quot;University Degree and higher&quot;,
+                             education == 5 ~ &quot;University Degree and higher&quot;,
+                             TRUE ~ &quot;Other&quot;),
+            ethnic_group = case_when(ethnicity_c == 4 ~ &quot;White&quot;,
+                                     TRUE ~ &quot;Other&quot;),
+            income = case_when(income == 1 ~ &quot;$0 to $19,999&quot;,
+                               income == 2 ~ &quot;$0 to $19,999&quot;,
+                               income == 3 ~ &quot;$0 to $19,999&quot;,
+                               income == 4 ~ &quot;$0 to $19,999&quot;,
+                               income == 5 ~ &quot;$20,000 to $49,999&quot;,
+                               income == 6 ~ &quot;$20,000 to $49,999&quot;,
+                               income == 7 ~ &quot;$20,000 to $49,999&quot;,
+                               income == 8 ~ &quot;$50,000 to $99,999&quot;,
+                               income == 9 ~ &quot;$100,000 to $149,999&quot;,
+                               income == 10 ~ &quot;$150,000 to $199,999&quot;,
+                               income == 11 ~ &quot;$200,000 or more&quot;,
+                               TRUE ~ &quot;I don’t know/Prefer not to answer&quot;))
+
+rem_lut &lt;- read_csv(&quot;data/REM/w1.FINAL_WEIGHTED_24May22 - Copy.csv&quot;, show_col_types = FALSE) %&gt;%
+  transmute(study = &quot;REM&quot;,
+            pid = uniqueID,
+            prov = &quot;QC&quot;,
+            postal_code = POSTCODE,
+            age = approx_age,
+            gender = case_when(GENDER == &quot;Male&quot; ~ &quot;Man&quot;,
+                               GENDER == &quot;Female&quot; ~ &quot;Woman&quot;,
+                               is.na(GENDER) ~ NA_character_,
+                               TRUE ~ &quot;Other&quot;),
+            educ = case_when(EDUCATION == &quot;Primary/Elementary school diploma&quot; ~ &quot;Primary/Secondary School&quot;,
+                             EDUCATION == &quot;Secondary school diploma&quot; ~ &quot;Primary/Secondary School&quot;,
+                             EDUCATION == &quot;Trade/Technical school or college diploma&quot; ~ &quot;Trade/Technical School or College Diploma&quot;,
+                             EDUCATION == &quot;Undergraduate degree&quot; ~ &quot;University Degree and higher&quot;,
+                             EDUCATION == &quot;Graduate degree&quot; ~ &quot;University Degree and higher&quot;,
+                             EDUCATION == &quot;Post-Graduate Degree&quot; ~ &quot;University Degree and higher&quot;,
+                             is.na(EDUCATION) ~ NA_character_,
+                             TRUE ~ &quot;Other&quot;),
+            ethnic_group = case_when(ETHNICITY.4. == &quot;Yes&quot; ~ &quot;White&quot;,
+                                     TRUE ~ &quot;Other&quot;),
+            income = INCOME) # Income cannot be merged with INTERACT and COHESION categories, keep them as-is.</code></pre>
+<pre><code>## Warning: One or more parsing issues, see `problems()` for details</code></pre>
+<pre class="r"><code>rem2_lut &lt;- read_csv(&quot;data/REM/w2.FINAL_COMPLETE_9May22.csv&quot;, show_col_types = FALSE) %&gt;%
+  transmute(study = &quot;REM2&quot;,
+            pid = uniqueID,
+            prov = &quot;QC&quot;,
+            postal_code = POSTCODE,
+            age = approx_age,
+            gender = case_when(GENDER == &quot;Male&quot; ~ &quot;Man&quot;,
+                               GENDER == &quot;Female&quot; ~ &quot;Woman&quot;,
+                               is.na(GENDER) ~ NA_character_,
+                               TRUE ~ &quot;Other&quot;),
+            educ = case_when(EDUCATION == &quot;Primary/Elementary school diploma&quot; ~ &quot;Primary/Secondary School&quot;,
+                             EDUCATION == &quot;Secondary school diploma&quot; ~ &quot;Primary/Secondary School&quot;,
+                             EDUCATION == &quot;Trade/Technical school or college diploma&quot; ~ &quot;Trade/Technical School or College Diploma&quot;,
+                             EDUCATION == &quot;Undergraduate degree&quot; ~ &quot;University Degree and higher&quot;,
+                             EDUCATION == &quot;Graduate degree&quot; ~ &quot;University Degree and higher&quot;,
+                             EDUCATION == &quot;Post-Graduate Degree&quot; ~ &quot;University Degree and higher&quot;,
+                             is.na(EDUCATION) ~ NA_character_,
+                             TRUE ~ &quot;Other&quot;),
+            ethnic_group = case_when(ETHNICITY.4. == &quot;Yes&quot; ~ &quot;White&quot;,
+                                     TRUE ~ &quot;Other&quot;),
+            income = INCOME) # Income cannot be merged with INTERACT and COHESION categories, keep them as-is.</code></pre>
+<pre><code>## Warning: One or more parsing issues, see `problems()` for details</code></pre>
+<pre class="r"><code># Combine LUTs
+pid_lut &lt;- bind_rows(cohesion_lut, interact_lut, rem_lut, rem2_lut)</code></pre>
+</div>
+<div id="full-ema-dataset-w-participants-data" class="section level2" number="2.3">
+<h2><span class="header-section-number">2.3</span> Full EMA dataset w/ participants’ data</h2>
+<pre class="r"><code>ema_full &lt;- ema_full %&gt;%
+  left_join(pid_lut, by=c(&quot;study&quot;, &quot;pid&quot;))
+
+head(select(ema_full, !c(lat, lng, postal_code)))</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["study"],"name":[1],"type":["chr"],"align":["left"]},{"label":["pid"],"name":[2],"type":["chr"],"align":["left"]},{"label":["locale"],"name":[3],"type":["chr"],"align":["left"]},{"label":["scheduled_time"],"name":[4],"type":["dttm"],"align":["right"]},{"label":["issued_time"],"name":[5],"type":["dttm"],"align":["right"]},{"label":["response_time"],"name":[6],"type":["dttm"],"align":["right"]},{"label":["latency"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["duration"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["mood_a"],"name":[9],"type":["fct"],"align":["left"]},{"label":["mood_b"],"name":[10],"type":["fct"],"align":["left"]},{"label":["mood_c"],"name":[11],"type":["fct"],"align":["left"]},{"label":["mood_d"],"name":[12],"type":["fct"],"align":["left"]},{"label":["mood_e"],"name":[13],"type":["fct"],"align":["left"]},{"label":["mood_f"],"name":[14],"type":["fct"],"align":["left"]},{"label":["mood_who"],"name":[15],"type":["fct"],"align":["left"]},{"label":["tz_code"],"name":[16],"type":["chr"],"align":["left"]},{"label":["geometry"],"name":[17],"type":["sf_POINT"],"align":["right"]},{"label":["tz_name"],"name":[18],"type":["chr"],"align":["left"]},{"label":["prov"],"name":[19],"type":["chr"],"align":["left"]},{"label":["age"],"name":[20],"type":["dbl"],"align":["right"]},{"label":["gender"],"name":[21],"type":["chr"],"align":["left"]},{"label":["educ"],"name":[22],"type":["chr"],"align":["left"]},{"label":["ethnic_group"],"name":[23],"type":["chr"],"align":["left"]},{"label":["income"],"name":[24],"type":["chr"],"align":["left"]}],"data":[{"1":"COHESION","2":"9999205256","3":"en","4":"2020-06-12 16:27:42","5":"2020-06-12 16:28:42","6":"2020-06-12 16:29:14","7":"77.566","8":"14","9":"6","10":"2","11":"6","12":"1","13":"5","14":"2","15":"1","16":"PDT","17":"<sf_POINT>","18":"Canada/Pacific","19":"BC","20":"31","21":"Man","22":"University Degree and higher","23":"White","24":"$150,000 to $199,999"},{"1":"COHESION","2":"9999205256","3":"en","4":"2020-06-13 15:46:05","5":"2020-06-13 15:47:05","6":"2020-06-13 15:49:36","7":"195.823","8":"15","9":"5","10":"2","11":"5","12":"2","13":"6","14":"2","15":"4","16":"PDT","17":"<sf_POINT>","18":"Canada/Pacific","19":"BC","20":"31","21":"Man","22":"University Degree and higher","23":"White","24":"$150,000 to $199,999"},{"1":"COHESION","2":"9999205256","3":"en","4":"2020-06-14 15:51:57","5":"2020-06-14 15:52:59","6":"2020-06-14 15:59:15","7":"414.827","8":"23","9":"6","10":"1","11":"5","12":"2","13":"6","14":"1","15":"5","16":"PDT","17":"<sf_POINT>","18":"Canada/Pacific","19":"BC","20":"31","21":"Man","22":"University Degree and higher","23":"White","24":"$150,000 to $199,999"},{"1":"COHESION","2":"9999205256","3":"en","4":"2020-06-15 16:45:57","5":"2020-06-15 16:46:57","6":"2020-06-15 17:07:49","7":"1297.067","8":"15","9":"6","10":"2","11":"4","12":"2","13":"5","14":"2","15":"5","16":"PDT","17":"<sf_POINT>","18":"Canada/Pacific","19":"BC","20":"31","21":"Man","22":"University Degree and higher","23":"White","24":"$150,000 to $199,999"},{"1":"COHESION","2":"9999205256","3":"en","4":"2020-06-16 15:52:17","5":"2020-06-16 15:53:17","6":"2020-06-16 17:06:56","7":"4462.727","8":"16","9":"6","10":"3","11":"4","12":"3","13":"4","14":"3","15":"1","16":"PDT","17":"<sf_POINT>","18":"Canada/Pacific","19":"BC","20":"31","21":"Man","22":"University Degree and higher","23":"White","24":"$150,000 to $199,999"},{"1":"COHESION","2":"9999205256","3":"en","4":"2020-06-18 15:55:16","5":"2020-06-18 15:56:16","6":"2020-06-18 15:57:15","7":"102.158","8":"16","9":"5","10":"3","11":"6","12":"1","13":"3","14":"3","15":"1","16":"PDT","17":"<sf_POINT>","18":"Canada/Pacific","19":"BC","20":"31","21":"Man","22":"University Degree and higher","23":"White","24":"$150,000 to $199,999"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p><em>NB</em> <code>lat</code>, <code>lng</code>, <code>postal_code</code>, columns hidden in table above to keep participant privacy</p>
+</div>
+</div>
+<div id="environmental-data" class="section level1" number="3">
+<h1><span class="header-section-number">3</span> Environmental data</h1>
+<div id="closest_park" class="section level2" number="3.1">
+<h2><span class="header-section-number">3.1</span> Greenness</h2>
+<p><em>See with CANUE if one can get raw mosaic NDVI image to link to custom locations (mail sent on 2022-08-19). Temporary solution for Montréal: we use the <a href="https://observatoire.cmm.qc.ca/produits/donnees-georeferencees/#utilisation_du_sol">CMM land use layer</a> from 2020.</em></p>
+<p>We retrieve all the individual zipped shapefiles, create a template spatial table using <code>ogr2ogr</code>, then append all shapefiles to the newly created table:</p>
+<pre class="sh"><code># Create a template table, which needs to be truncated before proceeding to the next chunk
+ogr2ogr \
+    -f &quot;PostgreSQL&quot; PG:&quot;dbname=&#39;xema_primer&#39;&quot; \
+    -sql &quot;SELECT &#39;55057-US-2020&#39; AS source, * FROM \&quot;55057-US-2020\&quot;&quot; \
+    ~/Downloads/CMM_US/55057-US-2020/55057-US-2020.shp \
+    -nln &quot;cmm_occup_sol&quot; \
+    -nlt MULTIPOLYGON \
+    -t_srs EPSG:4326
+    
+for d in ~/Downloads/CMM_US/*; do
+  if [ -d &quot;$d&quot; ]; then
+    f=&quot;$(basename -- $d)&quot;
+    ff=&quot;$d/$f.shp&quot;
+    ogr2ogr -append \
+        -f &quot;PostgreSQL&quot; PG:&quot;dbname=&#39;xema_primer&#39;&quot; \
+        -sql &quot;SELECT &#39;$f&#39; AS source, * FROM \&quot;$f\&quot;&quot; \
+        $ff \
+        -nlt MULTIPOLYGON \
+        -nln &quot;cmm_occup_sol&quot; \
+        -t_srs EPSG:4326
+    echo &quot;$f OK&quot;
+  fi
+done</code></pre>
+<pre class="r"><code># Load CMM land use layer and keep only Parks and green spaces (code = 600) || NB: special processing of Parc Maisonneuve + jardin botanique
+.cmm &lt;- st_read(&quot;PG:dbname=xema_primer&quot;, &quot;cmm_occup_sol&quot;) %&gt;%
+  st_make_valid()</code></pre>
+<pre><code>## Reading layer `cmm_occup_sol&#39; from data source `PG:dbname=xema_primer&#39; using driver `PostgreSQL&#39;
+## replacing null geometries with empty geometries
+## Simple feature collection with 251150 features and 39 fields (with 1 geometry empty)
+## Geometry type: MULTIPOLYGON
+## Dimension:     XY
+## Bounding box:  xmin: -74.26761 ymin: 45.22899 xmax: -73.06188 ymax: 45.98455
+## Geodetic CRS:  WGS 84</code></pre>
+<pre class="r"><code>.cmm_parks &lt;- .cmm %&gt;%
+  filter(util_sol == 600 | id %in% c(143129, 145276)) %&gt;%
+  select(source, id, codegeog)
+
+# Extract distance to closest park/greenspace (within CMM area)
+.ema_full_cmm &lt;- ema_full %&gt;%
+  st_filter(.cmm)
+.knn &lt;- .ema_full_cmm %&gt;%
+  st_nearest_feature(.cmm_parks)
+env.dist2park &lt;- .ema_full_cmm %&gt;%
+  cbind(closest_park = st_distance(.ema_full_cmm, .cmm_parks[.knn,], by_element = TRUE)) %&gt;%
+  data.frame() %&gt;%
+  select(study, pid, scheduled_time, closest_park)</code></pre>
+</div>
+<div id="canopy" class="section level2" number="3.2">
+<h2><span class="header-section-number">3.2</span> Canopy</h2>
+<p>Canopy changes is based on <a href="http://observatoire.cmm.qc.ca/fileadmin/user_upload/geomatique/IndiceCanopee/2015/CMM_indiceCanopee_2015_methodologie.pdf">data produced by CMM</a>, using multispectral aerial imagery and lidar. We keep 2019 year data. Data is of raster type and need to be processed within PostGIS for efficiency.</p>
+<pre class="r"><code># Codes du raster &quot;espace vert&quot;
+# 0. No data (hors CMM)
+# 1. NDVI &lt; 0,3 et MNH &lt; 3,0m = Minéral bas (route, stationnement, etc.)
+# 2. NDVI &lt; 0,3 et MNH ≥ 3,0m = Minéral haut (constructions)
+# 3. NDVI ≥ 0,3 et MNH &lt; 3,0m = Végétal bas (culture, gazon, etc.)
+# 4. NDVI ≥ 0,3 et MNH ≥ 3,0m = Végétal haut (canopée)
+# 5. Aquatique
+
+# Load rasters into pg database for further processing
+system(&#39;psql -d xema_primer -c &quot;CREATE EXTENSION IF NOT EXISTS postgis&quot;&#39;)
+system(&#39;psql -d xema_primer -c &quot;CREATE EXTENSION IF NOT EXISTS postgis_raster&quot;&#39;)
+
+if (nrow(dbGetQuery(.con, &quot;SELECT 1 test WHERE to_regclass(&#39;canopee2019&#39;) IS NOT NULL;&quot;)) == 0) {
+  system(&quot;raster2pgsql -s 32188 -I -C -M data/canopy/2019/*.tif -F -t 1000x1000 canopee2019 | psql -d xema_primer&quot;, intern = TRUE)
+} else { message(&quot;PG Raster &#39;canopee2019&#39; already imported&quot;) }</code></pre>
+<pre><code>## PG Raster &#39;canopee2019&#39; already imported</code></pre>
+<pre class="r"><code># Resample to 10m as the original rasters have a 1m resolution, which is too high to allow for a swift processing
+if (nrow(dbGetQuery(.con, &quot;SELECT 1 test WHERE to_regclass(&#39;canopee2019_10m&#39;) IS NOT NULL;&quot;)) == 0) {
+  system(&quot;gdal_translate -of GTiff PG:\&quot;host=localhost dbname=gentrif_bei table=canopee2019 mode=2\&quot; -r mode -tr 10 10 data/canopy/canopee2019_10m.tif&quot;)
+  system(&quot;raster2pgsql -s 32188 -I -C -M data/canopy/canopee2019_10m.tif -F -t 100x100 canopee2019_10m | psql -d xema_primer&quot;)
+} else { message(&quot;PG Raster &#39;canopee2019_10m&#39; already imported&quot;) }</code></pre>
+<pre><code>## PG Raster &#39;canopee2019_10m&#39; already imported</code></pre>
+<pre class="r"><code># Push EMA locations to pg
+ema_full %&gt;%
+  st_transform(crs = 32188) %&gt;%
+  st_write(.con, &quot;ema_full&quot;,
+           layer_options = c(&quot;OVERWRITE=yes&quot;, &quot;LAUNDER=true&quot;, &quot;SPATIAL_INDEX=gist&quot;, &quot;GEOMETRY_NAME=geom&quot;))</code></pre>
+<pre><code>## Note: method with signature &#39;DBIObject#sf&#39; chosen for function &#39;dbDataType&#39;,
+##  target signature &#39;PqConnection#sf&#39;.
+##  &quot;PqConnection#ANY&quot; would also be valid</code></pre>
+<pre class="r"><code>system(&quot;psql -d xema_primer -c &#39;CREATE INDEX ON ema_full USING gist (geometry)&#39;&quot;)</code></pre>
+<pre class="sql"><code>SELECT study, pid, scheduled_time
+        ,ST_Value(rast, geometry) As pv
+FROM canopee2019_10m
+JOIN ema_full ON ST_Intersects(geometry, rast)</code></pre>
+<pre class="r"><code>env.esp_vert &lt;- env.esp_vert %&gt;%
+  mutate(env.canopy = factor(case_when(pv == 0 ~ NA_character_,
+                             pv == 1 ~ &quot;Minéral bas&quot;,
+                             pv == 2 ~ &quot;Minéral haut&quot;,
+                             pv == 3 ~ &quot;Végétal bas&quot;,
+                             pv == 4 ~ &quot;Végétal haut&quot;,
+                             pv == 5 ~ &quot;Aquatique&quot;))) %&gt;%
+  select(!pv)</code></pre>
+</div>
+<div id="rd_density" class="section level2" number="3.3">
+<h2><span class="header-section-number">3.3</span> Major road density</h2>
+<p>Using DMTI CanMap 2018 dataset</p>
+<pre class="r"><code># Get major roads from FGDB, keeping only the major roads according to data dictionary
+# Expressways
+#  1. Primary Highways
+#  2. Secondary Highways
+#  3. Major Roads
+#  4. Local Roads
+st_read(&quot;data/CanMapContentSuite.gdb&quot;, &quot;MajorRoadsLine&quot;) %&gt;%
+  filter(CARTO &lt; 4) %&gt;%
+  # Dump it to pg database &lt;xema_primer&gt; for further processing
+  st_write(&quot;PG:dbname=xema_primer&quot;, &quot;major_roads&quot;, delete_layer = TRUE, layer_options = c(&quot;append=FALSE&quot;, &quot;OVERWRITE=yes&quot;, &quot;LAUNDER=true&quot;))</code></pre>
+<pre><code>## Reading layer `MajorRoadsLine&#39; from data source 
+##   `/Volumes/BigData/Temp/DMTI_BaseLayers_2018/CanMapContentSuite/CAN/Data/CanMapContentSuite.gdb&#39; 
+##   using driver `OpenFileGDB&#39;
+## Simple feature collection with 475364 features and 17 fields
+## Geometry type: MULTILINESTRING
+## Dimension:     XY
+## Bounding box:  xmin: -141.0014 ymin: 41.98495 xmax: -52.62366 ymax: 69.38091
+## Geodetic CRS:  WGS 84
+## Deleting layer `major_roads&#39; using driver `PostgreSQL&#39;
+## Writing layer `major_roads&#39; to data source 
+##   `PG:dbname=xema_primer&#39; using driver `PostgreSQL&#39;
+## options:        append=FALSE OVERWRITE=yes LAUNDER=true</code></pre>
+<pre><code>## Warning in CPL_write_ogr(obj, dsn, layer, driver,
+## as.character(dataset_options), : GDAL Message 6: dataset PG:dbname=xema_primer
+## does not support layer creation option append</code></pre>
+<pre><code>## Writing 291723 features with 17 fields and geometry type Multi Line String.</code></pre>
+<pre class="r"><code># Dump 100m buffers to pg database
+ema_full %&gt;% st_buffer(units::set_units(100, m)) %&gt;%
+  select(study, pid, scheduled_time) %&gt;% # keep keys for later join
+  st_write(&quot;PG:dbname=xema_primer&quot;, &quot;ema_buf100&quot;, delete_layer = TRUE, layer_options = c(&quot;append=FALSE&quot;, &quot;OVERWRITE=yes&quot;, &quot;LAUNDER=true&quot;))</code></pre>
+<pre><code>## Deleting layer `ema_buf100&#39; using driver `PostgreSQL&#39;
+## Writing layer `ema_buf100&#39; to data source 
+##   `PG:dbname=xema_primer&#39; using driver `PostgreSQL&#39;
+## options:        append=FALSE OVERWRITE=yes LAUNDER=true</code></pre>
+<pre><code>## Warning in CPL_write_ogr(obj, dsn, layer, driver,
+## as.character(dataset_options), : GDAL Message 6: dataset PG:dbname=xema_primer
+## does not support layer creation option append</code></pre>
+<pre><code>## Writing 28781 features with 3 fields and geometry type Polygon.</code></pre>
+<pre class="sql"><code>select study, pid, scheduled_time,
+    sum(coalesce(rd_length, 0)) / st_area(wkb_geometry::geography) rd_density
+from (
+    select b.*, ST_Length(ST_Intersection(b.wkb_geometry, r.wkb_geometry)::geography) rd_length
+    from (select * from ema_buf100 where not st_isempty(wkb_geometry)) as b
+    left join major_roads as r on st_intersects(b.wkb_geometry, r.wkb_geometry)) foo
+group by study, pid, scheduled_time, wkb_geometry</code></pre>
+</div>
+<div id="gentrified" class="section level2" number="3.4">
+<h2><span class="header-section-number">3.4</span> Gentrified neighborhood</h2>
+<p>Get the 5yr span Ding metric (from project <code>GENUINE|gentrification_metrics</code>)</p>
+<pre class="r"><code># Read gentrification status at CT level
+.gentrif_ding_16 &lt;- st_read(&quot;data/gentrified_5years.gpkg&quot;, &quot;gentrified_ding_16&quot;)</code></pre>
+<pre><code>## Reading layer `gentrified_ding_16&#39; from data source 
+##   `/Users/benoit/WORKSPACE/gentrification_metrics/R/data/gentrified_5years.gpkg&#39; 
+##   using driver `GPKG&#39;
+## Simple feature collection with 5721 features and 8 fields
+## Geometry type: MULTIPOLYGON
+## Dimension:     XY
+## Bounding box:  xmin: -124.6992 ymin: 42.01779 xmax: -52.61941 ymax: 60.00006
+## Geodetic CRS:  WGS 84</code></pre>
+<pre class="r"><code>env.gentrif_ding_16 &lt;- ema_full %&gt;%
+  st_join(.gentrif_ding_16) %&gt;%
+  as.data.frame() %&gt;%
+  filter(!is.na(gentrified_2016_2011)) %&gt;%
+  select(study, pid, scheduled_time, gentrified_2016_2011) # keep keys for later join</code></pre>
+</div>
+<div id="pampalon" class="section level2" number="3.5">
+<h2><span class="header-section-number">3.5</span> Social and material deprivation</h2>
+<p>Get Pampalon index <a href="https://www.inspq.qc.ca/en/deprivation/material-and-social-deprivation-index">here</a></p>
+<pre class="r"><code>.pampalon &lt;- openxlsx::read.xlsx(&quot;data/Canada2016Pampalon/A-MSDIData_Can2016_eng/1. EquivalenceTableCanada2016_ENG.xlsx&quot;, sheet = 2) %&gt;%
+  mutate(DA = as.character(DA)) %&gt;%
+  select(DA, SCOREMAT, SCORESOC)
+
+# 2016 DA boundaries
+DA16 &lt;- cancensus::get_census(dataset=&#39;CA16&#39;, regions=list(C=&quot;01&quot;), level=&#39;DA&#39;, geo_format = &quot;sf&quot;, api_key = Sys.getenv(&quot;CM_API_KEY&quot;), quiet = TRUE) %&gt;%
+  filter(Type == &quot;DA&quot;) %&gt;%
+  st_make_valid()
+
+env.pampalon &lt;- ema_full %&gt;%
+  st_join(DA16, left=TRUE) %&gt;%
+  as.data.frame() %&gt;%
+  inner_join(.pampalon, by = c(&quot;GeoUID&quot; = &quot;DA&quot;)) %&gt;%
+#  filter(!is.na(SCOREMAT)) %&gt;%
+  rename(DA_UID = GeoUID) %&gt;%
+  select(study, pid, scheduled_time, DA_UID, CT_UID, CMA_UID, CSD_UID, SCOREMAT, SCORESOC)</code></pre>
+</div>
+<div id="full-ema-dataset-w-environmental-data" class="section level2" number="3.6">
+<h2><span class="header-section-number">3.6</span> Full EMA dataset w/ environmental data</h2>
+<pre class="r"><code>ema_full &lt;- ema_full %&gt;%
+  left_join(env.dist2park, by=c(&quot;study&quot;, &quot;pid&quot;, &quot;scheduled_time&quot;)) %&gt;%
+  left_join(env.esp_vert, by=c(&quot;study&quot;, &quot;pid&quot;, &quot;scheduled_time&quot;)) %&gt;%
+  left_join(env.mjr_rd_dsty, by=c(&quot;study&quot;, &quot;pid&quot;, &quot;scheduled_time&quot;)) %&gt;%
+  left_join(env.gentrif_ding_16, by=c(&quot;study&quot;, &quot;pid&quot;, &quot;scheduled_time&quot;)) %&gt;%
+  left_join(env.pampalon, by=c(&quot;study&quot;, &quot;pid&quot;, &quot;scheduled_time&quot;)) %&gt;%
+  rename(env.DA16_UID = DA_UID,
+         env.CT16_UID = CT_UID,
+         env.CMA16_UID = CMA_UID,
+         env.CSD16_UID = CSD_UID,
+         env.closest_park = closest_park,
+         env.rd_density = rd_density,
+         env.gentrified = gentrified_2016_2011,
+         env.depriv_social = SCORESOC,
+         env.depriv_material = SCOREMAT)
+
+head(select(ema_full, !c(lat, lng, postal_code, env.DA16_UID)))</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["study"],"name":[1],"type":["chr"],"align":["left"]},{"label":["pid"],"name":[2],"type":["chr"],"align":["left"]},{"label":["locale"],"name":[3],"type":["chr"],"align":["left"]},{"label":["scheduled_time"],"name":[4],"type":["dttm"],"align":["right"]},{"label":["issued_time"],"name":[5],"type":["dttm"],"align":["right"]},{"label":["response_time"],"name":[6],"type":["dttm"],"align":["right"]},{"label":["latency"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["duration"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["mood_a"],"name":[9],"type":["fct"],"align":["left"]},{"label":["mood_b"],"name":[10],"type":["fct"],"align":["left"]},{"label":["mood_c"],"name":[11],"type":["fct"],"align":["left"]},{"label":["mood_d"],"name":[12],"type":["fct"],"align":["left"]},{"label":["mood_e"],"name":[13],"type":["fct"],"align":["left"]},{"label":["mood_f"],"name":[14],"type":["fct"],"align":["left"]},{"label":["mood_who"],"name":[15],"type":["fct"],"align":["left"]},{"label":["tz_code"],"name":[16],"type":["chr"],"align":["left"]},{"label":["geometry"],"name":[17],"type":["sf_POINT"],"align":["right"]},{"label":["tz_name"],"name":[18],"type":["chr"],"align":["left"]},{"label":["prov"],"name":[19],"type":["chr"],"align":["left"]},{"label":["age"],"name":[20],"type":["dbl"],"align":["right"]},{"label":["gender"],"name":[21],"type":["chr"],"align":["left"]},{"label":["educ"],"name":[22],"type":["chr"],"align":["left"]},{"label":["ethnic_group"],"name":[23],"type":["chr"],"align":["left"]},{"label":["income"],"name":[24],"type":["chr"],"align":["left"]},{"label":["env.closest_park"],"name":[25],"type":["units"],"align":["right"]},{"label":["env.canopy"],"name":[26],"type":["fct"],"align":["left"]},{"label":["env.rd_density"],"name":[27],"type":["dbl"],"align":["right"]},{"label":["env.gentrified"],"name":[28],"type":["lgl"],"align":["right"]},{"label":["env.CT16_UID"],"name":[29],"type":["chr"],"align":["left"]},{"label":["env.CMA16_UID"],"name":[30],"type":["chr"],"align":["left"]},{"label":["env.CSD16_UID"],"name":[31],"type":["chr"],"align":["left"]},{"label":["env.depriv_material"],"name":[32],"type":["dbl"],"align":["right"]},{"label":["env.depriv_social"],"name":[33],"type":["dbl"],"align":["right"]}],"data":[{"1":"COHESION","2":"9999205256","3":"en","4":"2020-06-12 16:27:42","5":"2020-06-12 16:28:42","6":"2020-06-12 16:29:14","7":"77.566","8":"14","9":"6","10":"2","11":"6","12":"1","13":"5","14":"2","15":"1","16":"PDT","17":"<sf_POINT>","18":"Canada/Pacific","19":"BC","20":"31","21":"Man","22":"University Degree and higher","23":"White","24":"$150,000 to $199,999","25":"NA [m]","26":"NA","27":"0","28":"TRUE","29":"9350010.00","30":"59935","31":"5917034","32":"0.002532901","33":"0.129828758"},{"1":"COHESION","2":"9999205256","3":"en","4":"2020-06-13 15:46:05","5":"2020-06-13 15:47:05","6":"2020-06-13 15:49:36","7":"195.823","8":"15","9":"5","10":"2","11":"5","12":"2","13":"6","14":"2","15":"4","16":"PDT","17":"<sf_POINT>","18":"Canada/Pacific","19":"BC","20":"31","21":"Man","22":"University Degree and higher","23":"White","24":"$150,000 to $199,999","25":"NA [m]","26":"NA","27":"0","28":"TRUE","29":"9350010.00","30":"59935","31":"5917034","32":"0.002532901","33":"0.129828758"},{"1":"COHESION","2":"9999205256","3":"en","4":"2020-06-14 15:51:57","5":"2020-06-14 15:52:59","6":"2020-06-14 15:59:15","7":"414.827","8":"23","9":"6","10":"1","11":"5","12":"2","13":"6","14":"1","15":"5","16":"PDT","17":"<sf_POINT>","18":"Canada/Pacific","19":"BC","20":"31","21":"Man","22":"University Degree and higher","23":"White","24":"$150,000 to $199,999","25":"NA [m]","26":"NA","27":"0","28":"FALSE","29":"9350150.02","30":"59935","31":"5917047","32":"0.003538198","33":"-0.006217693"},{"1":"COHESION","2":"9999205256","3":"en","4":"2020-06-15 16:45:57","5":"2020-06-15 16:46:57","6":"2020-06-15 17:07:49","7":"1297.067","8":"15","9":"6","10":"2","11":"4","12":"2","13":"5","14":"2","15":"5","16":"PDT","17":"<sf_POINT>","18":"Canada/Pacific","19":"BC","20":"31","21":"Man","22":"University Degree and higher","23":"White","24":"$150,000 to $199,999","25":"NA [m]","26":"NA","27":"0","28":"FALSE","29":"9350150.02","30":"59935","31":"5917047","32":"0.003538198","33":"-0.006217693"},{"1":"COHESION","2":"9999205256","3":"en","4":"2020-06-16 15:52:17","5":"2020-06-16 15:53:17","6":"2020-06-16 17:06:56","7":"4462.727","8":"16","9":"6","10":"3","11":"4","12":"3","13":"4","14":"3","15":"1","16":"PDT","17":"<sf_POINT>","18":"Canada/Pacific","19":"BC","20":"31","21":"Man","22":"University Degree and higher","23":"White","24":"$150,000 to $199,999","25":"NA [m]","26":"NA","27":"0","28":"TRUE","29":"9350010.00","30":"59935","31":"5917034","32":"0.002532901","33":"0.129828758"},{"1":"COHESION","2":"9999205256","3":"en","4":"2020-06-18 15:55:16","5":"2020-06-18 15:56:16","6":"2020-06-18 15:57:15","7":"102.158","8":"16","9":"5","10":"3","11":"6","12":"1","13":"3","14":"3","15":"1","16":"PDT","17":"<sf_POINT>","18":"Canada/Pacific","19":"BC","20":"31","21":"Man","22":"University Degree and higher","23":"White","24":"$150,000 to $199,999","25":"NA [m]","26":"NA","27":"0","28":"TRUE","29":"9350010.00","30":"59935","31":"5917034","32":"0.002532901","33":"0.129828758"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p><em>NB</em> <code>lat</code>, <code>lng</code>, <code>postal_code</code>, <code>env.DA16_UID</code> columns hidden in table above to keep participant privacy</p>
+</div>
+<div id="export-data" class="section level2" number="3.7">
+<h2><span class="header-section-number">3.7</span> Export data</h2>
+<pre class="r"><code>ema_full %&gt;% 
+  data.frame() %&gt;%
+  select(!geometry) %&gt;%
+  write_csv(&quot;data/ema_full.csv&quot;)
+
+# Sadun&#39;s export
+ema_full %&gt;%
+  data.frame() %&gt;%
+  select(!geometry) %&gt;%
+  filter(substr(study, 1,3) == &quot;REM&quot; | (study %in% c(&quot;INTERACT.1&quot;, &quot;INTERACT.2&quot;) &amp; substr(pid, 1, 1) == &quot;4&quot;)) %&gt;%
+  write_csv(&quot;data/ema_full.sadun.csv&quot;)
+  
+# All INTERACT EMA export
+ema_full %&gt;%
+  data.frame() %&gt;%
+  select(!geometry) %&gt;%
+  filter(study %in% c(&quot;INTERACT.1&quot;, &quot;INTERACT.2&quot;)) %&gt;%
+  write_csv(&quot;data/ema_full.INTERACT.csv&quot;)
+
+# All COHESION EMA export
+ema_full %&gt;%
+  data.frame() %&gt;%
+  select(!geometry) %&gt;%
+  filter(study == &#39;COHESION&#39;) %&gt;%
+  write_csv(&quot;data/ema_full.COHESION.csv&quot;)</code></pre>
+</div>
+<div id="data-dictionary" class="section level2" number="3.8">
+<h2><span class="header-section-number">3.8</span> Data dictionary</h2>
+<ul>
+<li><code>study</code>: one of <code>COHESION</code>, <code>INTERACT</code> or <code>REM</code>, which are the three studies for which EMA mood data is collected</li>
+<li><code>pid</code>: participant ID</li>
+<li><code>locale</code>: English or French survey language selected by participant</li>
+<li><code>scheduled_time</code>: date/time of scheduled EMA, in UTC</li>
+<li><code>issued_time</code>: date/time of EMA actually released, in UTC</li>
+<li><code>response_time</code>: date/time of participant’s response to EMA, in UTC</li>
+<li><code>latency</code>: interval between when EMA is issued and when EMA is completed by participant, expressed in seconds; can be <NA> if EMA has been canceled or <Inf> if EMA has expired</li>
+<li><code>duration</code>: time taken by participant to complete the EMA, in seconds</li>
+<li><code>lat</code> and <code>lng</code>: latitude and longitude; geographic coordinates of participant when EMA is completed; can be <NA> if location could not be inferred</li>
+<li><code>mood_a</code>: at this moment, I feel <strong>Unwell</strong> (<code>1</code>) &gt;&gt; <strong>Well</strong> (<code>6</code>)</li>
+<li><code>mood_b</code>: at this moment, I feel <strong>Content</strong> (<code>1</code>) &gt;&gt; <strong>Discontent</strong> (<code>6</code>)</li>
+<li><code>mood_c</code>: at this moment, I feel <strong>Agitated</strong> (<code>1</code>) &gt;&gt; <strong>Calm</strong> (<code>6</code>)</li>
+<li><code>mood_d</code>: at this moment, I feel <strong>Relaxed</strong> (<code>1</code>) &gt;&gt; <strong>Tense</strong> (<code>6</code>)</li>
+<li><code>mood_e</code>: at this moment, I feel <strong>Tired</strong> (<code>1</code>) &gt;&gt; <strong>Awake</strong> (<code>6</code>)</li>
+<li><code>mood_f</code>: at this moment, I feel <strong>Full of energy</strong> (<code>1</code>) &gt;&gt; <strong>Without energy</strong> (<code>6</code>)</li>
+<li><code>mood_who</code>: At this moment, I’m interacting with…
+<ul>
+<li><code>1</code> | No one, I am alone</li>
+<li><code>2</code> | No one, but there are people around me</li>
+<li><code>3</code> | Friend(s)</li>
+<li><code>4</code> | Family member(s)/spouse/partner</li>
+<li><code>5</code> | Colleague(s)</li>
+<li><code>6</code> | One or more people virtually</li>
+</ul></li>
+<li><code>tz_code</code> and <code>tz_name</code>: timezone code (inferred or explicit)</li>
+<li><code>prov</code>: province of residence of participant</li>
+<li><code>postal_code</code>: postal code of residence of participant</li>
+<li><code>age</code>: age of participant</li>
+<li><code>gender</code>: gender of participant
+<ul>
+<li><code>Man</code></li>
+<li><code>Woman</code></li>
+<li><code>Other</code></li>
+</ul></li>
+<li><code>educ</code>: highest education level
+<ul>
+<li><code>Primary/Secondary School</code></li>
+<li><code>Trade/Technical School or College Diploma</code></li>
+<li><code>University Degree and higher</code></li>
+<li><code>Other</code></li>
+</ul></li>
+<li><code>ethnic_group</code>: ethnic group of participant; <em>NB</em> due to a mismatch of ethnic classification between studies, we had to dichotomize between white and other (including non-white and mixed identities)
+<ul>
+<li><code>White</code></li>
+<li><code>Other</code>: comprises non-white as well as mixed identities, including white and nin-white ancestors</li>
+</ul></li>
+<li><code>income</code>: participant’s household income; <em>NB</em> <code>REM</code> study is using a different classification and cannot be reconciled with the other study classification</li>
+<li><code>env.closest_park</code>: distance to closest park, in meters (see <a href="#closest_park">greenness</a>); based on CMM land cover data, hence limited to EMA responses collected in the larger Montreal metropolitan region</li>
+<li><code>env.canopy</code>: canopy type matching EMA response location (see <a href="#canopy">canopy</a>); based on CMM canopy data, hence limited to EMA responses collected in the larger Montreal metropolitan region
+<ul>
+<li><code>Aquatique</code>: water</li>
+<li><code>Minéral bas</code>: lower mineral cover, <em>e.g.</em> parking (NDVI &lt; 0.3 and height &lt; 2m)</li>
+<li><code>Minéral haut</code>: upper mineral cover, <em>e.g.</em> buildings (NDVI &lt; 0.3 and height &gt; 2m)</li>
+<li><code>Végétal bas</code>: lower green cover, <em>e.g.</em> meadows, grass (NDVI &gt; 0.3 and height &lt; 2m)</li>
+<li><code>Végétal haut</code>: upper green cover, <em>e.g.</em> forest, trees (NDVI &gt; 0.3 and height &gt; 2m)</li>
+</ul></li>
+<li><code>env.rd_density</code>: major road density within a 100m buffer around EMA response location, in km/km<sup>2</sup> (see <a href="#rd_density">major road density</a>)</li>
+<li><code>env.gentrified</code>: gentrification status of CT where EMA response was located, based on Ding (see <a href="#gentrified">gentrified neighborhood</a>); only EMA response located within a Census Metropolitan Area get a gentrification status</li>
+<li><code>env.depriv_material</code> and <code>env.depriv_social</code>: Pampalon material and social deprivation indices of DA where EMA response was located (see <a href="#pampalon">Social and material deprivation</a>)</li>
+<li><code>env.DA16_UID</code>, <code>env.CT16_UID</code>, <code>env.CMA16_UID</code> and <code>env.CSD16_UID</code>: 2016 Census unit IDs (Dissemination Area, Census Tract, Census Metropolitan Area, Census Subdivision) where EMA response was located</li>
+</ul>
+</div>
+</div>
+<div id="preliminary-analyses" class="section level1" number="4">
+<h1><span class="header-section-number">4</span> Preliminary analyses</h1>
+<div id="descriptive-stats" class="section level2" number="4.1">
+<h2><span class="header-section-number">4.1</span> Descriptive stats</h2>
+<pre class="r"><code>.ema_full &lt;- ema_full %&gt;%
+  data.frame() %&gt;%
+  mutate(city = case_when(substr(pid, 1, 1) == &quot;1&quot; ~ &quot;Vic&quot;,
+                          substr(pid, 1, 1) == &quot;2&quot; ~ &quot;Van&quot;,
+                          substr(pid, 1, 1) == &quot;3&quot; ~ &quot;Skt&quot;,
+                          substr(pid, 1, 1) == &quot;4&quot; ~ &quot;Mtl&quot;),
+    study = case_when(str_detect(study, &quot;INTERACT&quot;) ~ paste0(study, &quot;.&quot;, city),
+                           TRUE ~ study)) 
+
+# Computing N obs/day
+.ema_full0 &lt;- .ema_full %&gt;%
+  group_by(study, pid, as_date(response_time)) %&gt;%
+  summarise(n_by_day = n()) %&gt;%
+  summarise(avg_obs_day = mean(n_by_day))</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;study&#39;, &#39;pid&#39;. You can override using the
+## `.groups` argument.
+## `summarise()` has grouped output by &#39;study&#39;. You can override using the
+## `.groups` argument.</code></pre>
+<pre class="r"><code># Computing stats at the participant level
+.ema_full &lt;- .ema_full %&gt;% 
+  group_by(study, pid, age, gender, educ, ethnic_group, income) %&gt;%
+  summarise(n = n(),
+            span_days = as.period(interval(start=min(response_time), end=max(response_time))) / days(1)) %&gt;%
+  mutate(gender_man = case_when(gender == &quot;Man&quot; ~ 1,
+                                gender != &quot;Man&quot; ~ 0),
+         gender_woman = case_when(gender == &quot;Woman&quot; ~ 1,
+                                gender != &quot;Woman&quot; ~ 0)) %&gt;%
+    left_join(.ema_full0, by = c(&quot;study&quot;, &quot;pid&quot;))</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;study&#39;, &#39;pid&#39;, &#39;age&#39;, &#39;gender&#39;, &#39;educ&#39;,
+## &#39;ethnic_group&#39;. You can override using the `.groups` argument.</code></pre>
+<pre class="r"><code>dstats &lt;- .ema_full %&gt;%
+  group_by(study) %&gt;%
+  summarise(`N Pid` = n(),
+            `N obs (avg)` = round(mean(n), 1),
+            `N obs (sd)` = round(sd(n), 1),
+            `N obs/day (avg)` = round(mean(avg_obs_day), 1),
+            `N obs/day (sd)` = round(sd(avg_obs_day), 1),
+            `Span days (avg)` = round(mean(span_days), 1),
+            `Span days (sd)` = round(sd(span_days), 1),
+            `Age (avg)` = round(mean(age, na.rm=TRUE), 1),
+            `Age (sd)` = round(sd(age, na.rm=TRUE), 1),
+            `N Man` = sum(gender_man, na.rm=TRUE),
+            `N Woman` = sum(gender_woman, na.rm=TRUE))
+dstats</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["study"],"name":[1],"type":["chr"],"align":["left"]},{"label":["N Pid"],"name":[2],"type":["int"],"align":["right"]},{"label":["N obs (avg)"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["N obs (sd)"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["N obs/day (avg)"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["N obs/day (sd)"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["Span days (avg)"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["Span days (sd)"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["Age (avg)"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["Age (sd)"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["N Man"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["N Woman"],"name":[12],"type":["dbl"],"align":["right"]}],"data":[{"1":"COHESION","2":"367","3":"24.0","4":"22.1","5":"1.1","6":"0.5","7":"162.6","8":"169.5","9":"45.8","10":"15.1","11":"89","12":"265"},{"1":"INTERACT.1.Mtl","2":"467","3":"11.6","4":"5.9","5":"1.9","6":"0.6","7":"5.4","8":"3.4","9":"42.5","10":"14.0","11":"172","12":"285"},{"1":"INTERACT.1.Skt","2":"137","3":"13.5","4":"7.3","5":"1.8","6":"0.5","7":"6.0","8":"2.4","9":"33.7","10":"12.2","11":"36","12":"99"},{"1":"INTERACT.2.Mtl","2":"160","3":"14.3","4":"5.4","5":"2.2","6":"0.6","7":"5.8","8":"1.4","9":"43.8","10":"13.7","11":"63","12":"91"},{"1":"INTERACT.2.Skt","2":"78","3":"14.2","4":"5.5","5":"2.0","6":"0.5","7":"5.7","8":"1.4","9":"37.4","10":"12.1","11":"24","12":"50"},{"1":"INTERACT.2.Van","2":"82","3":"12.7","4":"6.1","5":"1.9","6":"0.5","7":"5.6","8":"1.5","9":"50.8","10":"14.1","11":"27","12":"53"},{"1":"INTERACT.2.Vic","2":"129","3":"12.7","4":"5.6","5":"1.9","6":"0.4","7":"5.6","8":"1.6","9":"42.9","10":"12.7","11":"61","12":"67"},{"1":"INTERACT.3.Vic","2":"112","3":"12.9","4":"6.0","5":"1.9","6":"0.5","7":"5.4","8":"1.7","9":"NaN","10":"NA","11":"0","12":"0"},{"1":"REM","2":"262","3":"11.0","4":"6.1","5":"1.9","6":"0.6","7":"4.9","8":"2.0","9":"39.0","10":"12.4","11":"139","12":"119"},{"1":"REM2","2":"191","3":"12.8","4":"5.9","5":"2.1","6":"0.6","7":"5.5","8":"1.7","9":"40.7","10":"12.4","11":"0","12":"0"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="mood-trends" class="section level2" number="4.2">
+<h2><span class="header-section-number">4.2</span> Mood trends</h2>
+<div id="unwell-well" class="section level3" number="4.2.1">
+<h3><span class="header-section-number">4.2.1</span> Unwell / Well</h3>
+<pre class="r"><code>.ema_full &lt;- ema_full %&gt;%
+  data.frame() %&gt;%
+  mutate(city = case_when(substr(pid, 1, 1) == &quot;1&quot; ~ &quot;Vic&quot;,
+                          substr(pid, 1, 1) == &quot;2&quot; ~ &quot;Van&quot;,
+                          substr(pid, 1, 1) == &quot;3&quot; ~ &quot;Skt&quot;,
+                          substr(pid, 1, 1) == &quot;4&quot; ~ &quot;Mtl&quot;),
+    study = case_when(str_detect(study, &quot;INTERACT&quot;) ~ paste0(study, &quot;.&quot;, city),
+                           TRUE ~ study))
+
+p &lt;- ggplot(.ema_full, aes(x = as_date(response_time), y = as.numeric(mood_a))) +
+  geom_smooth(method = &quot;loess&quot;, span = .05, se = FALSE, colour=&quot;dodgerblue4&quot;) + 
+  geom_point(size = .3, alpha = .3, position = position_jitter(height = .1), colour=&quot;dodgerblue2&quot;) +  
+  scale_x_date() + 
+  scale_y_continuous(breaks = 1:6, labels = c(&quot;Unwell&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;Well&quot;), limits = c(1, 6)) +
+  xlab(&quot;Time&quot;) +
+  ylab(&quot;Mood | Unwell / Well&quot;) 
+
+p + facet_wrap(vars(study), scales = &quot;free&quot;, ncol=2)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-15-1.png" /><!-- --></p>
+</div>
+<div id="content-discontent" class="section level3" number="4.2.2">
+<h3><span class="header-section-number">4.2.2</span> Content / Discontent</h3>
+<pre class="r"><code>.ema_full &lt;- ema_full %&gt;%
+  data.frame() %&gt;%
+  mutate(city = case_when(substr(pid, 1, 1) == &quot;1&quot; ~ &quot;Vic&quot;,
+                          substr(pid, 1, 1) == &quot;2&quot; ~ &quot;Van&quot;,
+                          substr(pid, 1, 1) == &quot;3&quot; ~ &quot;Skt&quot;,
+                          substr(pid, 1, 1) == &quot;4&quot; ~ &quot;Mtl&quot;),
+    study = case_when(str_detect(study, &quot;INTERACT&quot;) ~ paste0(study, &quot;.&quot;, city),
+                           TRUE ~ study))
+
+p &lt;- ggplot(.ema_full, aes(x = as_date(response_time), y = as.numeric(mood_b))) +
+  geom_smooth(method = &quot;loess&quot;, span = .05, se = FALSE, colour=&quot;dodgerblue4&quot;) + 
+  geom_point(size = .3, alpha = .3, position = position_jitter(height = .1), colour=&quot;dodgerblue2&quot;) +  
+  scale_x_date() + 
+  scale_y_continuous(breaks = 1:6, labels = c(&quot;Content&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;Discontent&quot;), limits = c(1, 6)) +
+  xlab(&quot;Time&quot;) +
+  ylab(&quot;Mood | Content / Discontent&quot;) 
+
+p + facet_wrap(vars(study), scales = &quot;free&quot;, ncol=2)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-16-1.png" /><!-- --></p>
+</div>
+<div id="agitated-calm" class="section level3" number="4.2.3">
+<h3><span class="header-section-number">4.2.3</span> Agitated / Calm</h3>
+<pre class="r"><code>.ema_full &lt;- ema_full %&gt;%
+  data.frame() %&gt;%
+  mutate(city = case_when(substr(pid, 1, 1) == &quot;1&quot; ~ &quot;Vic&quot;,
+                          substr(pid, 1, 1) == &quot;2&quot; ~ &quot;Van&quot;,
+                          substr(pid, 1, 1) == &quot;3&quot; ~ &quot;Skt&quot;,
+                          substr(pid, 1, 1) == &quot;4&quot; ~ &quot;Mtl&quot;),
+    study = case_when(str_detect(study, &quot;INTERACT&quot;) ~ paste0(study, &quot;.&quot;, city),
+                           TRUE ~ study))
+
+p &lt;- ggplot(.ema_full, aes(x = as_date(response_time), y = as.numeric(mood_c))) +
+  geom_smooth(method = &quot;loess&quot;, span = .05, se = FALSE, colour=&quot;dodgerblue4&quot;) + 
+  geom_point(size = .3, alpha = .3, position = position_jitter(height = .1), colour=&quot;dodgerblue2&quot;) +  
+  scale_x_date() + 
+  scale_y_continuous(breaks = 1:6, labels = c(&quot;Agitated&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;Calm&quot;), limits = c(1, 6)) +
+  xlab(&quot;Time&quot;) +
+  ylab(&quot;Mood | Agitated / Calm&quot;) 
+
+p + facet_wrap(vars(study), scales = &quot;free&quot;, ncol=2)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-17-1.png" /><!-- --></p>
+</div>
+<div id="relaxed-tense" class="section level3" number="4.2.4">
+<h3><span class="header-section-number">4.2.4</span> Relaxed / Tense</h3>
+<pre class="r"><code>.ema_full &lt;- ema_full %&gt;%
+  data.frame() %&gt;%
+  mutate(city = case_when(substr(pid, 1, 1) == &quot;1&quot; ~ &quot;Vic&quot;,
+                          substr(pid, 1, 1) == &quot;2&quot; ~ &quot;Van&quot;,
+                          substr(pid, 1, 1) == &quot;3&quot; ~ &quot;Skt&quot;,
+                          substr(pid, 1, 1) == &quot;4&quot; ~ &quot;Mtl&quot;),
+    study = case_when(str_detect(study, &quot;INTERACT&quot;) ~ paste0(study, &quot;.&quot;, city),
+                           TRUE ~ study))
+
+p &lt;- ggplot(.ema_full, aes(x = as_date(response_time), y = as.numeric(mood_d))) +
+  geom_smooth(method = &quot;loess&quot;, span = .05, se = FALSE, colour=&quot;dodgerblue4&quot;) + 
+  geom_point(size = .3, alpha = .3, position = position_jitter(height = .1), colour=&quot;dodgerblue2&quot;) +  
+  scale_x_date() + 
+  scale_y_continuous(breaks = 1:6, labels = c(&quot;Relaxed&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;Tense&quot;), limits = c(1, 6)) +
+  xlab(&quot;Time&quot;) +
+  ylab(&quot;Mood | Relaxed / Tense&quot;) 
+
+p + facet_wrap(vars(study), scales = &quot;free&quot;, ncol=2)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-18-1.png" /><!-- --></p>
+</div>
+<div id="tired-awake" class="section level3" number="4.2.5">
+<h3><span class="header-section-number">4.2.5</span> Tired / Awake</h3>
+<pre class="r"><code>.ema_full &lt;- ema_full %&gt;%
+  data.frame() %&gt;%
+  mutate(city = case_when(substr(pid, 1, 1) == &quot;1&quot; ~ &quot;Vic&quot;,
+                          substr(pid, 1, 1) == &quot;2&quot; ~ &quot;Van&quot;,
+                          substr(pid, 1, 1) == &quot;3&quot; ~ &quot;Skt&quot;,
+                          substr(pid, 1, 1) == &quot;4&quot; ~ &quot;Mtl&quot;),
+    study = case_when(str_detect(study, &quot;INTERACT&quot;) ~ paste0(study, &quot;.&quot;, city),
+                           TRUE ~ study))
+
+p &lt;- ggplot(.ema_full, aes(x = as_date(response_time), y = as.numeric(mood_e))) +
+  geom_smooth(method = &quot;loess&quot;, span = .05, se = FALSE, colour=&quot;dodgerblue4&quot;) + 
+  geom_point(size = .3, alpha = .3, position = position_jitter(height = .1), colour=&quot;dodgerblue2&quot;) +  
+  scale_x_date() + 
+  scale_y_continuous(breaks = 1:6, labels = c(&quot;Tired&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;Awake&quot;), limits = c(1, 6)) +
+  xlab(&quot;Time&quot;) +
+  ylab(&quot;Mood | Tired / Awake&quot;) 
+
+p + facet_wrap(vars(study), scales = &quot;free&quot;, ncol=2)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-19-1.png" /><!-- --></p>
+</div>
+<div id="full-of-energy-without-energy" class="section level3" number="4.2.6">
+<h3><span class="header-section-number">4.2.6</span> Full of energy / Without energy</h3>
+<pre class="r"><code>.ema_full &lt;- ema_full %&gt;%
+  data.frame() %&gt;%
+  mutate(city = case_when(substr(pid, 1, 1) == &quot;1&quot; ~ &quot;Vic&quot;,
+                          substr(pid, 1, 1) == &quot;2&quot; ~ &quot;Van&quot;,
+                          substr(pid, 1, 1) == &quot;3&quot; ~ &quot;Skt&quot;,
+                          substr(pid, 1, 1) == &quot;4&quot; ~ &quot;Mtl&quot;),
+    study = case_when(str_detect(study, &quot;INTERACT&quot;) ~ paste0(study, &quot;.&quot;, city),
+                           TRUE ~ study))
+
+p &lt;- ggplot(.ema_full, aes(x = as_date(response_time), y = as.numeric(mood_f))) +
+  geom_smooth(method = &quot;loess&quot;, span = .05, se = FALSE, colour=&quot;dodgerblue4&quot;) + 
+  geom_point(size = .3, alpha = .3, position = position_jitter(height = .1), colour=&quot;dodgerblue2&quot;) +  
+  scale_x_date() + 
+  scale_y_continuous(breaks = 1:6, labels = c(&quot;Full of energy&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;Without energy&quot;), limits = c(1, 6)) +
+  xlab(&quot;Time&quot;) +
+  ylab(&quot;Mood | Full of energy / Without energy&quot;) 
+
+p + facet_wrap(vars(study), scales = &quot;free&quot;, ncol=2)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-20-1.png" /><!-- --></p>
+</div>
+</div>
+<div id="environmental-exposure" class="section level2" number="4.3">
+<h2><span class="header-section-number">4.3</span> Environmental exposure</h2>
+<div id="missing-data" class="section level3" number="4.3.1">
+<h3><span class="header-section-number">4.3.1</span> Missing data</h3>
+<p>All environmental exposure metrics require a valid location to be evaluated. In the dataset, among the 28929 rows, 2997 have no coordinates. Among the remaining 25932 rows, only 13649 EMA responses fall within the CMM boundary and get park distance and canopy metrics.</p>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Description</th>
+<th align="left">N</th>
+<th align="left">Possible explanations</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Total number of responses</td>
+<td align="left">28929</td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left">Useable location data</td>
+<td align="left">25932</td>
+<td align="left">2997 rows have no coordinates coordinates along their EMA responses</td>
+</tr>
+<tr class="odd">
+<td align="left">Canada-wide environmental data (<em>i.e.</em> <code>env.rd_density</code> and Pampalon deprivation metrics)</td>
+<td align="left">25932</td>
+<td align="left">Some <NA> values might exist in the Pampalon metrics, which are due to EMA responses being located in area where no data is available (parks, Indian reserves, etc.)</td>
+</tr>
+<tr class="even">
+<td align="left">CMA bound environmental data (<em>i.e.</em> <code>env.gentrified</code>)</td>
+<td align="left">23399</td>
+<td align="left">Gentrification status is computed at the Census tract level, which is only available for Census Metropolitan Areas</td>
+</tr>
+<tr class="odd">
+<td align="left">CMM bound environmental data (<em>i.e.</em> <code>env.closest_park</code> and <code>env.canopy</code>)</td>
+<td align="left">13649</td>
+<td align="left">Parks and canopy datasets produced by the <em><a href="https://cmm.qc.ca">Communauté métropolitaine de Montréal</a></em> were used to get a better quality data, at the cost of dropping all not Montréal centered EMA responses for those two environmental metrics; data layers of lower quality could be used to get a Canada-wide cobverage</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="distance-to-closest-park" class="section level3" number="4.3.2">
+<h3><span class="header-section-number">4.3.2</span> Distance to closest park</h3>
+<pre class="r"><code>ggplot(units::drop_units(ema_full)) +
+  geom_histogram(aes(env.closest_park), bins = 50) +
+  labs(title = &quot;Distance to closest park from EMA responses&quot;) +
+  xlab(&quot;Distance to closest park (m)&quot;)</code></pre>
+<pre><code>## Warning: Removed 15280 rows containing non-finite values (stat_bin).</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-21-1.png" /><!-- --></p>
+<pre class="r"><code>summary(ema_full$env.closest_park)</code></pre>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA&#39;s 
+##    0.00   94.17  170.23  218.25  293.30 7295.58   15280</code></pre>
+</div>
+<div id="canopy-1" class="section level3" number="4.3.3">
+<h3><span class="header-section-number">4.3.3</span> Canopy</h3>
+<pre class="r"><code>ggplot(ema_full) +
+  geom_bar(aes(env.canopy)) +
+  labs(title = &quot;Type of canopy&quot;) +
+  xlab(&quot;Type of canopy&quot;)</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-22-1.png" /><!-- --></p>
+<pre class="r"><code>summary(ema_full$env.canopy)</code></pre>
+<pre><code>##    Aquatique  Minéral bas Minéral haut  Végétal bas Végétal haut         NA&#39;s 
+##           10         4563         5356         1461         2259        15280</code></pre>
+</div>
+<div id="road-density" class="section level3" number="4.3.4">
+<h3><span class="header-section-number">4.3.4</span> Road density</h3>
+<pre class="r"><code>ggplot(ema_full) +
+  geom_histogram(aes(env.rd_density)) +
+  labs(title = &quot;Major raod density around EMA responses&quot;) +
+  xlab(expression(paste(&quot;Road density within 100m buffer (&quot;,m/m^2, &quot;)&quot;)))</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<pre><code>## Warning: Removed 2997 rows containing non-finite values (stat_bin).</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-23-1.png" /><!-- --></p>
+<pre class="r"><code>ggplot(filter(ema_full, env.rd_density &gt; 0)) +
+  geom_histogram(aes(env.rd_density)) +
+  labs(title = &quot;Major raod density around EMA responses (excluding 0)&quot;) +
+  xlab(expression(paste(&quot;Road density within 100m buffer (&quot;,m/m^2, &quot;)&quot;)))</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-23-2.png" /><!-- --></p>
+<pre class="r"><code>summary(ema_full$env.rd_density)</code></pre>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA&#39;s 
+##  0.0000  0.0000  0.0000  0.0009  0.0000  0.0520    2997</code></pre>
+</div>
+<div id="gentrified-neighborhood" class="section level3" number="4.3.5">
+<h3><span class="header-section-number">4.3.5</span> Gentrified neighborhood</h3>
+<pre class="r"><code>ggplot(ema_full) +
+  geom_bar(aes(env.gentrified)) +
+  labs(title = &quot;EMA response within gentrified neighborhood (Ding 2016)&quot;) +
+  xlab(&quot;Gentrified&quot;)</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-24-1.png" /><!-- --></p>
+<pre class="r"><code>summary(ema_full$env.gentrified)</code></pre>
+<pre><code>##    Mode   FALSE    TRUE    NA&#39;s 
+## logical   15499    7900    5530</code></pre>
+</div>
+<div id="pampalon-deprivation-index" class="section level3" number="4.3.6">
+<h3><span class="header-section-number">4.3.6</span> Pampalon deprivation index</h3>
+<pre class="r"><code>ggplot(ema_full) +
+  geom_histogram(aes(env.depriv_material)) +
+  labs(title = &quot;DA material deprivation status of EMA responses&quot;) +
+  xlab(&quot;Pampalon material score&quot;)</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<pre><code>## Warning: Removed 4741 rows containing non-finite values (stat_bin).</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-25-1.png" /><!-- --></p>
+<pre class="r"><code>ggplot(ema_full) +
+  geom_histogram(aes(env.depriv_social)) +
+  labs(title = &quot;DA social deprivation status of EMA responses&quot;) +
+  xlab(&quot;Pampalon social score&quot;)</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<pre><code>## Warning: Removed 4741 rows containing non-finite values (stat_bin).</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-25-2.png" /><!-- --></p>
+<pre class="r"><code>ema_full %&gt;%
+  as.data.frame() %&gt;%
+  select(starts_with(&quot;env.depriv&quot;)) %&gt;%
+  summary()</code></pre>
+<pre><code>##  env.depriv_material env.depriv_social
+##  Min.   :-0.157      Min.   :-0.132   
+##  1st Qu.:-0.046      1st Qu.: 0.002   
+##  Median :-0.017      Median : 0.034   
+##  Mean   :-0.019      Mean   : 0.028   
+##  3rd Qu.: 0.009      3rd Qu.: 0.055   
+##  Max.   : 0.172      Max.   : 0.206   
+##  NA&#39;s   :4741        NA&#39;s   :4741</code></pre>
+</div>
+</div>
+<div id="density-maps-of-responses" class="section level2" number="4.4">
+<h2><span class="header-section-number">4.4</span> Density maps of responses</h2>
+<pre class="r"><code>.ema_full &lt;- ema_full %&gt;%
+  data.frame() %&gt;%
+  mutate(city = case_when(substr(pid, 1, 1) == &quot;1&quot; ~ &quot;Vic&quot;,
+                          substr(pid, 1, 1) == &quot;2&quot; ~ &quot;Van&quot;,
+                          substr(pid, 1, 1) == &quot;3&quot; ~ &quot;Skt&quot;,
+                          substr(pid, 1, 1) == &quot;4&quot; ~ &quot;Mtl&quot;),
+    study = case_when(str_detect(study, &quot;INTERACT&quot;) ~ paste0(study, &quot;.&quot;, city),
+                           TRUE ~ study))
+
+for (s in unique(.ema_full$study)) {
+  if (s == &quot;INTERACT.2.Vic&quot;) next # Skip as no coords exist in this dataset !!
+  print(paste(&quot;Processing&quot;, s))
+  
+  .ema_full_subset &lt;- .ema_full %&gt;%
+    filter(study == s) 
+  
+  bb &lt;- .ema_full_subset %&gt;%
+    summarise(left = min(lng, na.rm=TRUE),
+              right = max(lng, na.rm=TRUE),
+              bottom = min(lat, na.rm=TRUE),
+              top = max(lat, na.rm=TRUE))
+  bb &lt;- unlist(bb[1,])
+
+  zlevel &lt;- switch(s,
+                   &quot;COHESION&quot; = 4,
+                   &quot;REM&quot; = 4,
+                   &quot;REM2&quot; = 4,
+                   &quot;INTERACT.1.Mtl&quot; = 5,
+                   &quot;INTERACT.1.Skt&quot; = 5,
+                   &quot;INTERACT.2.Mtl&quot; = 7,
+                   &quot;INTERACT.2.Skt&quot; = 7,
+                   &quot;INTERACT.2.Van&quot; = 10,
+                   &quot;INTERACT.3.Vic&quot; = 4)
+  names(bb) &lt;- c(&quot;left&quot;, &quot;right&quot;, &quot;bottom&quot;, &quot;top&quot;)
+  bgd &lt;-get_stamenmap(bb, maptype = &quot;toner-lite&quot;, zoom = zlevel)
+  
+  rem_plot &lt;- ggmap(bgd) + 
+                    geom_point(data=.ema_full_subset, aes(x=lng, y=lat), color=&quot;red&quot;, alpha=.2) + 
+                    #geom_hex(data = .ema_full, aes(x = lng, y = lat), binwidth = c(1, 1), alpha = 0.8) +
+                    #scale_fill_gradient(name=&quot;Count of EMA responses&quot;, low = &quot;white&quot;, high = &quot;red&quot;)
+                    # coord_sf(
+                    #     xlim = sf::st_bbox(vic_int_t)[c(1,3)],
+                    #     ylim = sf::st_bbox(vic_int_t)[c(2,4)]) + 
+                    #annotation_scale()
+                    #theme_map()
+    labs(title = paste(s, &quot;responses&quot;))
+  
+  plot(rem_plot)
+}</code></pre>
+<pre><code>## [1] &quot;Processing COHESION&quot;</code></pre>
+<pre><code>## Warning: Removed 613 rows containing missing values (geom_point).</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-1.png" /><!-- --></p>
+<pre><code>## [1] &quot;Processing REM&quot;</code></pre>
+<pre><code>## Warning: Removed 141 rows containing missing values (geom_point).</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-2.png" /><!-- --></p>
+<pre><code>## [1] &quot;Processing REM2&quot;</code></pre>
+<pre><code>## Warning: Removed 130 rows containing missing values (geom_point).</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-3.png" /><!-- --></p>
+<pre><code>## [1] &quot;Processing INTERACT.1.Mtl&quot;</code></pre>
+<pre><code>## Warning: Removed 225 rows containing missing values (geom_point).</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-4.png" /><!-- --></p>
+<pre><code>## [1] &quot;Processing INTERACT.1.Skt&quot;</code></pre>
+<pre><code>## Warning: Removed 40 rows containing missing values (geom_point).</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-5.png" /><!-- --></p>
+<pre><code>## [1] &quot;Processing INTERACT.2.Mtl&quot;</code></pre>
+<pre><code>## Warning: Removed 81 rows containing missing values (geom_point).</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-6.png" /><!-- --></p>
+<pre><code>## [1] &quot;Processing INTERACT.2.Skt&quot;</code></pre>
+<pre><code>## Warning: Removed 49 rows containing missing values (geom_point).</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-7.png" /><!-- --></p>
+<pre><code>## [1] &quot;Processing INTERACT.2.Van&quot;</code></pre>
+<pre><code>## Warning: Removed 36 rows containing missing values (geom_point).</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-8.png" /><!-- --></p>
+<pre><code>## [1] &quot;Processing INTERACT.3.Vic&quot;</code></pre>
+<pre><code>## Warning: Removed 43 rows containing missing values (geom_point).</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-9.png" /><!-- --></p>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
