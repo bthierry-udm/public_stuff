@@ -260,7 +260,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">EMA | mood pre-analysis</h1>
 <h4 class="author">B. Thierry, Spherelab</h4>
-<h4 class="date">09 January, 2023</h4>
+<h4 class="date">13 January, 2023</h4>
 
 </div>
 
@@ -313,6 +313,36 @@ cohesion_ema &lt;- read_csv(&quot;data/COHESION/cohesion_ema.csv&quot;, show_col
   transmute(study = &#39;COHESION&#39;,
             pid = as.character(participant_id),
             locale = locale,
+            scheduled_time = scheduled_time,
+            issued_time = issued_time,
+            response_time = response_time,
+            latency = latency,
+            duration = duration,
+            lat = lat,
+            lng = lng,
+            across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), as.factor)) %&gt;%
+  mutate(across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), ~na_if(., -7))) %&gt;%
+  drop_na(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;))
+
+# COHESION wave 2
+cohesion_ema2 &lt;- read_csv(&quot;data/COHESION/cohesion_ema_w2.csv&quot;, show_col_types = FALSE) %&gt;%
+  transmute(study = &#39;COHESION2&#39;,
+            pid = as.character(participant_id),
+            scheduled_time = scheduled_time,
+            issued_time = issued_time,
+            response_time = response_time,
+            latency = latency,
+            duration = duration,
+            lat = lat,
+            lng = lng,
+            across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), as.factor)) %&gt;%
+  mutate(across(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;), ~na_if(., -7))) %&gt;%
+  drop_na(matches(&#39;mood_(a|b|c|d|e|f|who)$&#39;))
+
+# COHESION wave 2 EMOWI
+cohesion_ema2e &lt;- read_csv(&quot;data/COHESION/cohesion_ema_w2_emowi.csv&quot;, show_col_types = FALSE) %&gt;%
+  transmute(study = &#39;COHESION2.emowi&#39;,
+            pid = as.character(participant_id),
             scheduled_time = scheduled_time,
             issued_time = issued_time,
             response_time = response_time,
@@ -553,6 +583,8 @@ interact_vic3 &lt;- read_csv(&quot;data/INTERACT/ema_w3_survey_vic_1655.csv&quot
 ## • `` -&gt; `...10`</code></pre>
 <p>Merge and clean…</p>
 <pre class="r"><code>ema_full &lt;- bind_rows(cohesion_ema,
+                      cohesion_ema2,
+                      cohesion_ema2e,
                       rem_ema,
                       rem_ema2,
                       interact_mtl1, interact_skt1,
@@ -571,7 +603,7 @@ tz_lut &lt;- ema_full %&gt;%
   summarise(n = n(),
             mean_lat = mean(lat, na.rm = T),
             mean_lng = mean(lng, na.rm = T)) %&gt;%
-  inner_join(data.frame(tz_code = c(&quot;ADT&quot;, &quot;AEDT&quot;, &quot;AEST&quot;, &quot;AST&quot;, &quot;CDT&quot;, &quot;CEST&quot;, &quot;CET&quot;, &quot;CST&quot;, &quot;EDT&quot;, &quot;EET&quot;, &quot;EST&quot;, &quot;MDT&quot;, &quot;MST&quot;, &quot;NDT&quot;, &quot;NST&quot;, &quot;PDT&quot;, &quot;PST&quot;),
+  inner_join(data.frame(tz_code = c(&quot;ADT&quot;, &quot;AEDT&quot;, &quot;AEST&quot;, &quot;AST&quot;, &quot;CDT&quot;, &quot;CEST&quot;, &quot;CET&quot;, &quot;CST&quot;, &quot;EDT&quot;, &quot;EET&quot;, &quot;EST&quot;, &quot;GMT&quot;, &quot;IST&quot;, &quot;MDT&quot;, &quot;MST&quot;, &quot;NDT&quot;, &quot;NST&quot;, &quot;PDT&quot;, &quot;PST&quot;),
                         tz_name = c(&quot;Canada/Atlantic&quot;, # ADT
                                     &quot;Australia/Victoria&quot;, # AEDT
                                     &quot;Australia/Victoria&quot;, # AEST
@@ -583,6 +615,8 @@ tz_lut &lt;- ema_full %&gt;%
                                     &quot;Canada/Eastern&quot;, # EDT
                                     &quot;Europe/Athens&quot;, # EET
                                     &quot;Canada/Eastern&quot;, # EST
+                                    &quot;Greenwicth Mean Time&quot;, # GMT
+                                    &quot;Indian Standard Time&quot;, # IST
                                     &quot;Canada/Mountain&quot;, # MDT
                                     &quot;Canada/Mountain&quot;, # MST
                                     &quot;Canada/Newfoundland&quot;, # NDT
@@ -602,6 +636,8 @@ tz_lut &lt;- ema_full %&gt;%
                                     &quot;-0400&quot;, # EDT
                                     &quot;+0200&quot;, # EET
                                     &quot;-0500&quot;, # EST
+                                    &quot;-0000&quot;, # GMT
+                                    &quot;+0530&quot;, # IST
                                     &quot;-0600&quot;, # MDT
                                     &quot;-0700&quot;, # MST
                                     &quot;-0230&quot;, # NDT
@@ -623,12 +659,77 @@ ema_full &lt;- ema_full %&gt;%
          issued_time = ymd_hms(paste(substr(issued_time, 1, 10+1+8), tz_shift), tz=&quot;UTC&quot;),
          response_time = ymd_hms(paste(substr(response_time, 1, 10+1+8), tz_shift), tz=&quot;UTC&quot;)) %&gt;%
   select(!tz_shift)</code></pre>
+<pre><code>## Warning: 1 failed to parse.
+
+## Warning: 1 failed to parse.</code></pre>
 </div>
 <div id="participants-personal-data" class="section level2" number="2.2">
 <h2><span class="header-section-number">2.2</span> Participants’ personal data</h2>
 <p>Includes recoding/harmonizing the various data.</p>
 <pre class="r"><code>cohesion_lut &lt;- read_csv(&quot;data/COHESION/cohesion_ema_user.csv&quot;, show_col_types = FALSE) %&gt;%
   transmute(study = &quot;COHESION&quot;,
+            pid = as.character(participant_id),
+            prov = province,
+            postal_code = str_replace(postal_code, &quot; &quot;, &quot;&quot;),
+            age = age,
+            gender = case_when(gender == &quot;Man&quot; ~ &quot;Man&quot;,
+                               gender == &quot;Woman&quot; ~ &quot;Woman&quot;,
+                               TRUE ~ &quot;Other&quot;),
+            educ = case_when(education == &quot;Primary/Elementary School&quot; ~ &quot;Primary/Secondary School&quot;,
+                             education == &quot;Secondary School&quot; ~ &quot;Primary/Secondary School&quot;,
+                             education == &quot;Trade/Technical School or College Diploma&quot; ~ &quot;Trade/Technical School or College Diploma&quot;,
+                             education == &quot;University Degree&quot; ~ &quot;University Degree and higher&quot;,
+                             education == &quot;Graduate Degree&quot; ~ &quot;University Degree and higher&quot;,
+                             education == &quot;Post-Graduate Degree&quot; ~ &quot;University Degree and higher&quot;,
+                             TRUE ~ &quot;Other&quot;),
+            ethnic_group = case_when(ethnic_group == &quot;White&quot; ~ &quot;White&quot;,
+                                     TRUE ~ &quot;Other&quot;),
+            income = case_when(income_pre_covid == &quot;No income&quot; ~ &quot;$0 to $19,999&quot;,
+                               income_pre_covid == &quot;$1 to $9,999&quot; ~ &quot;$0 to $19,999&quot;,
+                               income_pre_covid == &quot;$10,000 to $14,999&quot; ~ &quot;$0 to $19,999&quot;,
+                               income_pre_covid == &quot;$15,000 to $19,999&quot; ~ &quot;$0 to $19,999&quot;,
+                               income_pre_covid == &quot;$20,000 to $29,999&quot; ~ &quot;$20,000 to $49,999&quot;,
+                               income_pre_covid == &quot;$30,000 to $39,999&quot; ~ &quot;$20,000 to $49,999&quot;,
+                               income_pre_covid == &quot;$40,000 to $49,999&quot; ~ &quot;$20,000 to $49,999&quot;,
+                               income_pre_covid == &quot;$50,000 to $99,999&quot; ~ &quot;$50,000 to $99,999&quot;,
+                               income_pre_covid == &quot;$100,000 to $149,999&quot; ~ &quot;$100,000 to $149,999&quot;,
+                               income_pre_covid == &quot;$150,000 to $199,999&quot; ~ &quot;$150,000 to $199,999&quot;,
+                               income_pre_covid == &quot;$200,000 or more&quot; ~ &quot;$200,000 or more&quot;,
+                               TRUE ~ &quot;I don’t know/Prefer not to answer&quot;))
+
+cohesion2_lut &lt;- read_csv(&quot;data/COHESION/cohesion_ema_user_w2.csv&quot;, show_col_types = FALSE) %&gt;%
+  transmute(study = &quot;COHESION2&quot;,
+            pid = as.character(participant_id),
+            prov = province,
+            postal_code = str_replace(postal_code, &quot; &quot;, &quot;&quot;),
+            age = age,
+            gender = case_when(gender == &quot;Man&quot; ~ &quot;Man&quot;,
+                               gender == &quot;Woman&quot; ~ &quot;Woman&quot;,
+                               TRUE ~ &quot;Other&quot;),
+            educ = case_when(education == &quot;Primary/Elementary School&quot; ~ &quot;Primary/Secondary School&quot;,
+                             education == &quot;Secondary School&quot; ~ &quot;Primary/Secondary School&quot;,
+                             education == &quot;Trade/Technical School or College Diploma&quot; ~ &quot;Trade/Technical School or College Diploma&quot;,
+                             education == &quot;University Degree&quot; ~ &quot;University Degree and higher&quot;,
+                             education == &quot;Graduate Degree&quot; ~ &quot;University Degree and higher&quot;,
+                             education == &quot;Post-Graduate Degree&quot; ~ &quot;University Degree and higher&quot;,
+                             TRUE ~ &quot;Other&quot;),
+            ethnic_group = case_when(ethnic_group == &quot;White&quot; ~ &quot;White&quot;,
+                                     TRUE ~ &quot;Other&quot;),
+            income = case_when(income_pre_covid == &quot;No income&quot; ~ &quot;$0 to $19,999&quot;,
+                               income_pre_covid == &quot;$1 to $9,999&quot; ~ &quot;$0 to $19,999&quot;,
+                               income_pre_covid == &quot;$10,000 to $14,999&quot; ~ &quot;$0 to $19,999&quot;,
+                               income_pre_covid == &quot;$15,000 to $19,999&quot; ~ &quot;$0 to $19,999&quot;,
+                               income_pre_covid == &quot;$20,000 to $29,999&quot; ~ &quot;$20,000 to $49,999&quot;,
+                               income_pre_covid == &quot;$30,000 to $39,999&quot; ~ &quot;$20,000 to $49,999&quot;,
+                               income_pre_covid == &quot;$40,000 to $49,999&quot; ~ &quot;$20,000 to $49,999&quot;,
+                               income_pre_covid == &quot;$50,000 to $99,999&quot; ~ &quot;$50,000 to $99,999&quot;,
+                               income_pre_covid == &quot;$100,000 to $149,999&quot; ~ &quot;$100,000 to $149,999&quot;,
+                               income_pre_covid == &quot;$150,000 to $199,999&quot; ~ &quot;$150,000 to $199,999&quot;,
+                               income_pre_covid == &quot;$200,000 or more&quot; ~ &quot;$200,000 or more&quot;,
+                               TRUE ~ &quot;I don’t know/Prefer not to answer&quot;))
+
+cohesion2e_lut &lt;- read_csv(&quot;data/COHESION/cohesion_ema_user_w2_emowi.csv&quot;, show_col_types = FALSE) %&gt;%
+  transmute(study = &quot;COHESION2.emowi&quot;,
             pid = as.character(participant_id),
             prov = province,
             postal_code = str_replace(postal_code, &quot; &quot;, &quot;&quot;),
@@ -736,7 +837,7 @@ rem_lut &lt;- read_csv(&quot;data/REM/w1.FINAL_WEIGHTED_24May22 - Copy.csv&quot;
             income = INCOME) # Income cannot be merged with INTERACT and COHESION categories, keep them as-is.</code></pre>
 <pre><code>## Warning: One or more parsing issues, see `problems()` for details</code></pre>
 <pre class="r"><code># Combine LUTs
-pid_lut &lt;- bind_rows(cohesion_lut, interact_lut, rem_lut, rem2_lut)</code></pre>
+pid_lut &lt;- bind_rows(cohesion_lut, cohesion2_lut, cohesion2e_lut, interact_lut, rem_lut, rem2_lut)</code></pre>
 </div>
 <div id="full-ema-dataset-w-participants-data" class="section level2" number="2.3">
 <h2><span class="header-section-number">2.3</span> Full EMA dataset w/ participants’ data</h2>
@@ -892,7 +993,7 @@ ema_full %&gt;% st_buffer(units::set_units(100, m)) %&gt;%
 <pre><code>## Warning in CPL_write_ogr(obj, dsn, layer, driver,
 ## as.character(dataset_options), : GDAL Message 6: dataset PG:dbname=xema_primer
 ## does not support layer creation option append</code></pre>
-<pre><code>## Writing 28781 features with 3 fields and geometry type Polygon.</code></pre>
+<pre><code>## Writing 33775 features with 3 fields and geometry type Polygon.</code></pre>
 <pre class="sql"><code>select study, pid, scheduled_time,
     sum(coalesce(rd_length, 0)) / st_area(wkb_geometry::geography) rd_density
 from (
@@ -1101,8 +1202,8 @@ ema_full %&gt;%
             `N obs (sd)` = round(sd(n), 1),
             `N obs/day (avg)` = round(mean(avg_obs_day), 1),
             `N obs/day (sd)` = round(sd(avg_obs_day), 1),
-            `Span days (avg)` = round(mean(span_days), 1),
-            `Span days (sd)` = round(sd(span_days), 1),
+            `Span days (avg)` = round(mean(span_days, na.rm=TRUE), 1),
+            `Span days (sd)` = round(sd(span_days, na.rm=TRUE), 1),
             `Age (avg)` = round(mean(age, na.rm=TRUE), 1),
             `Age (sd)` = round(sd(age, na.rm=TRUE), 1),
             `N Man` = sum(gender_man, na.rm=TRUE),
@@ -1110,7 +1211,7 @@ ema_full %&gt;%
 dstats</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["study"],"name":[1],"type":["chr"],"align":["left"]},{"label":["N Pid"],"name":[2],"type":["int"],"align":["right"]},{"label":["N obs (avg)"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["N obs (sd)"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["N obs/day (avg)"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["N obs/day (sd)"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["Span days (avg)"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["Span days (sd)"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["Age (avg)"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["Age (sd)"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["N Man"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["N Woman"],"name":[12],"type":["dbl"],"align":["right"]}],"data":[{"1":"COHESION","2":"367","3":"24.0","4":"22.1","5":"1.1","6":"0.5","7":"162.6","8":"169.5","9":"45.8","10":"15.1","11":"89","12":"265"},{"1":"INTERACT.1.Mtl","2":"467","3":"11.6","4":"5.9","5":"1.9","6":"0.6","7":"5.4","8":"3.4","9":"42.5","10":"14.0","11":"172","12":"285"},{"1":"INTERACT.1.Skt","2":"137","3":"13.5","4":"7.3","5":"1.8","6":"0.5","7":"6.0","8":"2.4","9":"33.7","10":"12.2","11":"36","12":"99"},{"1":"INTERACT.2.Mtl","2":"160","3":"14.3","4":"5.4","5":"2.2","6":"0.6","7":"5.8","8":"1.4","9":"43.8","10":"13.7","11":"63","12":"91"},{"1":"INTERACT.2.Skt","2":"78","3":"14.2","4":"5.5","5":"2.0","6":"0.5","7":"5.7","8":"1.4","9":"37.4","10":"12.1","11":"24","12":"50"},{"1":"INTERACT.2.Van","2":"82","3":"12.7","4":"6.1","5":"1.9","6":"0.5","7":"5.6","8":"1.5","9":"50.8","10":"14.1","11":"27","12":"53"},{"1":"INTERACT.2.Vic","2":"129","3":"12.7","4":"5.6","5":"1.9","6":"0.4","7":"5.6","8":"1.6","9":"42.9","10":"12.7","11":"61","12":"67"},{"1":"INTERACT.3.Vic","2":"112","3":"12.9","4":"6.0","5":"1.9","6":"0.5","7":"5.4","8":"1.7","9":"NaN","10":"NA","11":"0","12":"0"},{"1":"REM","2":"262","3":"11.0","4":"6.1","5":"1.9","6":"0.6","7":"4.9","8":"2.0","9":"39.0","10":"12.4","11":"139","12":"119"},{"1":"REM2","2":"191","3":"12.8","4":"5.9","5":"2.1","6":"0.6","7":"5.5","8":"1.7","9":"40.7","10":"12.4","11":"0","12":"0"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["study"],"name":[1],"type":["chr"],"align":["left"]},{"label":["N Pid"],"name":[2],"type":["int"],"align":["right"]},{"label":["N obs (avg)"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["N obs (sd)"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["N obs/day (avg)"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["N obs/day (sd)"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["Span days (avg)"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["Span days (sd)"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["Age (avg)"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["Age (sd)"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["N Man"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["N Woman"],"name":[12],"type":["dbl"],"align":["right"]}],"data":[{"1":"COHESION","2":"367","3":"24.0","4":"22.1","5":"1.1","6":"0.5","7":"162.6","8":"169.5","9":"45.8","10":"15.1","11":"89","12":"265"},{"1":"COHESION2","2":"197","3":"11.1","4":"9.0","5":"1.0","6":"0.0","7":"66.7","8":"59.4","9":"47.1","10":"16.0","11":"55","12":"121"},{"1":"COHESION2.emowi","2":"233","3":"12.0","4":"5.6","5":"2.0","6":"0.6","7":"5.1","8":"1.7","9":"47.4","10":"14.9","11":"59","12":"153"},{"1":"INTERACT.1.Mtl","2":"467","3":"11.6","4":"5.9","5":"1.9","6":"0.6","7":"5.4","8":"3.4","9":"42.5","10":"14.0","11":"172","12":"285"},{"1":"INTERACT.1.Skt","2":"137","3":"13.5","4":"7.3","5":"1.8","6":"0.5","7":"6.0","8":"2.4","9":"33.7","10":"12.2","11":"36","12":"99"},{"1":"INTERACT.2.Mtl","2":"160","3":"14.3","4":"5.4","5":"2.2","6":"0.6","7":"5.8","8":"1.4","9":"43.8","10":"13.7","11":"63","12":"91"},{"1":"INTERACT.2.Skt","2":"78","3":"14.2","4":"5.5","5":"2.0","6":"0.5","7":"5.7","8":"1.4","9":"37.4","10":"12.1","11":"24","12":"50"},{"1":"INTERACT.2.Van","2":"82","3":"12.7","4":"6.1","5":"1.9","6":"0.5","7":"5.6","8":"1.5","9":"50.8","10":"14.1","11":"27","12":"53"},{"1":"INTERACT.2.Vic","2":"129","3":"12.7","4":"5.6","5":"1.9","6":"0.4","7":"5.6","8":"1.6","9":"42.9","10":"12.7","11":"61","12":"67"},{"1":"INTERACT.3.Vic","2":"112","3":"12.9","4":"6.0","5":"1.9","6":"0.5","7":"5.4","8":"1.7","9":"NaN","10":"NA","11":"0","12":"0"},{"1":"REM","2":"262","3":"11.0","4":"6.1","5":"1.9","6":"0.6","7":"4.9","8":"2.0","9":"39.0","10":"12.4","11":"139","12":"119"},{"1":"REM2","2":"191","3":"12.8","4":"5.9","5":"2.1","6":"0.6","7":"5.5","8":"1.7","9":"40.7","10":"12.4","11":"0","12":"0"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
@@ -1259,7 +1360,7 @@ p + facet_wrap(vars(study), scales = &quot;free&quot;, ncol=2)</code></pre>
 <h2><span class="header-section-number">4.3</span> Environmental exposure</h2>
 <div id="missing-data" class="section level3" number="4.3.1">
 <h3><span class="header-section-number">4.3.1</span> Missing data</h3>
-<p>All environmental exposure metrics require a valid location to be evaluated. In the dataset, among the 28929 rows, 2997 have no coordinates. Among the remaining 25932 rows, only 13649 EMA responses fall within the CMM boundary and get park distance and canopy metrics.</p>
+<p>All environmental exposure metrics require a valid location to be evaluated. In the dataset, among the 33923 rows, 4277 have no coordinates. Among the remaining 29646 rows, only 14190 EMA responses fall within the CMM boundary and get park distance and canopy metrics.</p>
 <table>
 <colgroup>
 <col width="33%" />
@@ -1276,27 +1377,27 @@ p + facet_wrap(vars(study), scales = &quot;free&quot;, ncol=2)</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left">Total number of responses</td>
-<td align="left">28929</td>
+<td align="left">33923</td>
 <td align="left"></td>
 </tr>
 <tr class="even">
 <td align="left">Useable location data</td>
-<td align="left">25932</td>
-<td align="left">2997 rows have no coordinates coordinates along their EMA responses</td>
+<td align="left">29646</td>
+<td align="left">4277 rows have no coordinates coordinates along their EMA responses</td>
 </tr>
 <tr class="odd">
 <td align="left">Canada-wide environmental data (<em>i.e.</em> <code>env.rd_density</code> and Pampalon deprivation metrics)</td>
-<td align="left">25932</td>
+<td align="left">29646</td>
 <td align="left">Some <NA> values might exist in the Pampalon metrics, which are due to EMA responses being located in area where no data is available (parks, Indian reserves, etc.)</td>
 </tr>
 <tr class="even">
 <td align="left">CMA bound environmental data (<em>i.e.</em> <code>env.gentrified</code>)</td>
-<td align="left">23399</td>
+<td align="left">26093</td>
 <td align="left">Gentrification status is computed at the Census tract level, which is only available for Census Metropolitan Areas</td>
 </tr>
 <tr class="odd">
 <td align="left">CMM bound environmental data (<em>i.e.</em> <code>env.closest_park</code> and <code>env.canopy</code>)</td>
-<td align="left">13649</td>
+<td align="left">14190</td>
 <td align="left">Parks and canopy datasets produced by the <em><a href="https://cmm.qc.ca">Communauté métropolitaine de Montréal</a></em> were used to get a better quality data, at the cost of dropping all not Montréal centered EMA responses for those two environmental metrics; data layers of lower quality could be used to get a Canada-wide cobverage</td>
 </tr>
 </tbody>
@@ -1308,11 +1409,11 @@ p + facet_wrap(vars(study), scales = &quot;free&quot;, ncol=2)</code></pre>
   geom_histogram(aes(env.closest_park), bins = 50) +
   labs(title = &quot;Distance to closest park from EMA responses&quot;) +
   xlab(&quot;Distance to closest park (m)&quot;)</code></pre>
-<pre><code>## Warning: Removed 15280 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>## Warning: Removed 19733 rows containing non-finite values (stat_bin).</code></pre>
 <p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-21-1.png" /><!-- --></p>
 <pre class="r"><code>summary(ema_full$env.closest_park)</code></pre>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA&#39;s 
-##    0.00   94.17  170.23  218.25  293.30 7295.58   15280</code></pre>
+##    0.00   93.78  169.41  217.72  293.37 7295.58   19733</code></pre>
 </div>
 <div id="canopy-1" class="section level3" number="4.3.3">
 <h3><span class="header-section-number">4.3.3</span> Canopy</h3>
@@ -1323,7 +1424,7 @@ p + facet_wrap(vars(study), scales = &quot;free&quot;, ncol=2)</code></pre>
 <p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-22-1.png" /><!-- --></p>
 <pre class="r"><code>summary(ema_full$env.canopy)</code></pre>
 <pre><code>##    Aquatique  Minéral bas Minéral haut  Végétal bas Végétal haut         NA&#39;s 
-##           10         4563         5356         1461         2259        15280</code></pre>
+##           10         4707         5551         1572         2350        19733</code></pre>
 </div>
 <div id="road-density" class="section level3" number="4.3.4">
 <h3><span class="header-section-number">4.3.4</span> Road density</h3>
@@ -1332,7 +1433,7 @@ p + facet_wrap(vars(study), scales = &quot;free&quot;, ncol=2)</code></pre>
   labs(title = &quot;Major raod density around EMA responses&quot;) +
   xlab(expression(paste(&quot;Road density within 100m buffer (&quot;,m/m^2, &quot;)&quot;)))</code></pre>
 <pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
-<pre><code>## Warning: Removed 2997 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>## Warning: Removed 4277 rows containing non-finite values (stat_bin).</code></pre>
 <p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-23-1.png" /><!-- --></p>
 <pre class="r"><code>ggplot(filter(ema_full, env.rd_density &gt; 0)) +
   geom_histogram(aes(env.rd_density)) +
@@ -1342,7 +1443,7 @@ p + facet_wrap(vars(study), scales = &quot;free&quot;, ncol=2)</code></pre>
 <p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-23-2.png" /><!-- --></p>
 <pre class="r"><code>summary(ema_full$env.rd_density)</code></pre>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA&#39;s 
-##  0.0000  0.0000  0.0000  0.0009  0.0000  0.0520    2997</code></pre>
+##   0.000   0.000   0.000   0.001   0.000   0.052    4277</code></pre>
 </div>
 <div id="gentrified-neighborhood" class="section level3" number="4.3.5">
 <h3><span class="header-section-number">4.3.5</span> Gentrified neighborhood</h3>
@@ -1353,7 +1454,7 @@ p + facet_wrap(vars(study), scales = &quot;free&quot;, ncol=2)</code></pre>
 <p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-24-1.png" /><!-- --></p>
 <pre class="r"><code>summary(ema_full$env.gentrified)</code></pre>
 <pre><code>##    Mode   FALSE    TRUE    NA&#39;s 
-## logical   15499    7900    5530</code></pre>
+## logical   17595    8498    7830</code></pre>
 </div>
 <div id="pampalon-deprivation-index" class="section level3" number="4.3.6">
 <h3><span class="header-section-number">4.3.6</span> Pampalon deprivation index</h3>
@@ -1362,27 +1463,27 @@ p + facet_wrap(vars(study), scales = &quot;free&quot;, ncol=2)</code></pre>
   labs(title = &quot;DA material deprivation status of EMA responses&quot;) +
   xlab(&quot;Pampalon material score&quot;)</code></pre>
 <pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
-<pre><code>## Warning: Removed 4741 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>## Warning: Removed 6382 rows containing non-finite values (stat_bin).</code></pre>
 <p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-25-1.png" /><!-- --></p>
 <pre class="r"><code>ggplot(ema_full) +
   geom_histogram(aes(env.depriv_social)) +
   labs(title = &quot;DA social deprivation status of EMA responses&quot;) +
   xlab(&quot;Pampalon social score&quot;)</code></pre>
 <pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
-<pre><code>## Warning: Removed 4741 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>## Warning: Removed 6382 rows containing non-finite values (stat_bin).</code></pre>
 <p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-25-2.png" /><!-- --></p>
 <pre class="r"><code>ema_full %&gt;%
   as.data.frame() %&gt;%
   select(starts_with(&quot;env.depriv&quot;)) %&gt;%
   summary()</code></pre>
 <pre><code>##  env.depriv_material env.depriv_social
-##  Min.   :-0.157      Min.   :-0.132   
-##  1st Qu.:-0.046      1st Qu.: 0.002   
-##  Median :-0.017      Median : 0.034   
-##  Mean   :-0.019      Mean   : 0.028   
-##  3rd Qu.: 0.009      3rd Qu.: 0.055   
+##  Min.   :-0.162      Min.   :-0.132   
+##  1st Qu.:-0.045      1st Qu.: 0.000   
+##  Median :-0.016      Median : 0.033   
+##  Mean   :-0.018      Mean   : 0.026   
+##  3rd Qu.: 0.010      3rd Qu.: 0.054   
 ##  Max.   : 0.172      Max.   : 0.206   
-##  NA&#39;s   :4741        NA&#39;s   :4741</code></pre>
+##  NA&#39;s   :6382        NA&#39;s   :6382</code></pre>
 </div>
 </div>
 <div id="density-maps-of-responses" class="section level2" number="4.4">
@@ -1412,6 +1513,8 @@ for (s in unique(.ema_full$study)) {
 
   zlevel &lt;- switch(s,
                    &quot;COHESION&quot; = 4,
+                   &quot;COHESION2&quot; = 4,
+                   &quot;COHESION2.emowi&quot; = 4,
                    &quot;REM&quot; = 4,
                    &quot;REM2&quot; = 4,
                    &quot;INTERACT.1.Mtl&quot; = 5,
@@ -1439,30 +1542,36 @@ for (s in unique(.ema_full$study)) {
 <pre><code>## [1] &quot;Processing COHESION&quot;</code></pre>
 <pre><code>## Warning: Removed 613 rows containing missing values (geom_point).</code></pre>
 <p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-1.png" /><!-- --></p>
+<pre><code>## [1] &quot;Processing COHESION2&quot;</code></pre>
+<pre><code>## Warning: Removed 168 rows containing missing values (geom_point).</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-2.png" /><!-- --></p>
+<pre><code>## [1] &quot;Processing COHESION2.emowi&quot;</code></pre>
+<pre><code>## Warning: Removed 1112 rows containing missing values (geom_point).</code></pre>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-3.png" /><!-- --></p>
 <pre><code>## [1] &quot;Processing REM&quot;</code></pre>
 <pre><code>## Warning: Removed 141 rows containing missing values (geom_point).</code></pre>
-<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-2.png" /><!-- --></p>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-4.png" /><!-- --></p>
 <pre><code>## [1] &quot;Processing REM2&quot;</code></pre>
 <pre><code>## Warning: Removed 130 rows containing missing values (geom_point).</code></pre>
-<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-3.png" /><!-- --></p>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-5.png" /><!-- --></p>
 <pre><code>## [1] &quot;Processing INTERACT.1.Mtl&quot;</code></pre>
 <pre><code>## Warning: Removed 225 rows containing missing values (geom_point).</code></pre>
-<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-4.png" /><!-- --></p>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-6.png" /><!-- --></p>
 <pre><code>## [1] &quot;Processing INTERACT.1.Skt&quot;</code></pre>
 <pre><code>## Warning: Removed 40 rows containing missing values (geom_point).</code></pre>
-<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-5.png" /><!-- --></p>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-7.png" /><!-- --></p>
 <pre><code>## [1] &quot;Processing INTERACT.2.Mtl&quot;</code></pre>
 <pre><code>## Warning: Removed 81 rows containing missing values (geom_point).</code></pre>
-<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-6.png" /><!-- --></p>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-8.png" /><!-- --></p>
 <pre><code>## [1] &quot;Processing INTERACT.2.Skt&quot;</code></pre>
 <pre><code>## Warning: Removed 49 rows containing missing values (geom_point).</code></pre>
-<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-7.png" /><!-- --></p>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-9.png" /><!-- --></p>
 <pre><code>## [1] &quot;Processing INTERACT.2.Van&quot;</code></pre>
 <pre><code>## Warning: Removed 36 rows containing missing values (geom_point).</code></pre>
-<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-8.png" /><!-- --></p>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-10.png" /><!-- --></p>
 <pre><code>## [1] &quot;Processing INTERACT.3.Vic&quot;</code></pre>
 <pre><code>## Warning: Removed 43 rows containing missing values (geom_point).</code></pre>
-<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-9.png" /><!-- --></p>
+<p><img src="EMA_preanalyses_files/figure-html/unnamed-chunk-26-11.png" /><!-- --></p>
 </div>
 </div>
 
