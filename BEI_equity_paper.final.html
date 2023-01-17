@@ -262,7 +262,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">BEI and equity paper analyses | FINAL | Hurdle models</h1>
 <h4 class="author">B. Thierry, Spherelab</h4>
-<h4 class="date">12 October, 2022</h4>
+<h4 class="date">17 January, 2023</h4>
 
 </div>
 
@@ -391,6 +391,11 @@ tidy_df &lt;- function(src_df, ct, f, drop_islands=TRUE) {
 <ul>
 <li>Fix quintile computation (which was previously based on the whole CMA and now uses the actual AOI)</li>
 <li>Dropped a few useless chunks (mostly bike lane, no hurdle model)</li>
+</ul>
+<p><strong>UPDATE 2023-01-16</strong></p>
+<ul>
+<li>Decided to split the paper in two (gentrif + greenness) after reviews from the paper submission</li>
+<li>As per reviewer’s suggestion, gentrification now distinguishes between 3 states: gentrified / not-gontrified/non-eligible to gentrification</li>
 </ul>
 </div>
 <div id="a-few-references" class="section level2" number="1.4">
@@ -918,13 +923,15 @@ ding[[&quot;2006&quot;]] &lt;- st_read(&quot;data/gentrified_5years.gpkg&quot;, 
   st_transform(st_crs(bike_lane))
 
 .ding_map &lt;- ding[[&quot;2016&quot;]] %&gt;%
+  mutate(gentrification_status = factor(case_when(!gentrifiable_2011 ~ &quot;Non eligible&quot;, 
+                                           gentrifiable_2011 &amp; !gentrified_2016_2011 ~ &quot;Not gentrified&quot;,
+                                           gentrified_2016_2011 ~ &quot;Gentrified&quot;), levels = c(&quot;Non eligible&quot;, &quot;Not gentrified&quot;, &quot;Gentrified&quot;))) %&gt;%
   left_join(select(as.data.frame(CT16), GeoUID, interact_aoi), by = c(&quot;ct_uid_16&quot; = &quot;GeoUID&quot;)) %&gt;%
   filter(interact_aoi)
 
 ggplot(data = .ding_map) + 
-  geom_sf(aes(fill = gentrified_2016_2011, colour=gentrifiable_2011)) +
-  scale_fill_manual(labels = c(&#39;No&#39;, &#39;Yes&#39;, &#39;N/A&#39;), values = c(&quot;gray&quot;, &quot;red&quot;, &quot;darkgray&quot;), name = &quot;Gentrified in 2016&quot;) +
-  scale_colour_manual(labels = c(&#39;No&#39;, &#39;Yes&#39;, &#39;N/A&#39;), values = c(&quot;darkgray&quot;, &quot;darkred&quot;, &quot;darkgray&quot;), name = &quot;Gentrifiable in 2011&quot;) +
+  geom_sf(aes(fill = gentrification_status)) +
+  scale_fill_manual(values = c(&quot;lightgray&quot;, &quot;yellow&quot;, &quot;red&quot;), name = &quot;Gentrification status in 2016&quot;) +
   #labs(title = &quot;Census tract gentrification status in 2016&quot;) +
   theme_void(base_size = 20)</code></pre>
 <p><img src="BEI_equity_paper.final_files/figure-html/ding-load-1.png" width="1152" /></p>
@@ -1034,8 +1041,17 @@ bei_df &lt;- CT16 %&gt;%
             Population = Population) %&gt;%
   left_join(pampalon_CT, by=&quot;CT_UID&quot;) %&gt;%
   left_join(select(as.data.frame(ding$`2016`), ct_uid_16, starts_with(&quot;gentrif&quot;)), by=c(&quot;CT_UID&quot; = &quot;ct_uid_16&quot;)) %&gt;%
+  mutate(gentrif_status_2016 = factor(case_when(!gentrifiable_2011 ~ &quot;Non eligible&quot;, 
+                                           gentrifiable_2011 &amp; !gentrified_2016_2011 ~ &quot;Not gentrified&quot;,
+                                           gentrified_2016_2011 ~ &quot;Gentrified&quot;), levels = c(&quot;Non eligible&quot;, &quot;Not gentrified&quot;, &quot;Gentrified&quot;))) %&gt;%
   left_join(select(as.data.frame(ding$`2011`), ct_uid_11, starts_with(&quot;gentrif&quot;)), by=c(&quot;CT_UID&quot; = &quot;ct_uid_11&quot;)) %&gt;%
+  mutate(gentrif_status_2011 = factor(case_when(!gentrifiable_2006 ~ &quot;Non eligible&quot;, 
+                                           gentrifiable_2006 &amp; !gentrified_2011_2006 ~ &quot;Not gentrified&quot;,
+                                           gentrified_2011_2006 ~ &quot;Gentrified&quot;), levels = c(&quot;Non eligible&quot;, &quot;Not gentrified&quot;, &quot;Gentrified&quot;))) %&gt;%
   left_join(select(as.data.frame(ding$`2006`), ct_uid_06, starts_with(&quot;gentrif&quot;)), by=c(&quot;CT_UID&quot; = &quot;ct_uid_06&quot;)) %&gt;%
+  mutate(gentrif_status_2006 = factor(case_when(!gentrifiable_2001 ~ &quot;Non eligible&quot;, 
+                                           gentrifiable_2001 &amp; !gentrified_2006_2001 ~ &quot;Not gentrified&quot;,
+                                           gentrified_2006_2001 ~ &quot;Gentrified&quot;), levels = c(&quot;Non eligible&quot;, &quot;Not gentrified&quot;, &quot;Gentrified&quot;))) %&gt;%
   left_join(select(as.data.frame(equity_ct), !c(&quot;geometry&quot;, &quot;CT_UID_2011&quot;, &quot;CT_UID_2006&quot;)), by=&quot;CT_UID&quot;) %&gt;%
   left_join(.bike_lane_changes, by=c(&quot;CT_UID&quot; = &quot;GeoUID&quot;)) %&gt;%
   left_join(as.data.frame(rename_with(esp_vert_ct, ~ paste0(., &quot;ct&quot;))), by=c(&quot;CT_UID&quot; = &quot;GeoUIDct&quot;)) %&gt;%
@@ -1055,7 +1071,7 @@ bei_df &lt;- CT16 %&gt;%
 head(bei_df)</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["CT_UID"],"name":[1],"type":["chr"],"align":["left"]},{"label":["CD_UID"],"name":[2],"type":["chr"],"align":["left"]},{"label":["CSD_UID"],"name":[3],"type":["chr"],"align":["left"]},{"label":["interact_aoi"],"name":[4],"type":["lgl"],"align":["right"]},{"label":["zone"],"name":[5],"type":["chr"],"align":["left"]},{"label":["Population"],"name":[6],"type":["int"],"align":["right"]},{"label":["wSCOREMAT.2016"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["wSCORESOC.2016"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["wSCOREMAT.2011"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["wSCORESOC.2011"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["wSCOREMAT.2006"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["wSCORESOC.2006"],"name":[12],"type":["dbl"],"align":["right"]},{"label":["gentrified_2016_2011"],"name":[13],"type":["lgl"],"align":["right"]},{"label":["gentrifiable_2011"],"name":[14],"type":["lgl"],"align":["right"]},{"label":["gentrified_2011_2006"],"name":[15],"type":["lgl"],"align":["right"]},{"label":["gentrifiable_2006"],"name":[16],"type":["lgl"],"align":["right"]},{"label":["gentrified_2006_2001"],"name":[17],"type":["lgl"],"align":["right"]},{"label":["gentrifiable_2001"],"name":[18],"type":["lgl"],"align":["right"]},{"label":["vis_minority_2016"],"name":[19],"type":["dbl"],"align":["right"]},{"label":["low_income_2016"],"name":[20],"type":["dbl"],"align":["right"]},{"label":["vis_minority_2011"],"name":[21],"type":["dbl"],"align":["right"]},{"label":["low_income_2011"],"name":[22],"type":["dbl"],"align":["right"]},{"label":["vis_minority_2006"],"name":[23],"type":["dbl"],"align":["right"]},{"label":["low_income_2006"],"name":[24],"type":["dbl"],"align":["right"]},{"label":["street_length"],"name":[25],"type":["dbl"],"align":["right"]},{"label":["street_length.hm"],"name":[26],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_total.2016ct"],"name":[27],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_total.2011ct"],"name":[28],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_total.2006ct"],"name":[29],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_total.hm.2016ct"],"name":[30],"type":["int"],"align":["right"]},{"label":["Bike_lane_total.hm.2011ct"],"name":[31],"type":["int"],"align":["right"]},{"label":["Bike_lane_total.hm.2006ct"],"name":[32],"type":["int"],"align":["right"]},{"label":["Bike_lane.by.street.2016ct"],"name":[33],"type":["dbl"],"align":["right"]},{"label":["Bike_lane.by.street.2011ct"],"name":[34],"type":["dbl"],"align":["right"]},{"label":["Bike_lane.by.street.2006ct"],"name":[35],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_diff.2011.2016ct"],"name":[36],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_diff.by.street.2011.2016ct"],"name":[37],"type":["dbl"],"align":["right"]},{"label":["ct_area_hct"],"name":[38],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_2011ct"],"name":[39],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_high_2011ct"],"name":[40],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_high_2011ct"],"name":[41],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_2011ct"],"name":[42],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_2015ct"],"name":[43],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_high_2015ct"],"name":[44],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_high_2015ct"],"name":[45],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_2015ct"],"name":[46],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_2017ct"],"name":[47],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_high_2017ct"],"name":[48],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_high_2017ct"],"name":[49],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_2017ct"],"name":[50],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_2019ct"],"name":[51],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_high_2019ct"],"name":[52],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_high_2019ct"],"name":[53],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_2019ct"],"name":[54],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_2011.2015ct"],"name":[55],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_2011.2017ct"],"name":[56],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_2015.2017ct"],"name":[57],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_high_2011.2015ct"],"name":[58],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_high_2011.2017ct"],"name":[59],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_high_2015.2017ct"],"name":[60],"type":["dbl"],"align":["right"]},{"label":["wSCOREMAT.2006.Q"],"name":[61],"type":["int"],"align":["right"]},{"label":["wSCOREMAT.2011.Q"],"name":[62],"type":["int"],"align":["right"]},{"label":["wSCOREMAT.2016.Q"],"name":[63],"type":["int"],"align":["right"]},{"label":["low_income_2006.Q"],"name":[64],"type":["int"],"align":["right"]},{"label":["low_income_2011.Q"],"name":[65],"type":["int"],"align":["right"]},{"label":["low_income_2016.Q"],"name":[66],"type":["int"],"align":["right"]},{"label":["vis_minority_2006.Q"],"name":[67],"type":["int"],"align":["right"]},{"label":["vis_minority_2011.Q"],"name":[68],"type":["int"],"align":["right"]},{"label":["vis_minority_2016.Q"],"name":[69],"type":["int"],"align":["right"]}],"data":[{"1":"4620149.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"3161","7":"-0.049248759","8":"0.057190321","9":"-0.02978953","10":"0.0594421910","11":"-0.02369179","12":"0.037338622","13":"FALSE","14":"TRUE","15":"TRUE","16":"TRUE","17":"TRUE","18":"TRUE","19":"15.35948","20":"22.0","21":"15.54828","22":"30.8","23":"12.59843","24":"23.91","25":"3154.205","26":"31.54205","27":"1208.5717","28":"688.5246","29":"577.1925","30":"12","31":"7","32":"6","33":"38.31620","34":"21.82878","35":"18.29914","36":"520.0470959","37":"16.487419915","38":"13.8","39":"3","40":"3","41":"21.8","42":"24.8","43":"4","44":"4","45":"26.4","46":"28.7","47":"4","48":"4","49":"29.2","50":"31.4","51":"4","52":"4","53":"28.7","54":"32.1","55":"3.9","56":"6.6","57":"2.7","58":"4.6","59":"7.4","60":"2.8","61":"2","62":"1","63":"1","64":"4","65":"5","66":"4","67":"3","68":"3","69":"3","_rn_":"1"},{"1":"4620185.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"5217","7":"0.002586202","8":"0.052690760","9":"0.01135986","10":"0.0457714081","11":"0.02030788","12":"0.046134103","13":"TRUE","14":"TRUE","15":"TRUE","16":"TRUE","17":"FALSE","18":"TRUE","19":"16.13217","20":"20.1","21":"17.59082","22":"27.6","23":"12.25490","24":"23.29","25":"7641.672","26":"76.41672","27":"1069.1814","28":"1069.4042","29":"0.0000","30":"11","31":"11","32":"0","33":"13.99146","34":"13.99437","35":"0.00000","36":"-0.2227721","37":"-0.002915228","38":"39.3","39":"12","40":"8","41":"20.6","42":"29.4","43":"11","44":"8","45":"20.0","46":"29.0","47":"13","48":"10","49":"24.3","50":"33.7","51":"14","52":"9","53":"22.1","54":"34.7","55":"-0.4","56":"4.3","57":"4.7","58":"-0.6","59":"3.7","60":"4.3","61":"4","62":"3","63":"3","64":"4","65":"4","66":"4","67":"3","68":"3","69":"3","_rn_":"2"},{"1":"4620222.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"3587","7":"0.082313210","8":"0.014476934","9":"0.09282443","10":"0.0052905841","11":"0.09663123","12":"-0.004537943","13":"FALSE","14":"TRUE","15":"TRUE","16":"TRUE","17":"FALSE","18":"TRUE","19":"57.91610","20":"35.1","21":"57.56359","22":"39.5","23":"50.00000","24":"41.79","25":"4155.251","26":"41.55251","27":"1059.5655","28":"0.0000","29":"0.0000","30":"11","31":"0","32":"0","33":"25.49944","34":"0.00000","35":"0.00000","36":"1059.5654725","37":"25.499435195","38":"19.9","39":"5","40":"2","41":"11.7","42":"24.9","43":"5","44":"2","45":"11.4","46":"24.0","47":"6","48":"3","49":"14.2","50":"29.6","51":"5","52":"3","53":"13.6","54":"26.9","55":"-0.9","56":"4.7","57":"5.6","58":"-0.3","59":"2.5","60":"2.8","61":"5","62":"5","63":"5","64":"5","65":"5","66":"5","67":"5","68":"5","69":"5","_rn_":"3"},{"1":"4620117.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"4359","7":"0.034245133","8":"0.006085192","9":"0.06315153","10":"0.0009442053","11":"0.03645207","12":"0.010056370","13":"TRUE","14":"TRUE","15":"FALSE","16":"TRUE","17":"TRUE","18":"TRUE","19":"84.76071","20":"27.5","21":"80.62201","22":"40.6","23":"73.28520","24":"41.64","25":"3360.624","26":"33.60624","27":"0.0000","28":"0.0000","29":"0.0000","30":"0","31":"0","32":"0","33":"0.00000","34":"0.00000","35":"0.00000","36":"0.0000000","37":"0.000000000","38":"27.1","39":"6","40":"4","41":"14.7","42":"20.9","43":"6","44":"4","45":"15.2","46":"22.7","47":"8","48":"5","49":"17.8","50":"27.8","51":"7","52":"4","53":"16.1","54":"26.8","55":"1.8","56":"6.9","57":"5.1","58":"0.5","59":"3.1","60":"2.6","61":"5","62":"5","63":"5","64":"5","65":"5","66":"5","67":"5","68":"5","69":"5","_rn_":"4"},{"1":"4620124.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"5729","7":"0.020820044","8":"0.047056282","9":"0.02972110","10":"0.0401421555","11":"0.02970024","12":"0.039865255","13":"FALSE","14":"TRUE","15":"TRUE","16":"TRUE","17":"TRUE","18":"TRUE","19":"55.86690","20":"36.6","21":"51.55172","22":"47.0","23":"41.18151","24":"47.58","25":"5169.698","26":"51.69698","27":"781.5758","28":"0.0000","29":"0.0000","30":"8","31":"0","32":"0","33":"15.11840","34":"0.00000","35":"0.00000","36":"781.5758193","37":"15.118404503","38":"37.7","39":"12","40":"9","41":"23.4","42":"32.3","43":"13","44":"10","45":"25.9","46":"34.2","47":"15","48":"11","49":"29.4","50":"38.8","51":"14","52":"11","53":"28.3","54":"37.6","55":"1.9","56":"6.5","57":"4.6","58":"2.5","59":"6.0","60":"3.5","61":"5","62":"4","63":"4","64":"5","65":"5","66":"5","67":"5","68":"5","69":"5","_rn_":"5"},{"1":"4620306.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"2847","7":"0.030925210","8":"0.054219900","9":"0.03587117","10":"0.0427824009","11":"0.04348091","12":"0.040864073","13":"TRUE","14":"TRUE","15":"TRUE","16":"TRUE","17":"TRUE","18":"TRUE","19":"16.21129","20":"24.4","21":"19.69981","22":"29.3","23":"14.71049","24":"32.79","25":"3734.591","26":"37.34591","27":"1086.4298","28":"537.5893","29":"537.5893","30":"11","31":"5","32":"5","33":"29.09100","34":"14.39486","35":"14.39486","36":"548.8405550","37":"14.696136132","38":"22.3","39":"7","40":"2","41":"9.6","42":"33.0","43":"8","44":"3","45":"11.7","46":"36.3","47":"9","48":"3","49":"13.7","50":"39.6","51":"7","52":"3","53":"14.0","54":"30.1","55":"3.3","56":"6.6","57":"3.3","58":"2.1","59":"4.1","60":"2.0","61":"5","62":"5","63":"5","64":"5","65":"5","66":"4","67":"3","68":"3","69":"3","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["CT_UID"],"name":[1],"type":["chr"],"align":["left"]},{"label":["CD_UID"],"name":[2],"type":["chr"],"align":["left"]},{"label":["CSD_UID"],"name":[3],"type":["chr"],"align":["left"]},{"label":["interact_aoi"],"name":[4],"type":["lgl"],"align":["right"]},{"label":["zone"],"name":[5],"type":["chr"],"align":["left"]},{"label":["Population"],"name":[6],"type":["int"],"align":["right"]},{"label":["wSCOREMAT.2016"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["wSCORESOC.2016"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["wSCOREMAT.2011"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["wSCORESOC.2011"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["wSCOREMAT.2006"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["wSCORESOC.2006"],"name":[12],"type":["dbl"],"align":["right"]},{"label":["gentrified_2016_2011"],"name":[13],"type":["lgl"],"align":["right"]},{"label":["gentrifiable_2011"],"name":[14],"type":["lgl"],"align":["right"]},{"label":["gentrif_status_2016"],"name":[15],"type":["fct"],"align":["left"]},{"label":["gentrified_2011_2006"],"name":[16],"type":["lgl"],"align":["right"]},{"label":["gentrifiable_2006"],"name":[17],"type":["lgl"],"align":["right"]},{"label":["gentrif_status_2011"],"name":[18],"type":["fct"],"align":["left"]},{"label":["gentrified_2006_2001"],"name":[19],"type":["lgl"],"align":["right"]},{"label":["gentrifiable_2001"],"name":[20],"type":["lgl"],"align":["right"]},{"label":["gentrif_status_2006"],"name":[21],"type":["fct"],"align":["left"]},{"label":["vis_minority_2016"],"name":[22],"type":["dbl"],"align":["right"]},{"label":["low_income_2016"],"name":[23],"type":["dbl"],"align":["right"]},{"label":["vis_minority_2011"],"name":[24],"type":["dbl"],"align":["right"]},{"label":["low_income_2011"],"name":[25],"type":["dbl"],"align":["right"]},{"label":["vis_minority_2006"],"name":[26],"type":["dbl"],"align":["right"]},{"label":["low_income_2006"],"name":[27],"type":["dbl"],"align":["right"]},{"label":["street_length"],"name":[28],"type":["dbl"],"align":["right"]},{"label":["street_length.hm"],"name":[29],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_total.2016ct"],"name":[30],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_total.2011ct"],"name":[31],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_total.2006ct"],"name":[32],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_total.hm.2016ct"],"name":[33],"type":["int"],"align":["right"]},{"label":["Bike_lane_total.hm.2011ct"],"name":[34],"type":["int"],"align":["right"]},{"label":["Bike_lane_total.hm.2006ct"],"name":[35],"type":["int"],"align":["right"]},{"label":["Bike_lane.by.street.2016ct"],"name":[36],"type":["dbl"],"align":["right"]},{"label":["Bike_lane.by.street.2011ct"],"name":[37],"type":["dbl"],"align":["right"]},{"label":["Bike_lane.by.street.2006ct"],"name":[38],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_diff.2011.2016ct"],"name":[39],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_diff.by.street.2011.2016ct"],"name":[40],"type":["dbl"],"align":["right"]},{"label":["ct_area_hct"],"name":[41],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_2011ct"],"name":[42],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_high_2011ct"],"name":[43],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_high_2011ct"],"name":[44],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_2011ct"],"name":[45],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_2015ct"],"name":[46],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_high_2015ct"],"name":[47],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_high_2015ct"],"name":[48],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_2015ct"],"name":[49],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_2017ct"],"name":[50],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_high_2017ct"],"name":[51],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_high_2017ct"],"name":[52],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_2017ct"],"name":[53],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_2019ct"],"name":[54],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_high_2019ct"],"name":[55],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_high_2019ct"],"name":[56],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_2019ct"],"name":[57],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_2011.2015ct"],"name":[58],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_2011.2017ct"],"name":[59],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_2015.2017ct"],"name":[60],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_high_2011.2015ct"],"name":[61],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_high_2011.2017ct"],"name":[62],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_high_2015.2017ct"],"name":[63],"type":["dbl"],"align":["right"]},{"label":["wSCOREMAT.2006.Q"],"name":[64],"type":["int"],"align":["right"]},{"label":["wSCOREMAT.2011.Q"],"name":[65],"type":["int"],"align":["right"]},{"label":["wSCOREMAT.2016.Q"],"name":[66],"type":["int"],"align":["right"]},{"label":["low_income_2006.Q"],"name":[67],"type":["int"],"align":["right"]},{"label":["low_income_2011.Q"],"name":[68],"type":["int"],"align":["right"]},{"label":["low_income_2016.Q"],"name":[69],"type":["int"],"align":["right"]},{"label":["vis_minority_2006.Q"],"name":[70],"type":["int"],"align":["right"]},{"label":["vis_minority_2011.Q"],"name":[71],"type":["int"],"align":["right"]},{"label":["vis_minority_2016.Q"],"name":[72],"type":["int"],"align":["right"]}],"data":[{"1":"4620149.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"3161","7":"-0.049248759","8":"0.057190321","9":"-0.02978953","10":"0.0594421910","11":"-0.02369179","12":"0.037338622","13":"FALSE","14":"TRUE","15":"Not gentrified","16":"TRUE","17":"TRUE","18":"Gentrified","19":"TRUE","20":"TRUE","21":"Gentrified","22":"15.35948","23":"22.0","24":"15.54828","25":"30.8","26":"12.59843","27":"23.91","28":"3154.205","29":"31.54205","30":"1208.5717","31":"688.5246","32":"577.1925","33":"12","34":"7","35":"6","36":"38.31620","37":"21.82878","38":"18.29914","39":"520.0470959","40":"16.487419915","41":"13.8","42":"3","43":"3","44":"21.8","45":"24.8","46":"4","47":"4","48":"26.4","49":"28.7","50":"4","51":"4","52":"29.2","53":"31.4","54":"4","55":"4","56":"28.7","57":"32.1","58":"3.9","59":"6.6","60":"2.7","61":"4.6","62":"7.4","63":"2.8","64":"2","65":"1","66":"1","67":"4","68":"5","69":"4","70":"3","71":"3","72":"3","_rn_":"1"},{"1":"4620185.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"5217","7":"0.002586202","8":"0.052690760","9":"0.01135986","10":"0.0457714081","11":"0.02030788","12":"0.046134103","13":"TRUE","14":"TRUE","15":"Gentrified","16":"TRUE","17":"TRUE","18":"Gentrified","19":"FALSE","20":"TRUE","21":"Not gentrified","22":"16.13217","23":"20.1","24":"17.59082","25":"27.6","26":"12.25490","27":"23.29","28":"7641.672","29":"76.41672","30":"1069.1814","31":"1069.4042","32":"0.0000","33":"11","34":"11","35":"0","36":"13.99146","37":"13.99437","38":"0.00000","39":"-0.2227721","40":"-0.002915228","41":"39.3","42":"12","43":"8","44":"20.6","45":"29.4","46":"11","47":"8","48":"20.0","49":"29.0","50":"13","51":"10","52":"24.3","53":"33.7","54":"14","55":"9","56":"22.1","57":"34.7","58":"-0.4","59":"4.3","60":"4.7","61":"-0.6","62":"3.7","63":"4.3","64":"4","65":"3","66":"3","67":"4","68":"4","69":"4","70":"3","71":"3","72":"3","_rn_":"2"},{"1":"4620222.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"3587","7":"0.082313210","8":"0.014476934","9":"0.09282443","10":"0.0052905841","11":"0.09663123","12":"-0.004537943","13":"FALSE","14":"TRUE","15":"Not gentrified","16":"TRUE","17":"TRUE","18":"Gentrified","19":"FALSE","20":"TRUE","21":"Not gentrified","22":"57.91610","23":"35.1","24":"57.56359","25":"39.5","26":"50.00000","27":"41.79","28":"4155.251","29":"41.55251","30":"1059.5655","31":"0.0000","32":"0.0000","33":"11","34":"0","35":"0","36":"25.49944","37":"0.00000","38":"0.00000","39":"1059.5654725","40":"25.499435195","41":"19.9","42":"5","43":"2","44":"11.7","45":"24.9","46":"5","47":"2","48":"11.4","49":"24.0","50":"6","51":"3","52":"14.2","53":"29.6","54":"5","55":"3","56":"13.6","57":"26.9","58":"-0.9","59":"4.7","60":"5.6","61":"-0.3","62":"2.5","63":"2.8","64":"5","65":"5","66":"5","67":"5","68":"5","69":"5","70":"5","71":"5","72":"5","_rn_":"3"},{"1":"4620117.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"4359","7":"0.034245133","8":"0.006085192","9":"0.06315153","10":"0.0009442053","11":"0.03645207","12":"0.010056370","13":"TRUE","14":"TRUE","15":"Gentrified","16":"FALSE","17":"TRUE","18":"Not gentrified","19":"TRUE","20":"TRUE","21":"Gentrified","22":"84.76071","23":"27.5","24":"80.62201","25":"40.6","26":"73.28520","27":"41.64","28":"3360.624","29":"33.60624","30":"0.0000","31":"0.0000","32":"0.0000","33":"0","34":"0","35":"0","36":"0.00000","37":"0.00000","38":"0.00000","39":"0.0000000","40":"0.000000000","41":"27.1","42":"6","43":"4","44":"14.7","45":"20.9","46":"6","47":"4","48":"15.2","49":"22.7","50":"8","51":"5","52":"17.8","53":"27.8","54":"7","55":"4","56":"16.1","57":"26.8","58":"1.8","59":"6.9","60":"5.1","61":"0.5","62":"3.1","63":"2.6","64":"5","65":"5","66":"5","67":"5","68":"5","69":"5","70":"5","71":"5","72":"5","_rn_":"4"},{"1":"4620124.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"5729","7":"0.020820044","8":"0.047056282","9":"0.02972110","10":"0.0401421555","11":"0.02970024","12":"0.039865255","13":"FALSE","14":"TRUE","15":"Not gentrified","16":"TRUE","17":"TRUE","18":"Gentrified","19":"TRUE","20":"TRUE","21":"Gentrified","22":"55.86690","23":"36.6","24":"51.55172","25":"47.0","26":"41.18151","27":"47.58","28":"5169.698","29":"51.69698","30":"781.5758","31":"0.0000","32":"0.0000","33":"8","34":"0","35":"0","36":"15.11840","37":"0.00000","38":"0.00000","39":"781.5758193","40":"15.118404503","41":"37.7","42":"12","43":"9","44":"23.4","45":"32.3","46":"13","47":"10","48":"25.9","49":"34.2","50":"15","51":"11","52":"29.4","53":"38.8","54":"14","55":"11","56":"28.3","57":"37.6","58":"1.9","59":"6.5","60":"4.6","61":"2.5","62":"6.0","63":"3.5","64":"5","65":"4","66":"4","67":"5","68":"5","69":"5","70":"5","71":"5","72":"5","_rn_":"5"},{"1":"4620306.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"2847","7":"0.030925210","8":"0.054219900","9":"0.03587117","10":"0.0427824009","11":"0.04348091","12":"0.040864073","13":"TRUE","14":"TRUE","15":"Gentrified","16":"TRUE","17":"TRUE","18":"Gentrified","19":"TRUE","20":"TRUE","21":"Gentrified","22":"16.21129","23":"24.4","24":"19.69981","25":"29.3","26":"14.71049","27":"32.79","28":"3734.591","29":"37.34591","30":"1086.4298","31":"537.5893","32":"537.5893","33":"11","34":"5","35":"5","36":"29.09100","37":"14.39486","38":"14.39486","39":"548.8405550","40":"14.696136132","41":"22.3","42":"7","43":"2","44":"9.6","45":"33.0","46":"8","47":"3","48":"11.7","49":"36.3","50":"9","51":"3","52":"13.7","53":"39.6","54":"7","55":"3","56":"14.0","57":"30.1","58":"3.3","59":"6.6","60":"3.3","61":"2.1","62":"4.1","63":"2.0","64":"5","65":"5","66":"5","67":"5","68":"5","69":"4","70":"3","71":"3","72":"3","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 <pre class="r"><code>write.csv(bei_df, &quot;data/_results/bei_equity.csv&quot;, na=&quot;&quot;, row.names = FALSE)
@@ -1072,7 +1088,9 @@ bei_df_aoi &lt;- filter(bei_df, interact_aoi) %&gt;%
          low_income_2016.Q = ntile(low_income_2016, 5),
          vis_minority_2006.Q = ntile(vis_minority_2006, 5),
          vis_minority_2011.Q = ntile(vis_minority_2011, 5),
-         vis_minority_2016.Q = ntile(vis_minority_2016, 5))</code></pre>
+         vis_minority_2016.Q = ntile(vis_minority_2016, 5),
+         # Need to reorder factor in order to get the proper dummy variables in models below
+         gentrif_status_2016 = forcats::fct_relevel(gentrif_status_2016, &quot;Not gentrified&quot;, &quot;Gentrified&quot;, &quot;Non eligible&quot;))</code></pre>
 <p>Included variables:</p>
 <ul>
 <li>Census Tracts variables
@@ -1089,10 +1107,13 @@ bei_df_aoi &lt;- filter(bei_df, interact_aoi) %&gt;%
 <ul>
 <li><code>gentrified_2016_2011</code>: Is the CT gentrified in 2016?</li>
 <li><code>gentrifiable_2011</code>: Is the CT candidate to gentrification in 2011?</li>
+<li><code>gentrif_status_2016</code>: 3-state gentrification status in 2016 (Gentrified/Not gentrified/Non eligible)</li>
 <li><code>gentrified_2011_2006</code>: Is the CT gentrified in 2011</li>
 <li><code>gentrifiable_2006</code>: Is the CT candidate to gentrification in 2006</li>
+<li><code>gentrif_status_2011</code>: 3-state gentrification status in 2011 (Gentrified/Not gentrified/Non eligible)</li>
 <li><code>gentrified_2006_2001</code>: Is the CT gentrified in 2006</li>
 <li><code>gentrifiable_2001</code>: Is the CT candidate to gentrification in 2001</li>
+<li><code>gentrif_status_2006</code>: 3-state gentrification status in 2006 (Gentrified/Not gentrified/Non eligible)</li>
 </ul></li>
 <li>Pampalon’s metrics
 <ul>
@@ -1167,7 +1188,7 @@ ggplot(.bei_df_long, aes(value)) +
 <pre><code>## Warning: Removed 85 rows containing non-finite values (stat_bin).</code></pre>
 <p><img src="BEI_equity_paper.final_files/figure-html/outcome-distribution-aoi-2.png" width="1152" /></p>
 <pre class="r"><code>.bei_df_long &lt;- bei_df_aoi %&gt;%
-  select(CT_UID, CD_UID, starts_with(&quot;gentrif&quot;)) %&gt;%
+  select(CT_UID, CD_UID, starts_with(&quot;gentrif_status&quot;)) %&gt;%
   select(!ends_with(&#39;.Q&#39;)) %&gt;%
   pivot_longer(!c(CT_UID, CD_UID))
 
@@ -1978,48 +1999,53 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </div>
 <div id="uc-vs-gentrified-ct" class="section level2 tabset" number="4.3">
 <h2 class="tabset"><span class="header-section-number">4.3</span> UC vs gentrified CT</h2>
-<p>Gentrified CT between 2011 and 2016</p>
+<p>Gentrified CT between 2011 and 2016. <em>NB</em> we now use a 3-state gentrification status</p>
 <div id="bike-lane-length-hurdle-2" class="section level3" number="4.3.1">
 <h3><span class="header-section-number">4.3.1</span> Bike lane length (hurdle)</h3>
 <p>Bike lane ratio to streets (in %) at the Census tract level</p>
-<pre class="r"><code>f &lt;- Bike_lane_total.hm.2011ct ~ gentrified_2016_2011 + offset(log(street_length.hm))
+<pre class="r"><code>f &lt;- Bike_lane_total.hm.2011ct ~ gentrif_status_2016 + offset(log(street_length.hm))
 
 clean_bei &lt;- tidy_df(bei_df_aoi, CT16, f)
 
 # Zero model
-res.lmm.zero &lt;- fitme(I(Bike_lane_total.hm.2011ct != 0) ~ gentrified_2016_2011 + offset(log(street_length.hm)) + adjacency(1|ct_no),
+res.lmm.zero &lt;- fitme(I(Bike_lane_total.hm.2011ct != 0) ~ gentrif_status_2016 + offset(log(street_length.hm)) + adjacency(1|ct_no),
                  data = clean_bei$df, adjMatrix = clean_bei$nbmatx,
                  family = binomial())
 smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</code></pre>
-<pre><code>## formula: I(Bike_lane_total.hm.2011ct != 0) ~ gentrified_2016_2011 + offset(log(street_length.hm)) + 
+<pre><code>## formula: I(Bike_lane_total.hm.2011ct != 0) ~ gentrif_status_2016 + offset(log(street_length.hm)) + 
 ##     adjacency(1 | ct_no)
 ## Estimation of corrPars and lambda by Laplace ML approximation (p_v).
 ## Estimation of fixed effects by Laplace ML approximation (p_v).
 ## Estimation of lambda by &#39;outer&#39; ML, maximizing p_v.
 ## family: binomial( link = logit ) 
 ##  ------------ Fixed effects (beta) ------------
-##                          Estimate Cond. SE t-value p-value
-## (Intercept)              -3.12397   0.1952 -16.003  0.0000
-## gentrified_2016_2011TRUE -0.06627   0.2473  -0.268  0.7887
+##                                 Estimate Cond. SE  t-value p-value
+## (Intercept)                     -3.25283   0.2395 -13.5831  0.0000
+## gentrif_status_2016Gentrified    0.04375   0.2724   0.1606  0.8724
+## gentrif_status_2016Non eligible  0.27497   0.2994   0.9185  0.3583
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
 ##     1.rho 
-## 0.1378746 
+## 0.1378199 
 ##            --- Variance parameters (&#39;lambda&#39;):
 ## lambda = var(u) for u ~ Gaussian; 
-##    ct_no  :  1.496  
+##    ct_no  :  1.525  
 ## # of obs: 688; # of groups: ct_no, 688 
 ##  ------------- Likelihood values  -------------
-##                         logLik
-## p_v(h) (marginal L): -357.4465</code></pre>
-<pre class="r"><code>ci.lmm.zero &lt;- confint(res.lmm.zero, &#39;gentrified_2016_2011TRUE&#39;)</code></pre>
-<pre><code>## lower gentrified_2016_2011TRUE upper gentrified_2016_2011TRUE 
-##                     -0.6062718                      0.4522833</code></pre>
-<pre class="r"><code>res.lmm.0 &lt;- update(res.lmm.zero, . ~ . - gentrified_2016_2011)
+##                        logLik
+## p_v(h) (marginal L): -357.058</code></pre>
+<pre class="r"><code>varfixef.zero &lt;- names(res.lmm.zero[[&#39;fixef&#39;]])
+ci.1.lmm.zero &lt;- confint(res.lmm.zero, varfixef.zero[2])</code></pre>
+<pre><code>## lower gentrif_status_2016Gentrified upper gentrif_status_2016Gentrified 
+##                          -0.5464395                           0.6220343</code></pre>
+<pre class="r"><code>ci.2.lmm.zero &lt;- confint(res.lmm.zero, varfixef.zero[3])</code></pre>
+<pre><code>## lower gentrif_status_2016Non eligible upper gentrif_status_2016Non eligible 
+##                            -0.3352943                             0.9200442</code></pre>
+<pre class="r"><code>res.lmm.0 &lt;- update(res.lmm.zero, . ~ . - gentrif_status_2016)
 LRT(res.lmm.0, res.lmm.zero)</code></pre>
-<pre><code>##        chi2_LR df   p_value
-## p_v 0.06253228  1 0.8025374</code></pre>
+<pre><code>##       chi2_LR df  p_value
+## p_v 0.8393968  2 0.657245</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.zero, plot = F)
   plot(simout, title = &quot;DHARMa residual | Logit&quot;)
@@ -2030,39 +2056,44 @@ clean_bei.cnt &lt;- bei_df_aoi %&gt;%
   filter(Bike_lane_total.hm.2011ct != 0) %&gt;%
   tidy_df(CT16, f)
 
-res.lmm.cnt &lt;- fitme(Bike_lane_total.hm.2011ct ~ gentrified_2016_2011 + offset(log(street_length.hm)) + adjacency(1|ct_no),
+res.lmm.cnt &lt;- fitme(Bike_lane_total.hm.2011ct ~ gentrif_status_2016 + offset(log(street_length.hm)) + adjacency(1|ct_no),
                  data = clean_bei.cnt$df, adjMatrix = clean_bei.cnt$nbmatx,
                  family = Tpoisson())
 smy.cnt &lt;- summary(res.lmm.cnt, details = c(p_value=&quot;Wald&quot;))</code></pre>
-<pre><code>## formula: Bike_lane_total.hm.2011ct ~ gentrified_2016_2011 + offset(log(street_length.hm)) + 
+<pre><code>## formula: Bike_lane_total.hm.2011ct ~ gentrif_status_2016 + offset(log(street_length.hm)) + 
 ##     adjacency(1 | ct_no)
 ## Estimation of corrPars and lambda by Laplace ML approximation (p_v).
 ## Estimation of fixed effects by Laplace ML approximation (p_v).
 ## Estimation of lambda by &#39;outer&#39; ML, maximizing p_v.
 ## family: 0-truncated poisson( link = log ) 
 ##  ------------ Fixed effects (beta) ------------
-##                          Estimate Cond. SE t-value p-value
-## (Intercept)              -2.26118  0.05223 -43.290  0.0000
-## gentrified_2016_2011TRUE  0.09494  0.08002   1.186  0.2355
+##                                 Estimate Cond. SE   t-value p-value
+## (Intercept)                     -2.26393  0.07149 -31.66787  0.0000
+## gentrif_status_2016Gentrified    0.09737  0.09088   1.07140  0.2840
+## gentrif_status_2016Non eligible  0.00532  0.08648   0.06152  0.9509
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
 ##     1.rho 
-## 0.1267498 
+## 0.1269329 
 ##            --- Variance parameters (&#39;lambda&#39;):
 ## lambda = var(u) for u ~ Gaussian; 
-##    ct_no  :  0.3946  
+##    ct_no  :  0.3945  
 ## # of obs: 469; # of groups: ct_no, 469 
 ##  ------------- Likelihood values  -------------
 ##                         logLik
-## p_v(h) (marginal L): -1732.647</code></pre>
-<pre class="r"><code>ci.lmm.cnt &lt;- confint(res.lmm.cnt, &#39;gentrified_2016_2011TRUE&#39;)</code></pre>
-<pre><code>## lower gentrified_2016_2011TRUE upper gentrified_2016_2011TRUE 
-##                    -0.06921123                     0.25966646</code></pre>
-<pre class="r"><code>res.lmm.0 &lt;- update(res.lmm.cnt, . ~ . - gentrified_2016_2011)
+## p_v(h) (marginal L): -1732.645</code></pre>
+<pre class="r"><code>varfixef.cnt &lt;- names(res.lmm.cnt[[&#39;fixef&#39;]])
+ci.1.lmm.cnt &lt;- confint(res.lmm.cnt, varfixef.cnt[2])</code></pre>
+<pre><code>## lower gentrif_status_2016Gentrified upper gentrif_status_2016Gentrified 
+##                         -0.08433251                          0.28053923</code></pre>
+<pre class="r"><code>ci.2.lmm.cnt &lt;- confint(res.lmm.cnt, varfixef.cnt[3])</code></pre>
+<pre><code>## lower gentrif_status_2016Non eligible upper gentrif_status_2016Non eligible 
+##                            -0.1664376                             0.1784747</code></pre>
+<pre class="r"><code>res.lmm.0 &lt;- update(res.lmm.cnt, . ~ . - gentrif_status_2016)
 LRT(res.lmm.0, res.lmm.cnt)</code></pre>
 <pre><code>##      chi2_LR df   p_value
-## p_v 1.285916  1 0.2568019</code></pre>
+## p_v 1.289591  2 0.5247699</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.cnt, plot = F)
   plot(simout, title = &quot;DHARMa residual | Count (truncated Poisson)&quot;)
@@ -2076,8 +2107,8 @@ AIC(res.lmm.cnt)
 &quot;Combined Hurdle AIC:&quot;</code></pre>
 <pre><code>## [1] &quot;Combined Hurdle AIC:&quot;</code></pre>
 <pre class="r"><code>-2 * res.lmm.zero$APHLs$p_v - 2 * res.lmm.cnt$APHLs$p_v + 2 * Reduce(sum, res.lmm.cnt$dfs)</code></pre>
-<pre><code>## [1] 4188.186</code></pre>
-<p>Interpretation of the <code>gentrified_2016_2011</code> coefficient: none significant - model <em>zero-hurdle</em> (non significant): we have <span class="math inline">\(e^{-0.066}\)</span> = 0.936 (95%CI: 0.545 – 1.572) - model <em>count</em>: we have <span class="math inline">\(e^{0.095}\)</span> = 1.1 (95%CI: 0.933 – 1.296)</p>
+<pre><code>## [1] 4189.406</code></pre>
+<p>Interpretation of the <code>gentrif_status_2016</code> coefficient: none significant</p>
 <p>Transforming the model coefficients:</p>
 <pre class="r"><code># Zero model
 smy.zero.bt &lt;- data.frame(smy.zero$beta_table)
@@ -2096,19 +2127,26 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 <tbody>
 <tr class="odd">
 <td align="left">(Intercept)</td>
-<td align="right">0.044</td>
+<td align="right">0.039</td>
 <td align="right">0.000</td>
 </tr>
 <tr class="even">
-<td align="left">gentrified_2016_2011TRUE</td>
-<td align="right">0.936</td>
-<td align="right">0.789</td>
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">1.045</td>
+<td align="right">0.872</td>
+</tr>
+<tr class="odd">
+<td align="left">gentrif_status_2016Non eligible</td>
+<td align="right">1.316</td>
+<td align="right">0.358</td>
 </tr>
 </tbody>
 </table>
-<pre class="r"><code>round(exp(ci.lmm.zero$interval), 3)%&gt;%
-  data.frame(gentrified_2016_2011TRUE = ., row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
-  knitr::kable(caption=&quot;Zero model confidence interval&quot;)</code></pre>
+<pre class="r"><code>.ci.exp &lt;- rbind(ci.1.lmm.zero$interval, ci.2.lmm.zero$interval) %&gt;% 
+  exp() %&gt;% round(., 3) %&gt;%
+  data.frame(., row.names = varfixef.zero[2:3])
+names(.ci.exp) &lt;- c(&quot;lower&quot;, &quot;upper&quot;)
+knitr::kable(.ci.exp, caption=&quot;Zero model confidence interval&quot;)</code></pre>
 <table>
 <caption>Zero model confidence interval</caption>
 <thead>
@@ -2120,9 +2158,14 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">gentrified_2016_2011TRUE</td>
-<td align="right">0.545</td>
-<td align="right">1.572</td>
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">0.579</td>
+<td align="right">1.863</td>
+</tr>
+<tr class="even">
+<td align="left">gentrif_status_2016Non eligible</td>
+<td align="right">0.715</td>
+<td align="right">2.509</td>
 </tr>
 </tbody>
 </table>
@@ -2147,15 +2190,22 @@ round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
 <td align="right">0.000</td>
 </tr>
 <tr class="even">
-<td align="left">gentrified_2016_2011TRUE</td>
-<td align="right">1.100</td>
-<td align="right">0.235</td>
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">1.102</td>
+<td align="right">0.284</td>
+</tr>
+<tr class="odd">
+<td align="left">gentrif_status_2016Non eligible</td>
+<td align="right">1.005</td>
+<td align="right">0.951</td>
 </tr>
 </tbody>
 </table>
-<pre class="r"><code>round(exp(ci.lmm.cnt$interval), 3)%&gt;%
-  data.frame(gentrified_2016_2011TRUE = ., row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
-  knitr::kable(caption=&quot;Count model confidence interval&quot;)</code></pre>
+<pre class="r"><code>.ci.exp &lt;- rbind(ci.1.lmm.cnt$interval, ci.2.lmm.cnt$interval) %&gt;% 
+  exp() %&gt;% round(., 3) %&gt;%
+  data.frame(., row.names = varfixef.cnt[2:3]) 
+names(.ci.exp) &lt;- c(&quot;lower&quot;, &quot;upper&quot;)
+knitr::kable(.ci.exp, caption=&quot;Count model confidence interval&quot;)</code></pre>
 <table>
 <caption>Count model confidence interval</caption>
 <thead>
@@ -2167,9 +2217,14 @@ round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">gentrified_2016_2011TRUE</td>
-<td align="right">0.933</td>
-<td align="right">1.296</td>
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">0.919</td>
+<td align="right">1.324</td>
+</tr>
+<tr class="even">
+<td align="left">gentrif_status_2016Non eligible</td>
+<td align="right">0.847</td>
+<td align="right">1.195</td>
 </tr>
 </tbody>
 </table>
@@ -2177,50 +2232,54 @@ round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
 <div id="greenness-2" class="section level3" number="4.3.2">
 <h3><span class="header-section-number">4.3.2</span> Greenness</h3>
 <p>Measuring canopy (<em>i.e.</em> greenness ~ grass &amp; trees) ratio within CT/buffer in 2011 (in %) at the Census tract level</p>
-<pre class="r"><code>f &lt;- area_esp_vert_2011ct ~ gentrified_2016_2011 + offset(log(ct_area_hct))
+<pre class="r"><code>f &lt;- area_esp_vert_2011ct ~ gentrif_status_2016 + offset(log(ct_area_hct))
 
 clean_bei &lt;- tidy_df(bei_df_aoi, CT16, f)
 
-res.lmm &lt;- fitme(area_esp_vert_2011ct ~ gentrified_2016_2011 + offset(log(ct_area_hct)) + adjacency(1|ct_no),
+res.lmm &lt;- fitme(area_esp_vert_2011ct ~ gentrif_status_2016 + offset(log(ct_area_hct)) + adjacency(1|ct_no),
                  data = clean_bei$df, adjMatrix = clean_bei$nbmatx, 
                  family = Poisson())
 smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
-<pre><code>## formula: area_esp_vert_2011ct ~ gentrified_2016_2011 + offset(log(ct_area_hct)) + 
+<pre><code>## formula: area_esp_vert_2011ct ~ gentrif_status_2016 + offset(log(ct_area_hct)) + 
 ##     adjacency(1 | ct_no)
 ## Estimation of corrPars and lambda by Laplace ML approximation (p_v).
 ## Estimation of fixed effects by Laplace ML approximation (p_v).
 ## Estimation of lambda by &#39;outer&#39; ML, maximizing p_v.
 ## family: poisson( link = log ) 
 ##  ------------ Fixed effects (beta) ------------
-##                          Estimate Cond. SE t-value   p-value
-## (Intercept)               -0.8304  0.02578 -32.205 0.000e+00
-## gentrified_2016_2011TRUE  -0.1964  0.03343  -5.875 4.234e-09
+##                                 Estimate Cond. SE t-value p-value
+## (Intercept)                     -1.01254  0.03174 -31.898  0.0000
+## gentrif_status_2016Gentrified   -0.05111  0.03572  -1.431  0.1525
+## gentrif_status_2016Non eligible  0.30009  0.03269   9.180  0.0000
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
 ##     1.rho 
-## 0.1385641 
+## 0.1385268 
 ##            --- Variance parameters (&#39;lambda&#39;):
 ## lambda = var(u) for u ~ Gaussian; 
-##    ct_no  :  0.05997  
+##    ct_no  :  0.04968  
 ## # of obs: 688; # of groups: ct_no, 688 
 ##  ------------- Likelihood values  -------------
 ##                         logLik
-## p_v(h) (marginal L): -2421.862</code></pre>
-<pre class="r"><code>ci.lmm &lt;- confint(res.lmm, &#39;gentrified_2016_2011TRUE&#39;)</code></pre>
-<pre><code>## lower gentrified_2016_2011TRUE upper gentrified_2016_2011TRUE 
-##                     -0.2620145                     -0.1306189</code></pre>
+## p_v(h) (marginal L): -2382.628</code></pre>
+<pre class="r"><code>varfixef &lt;- names(res.lmm[[&#39;fixef&#39;]])
+ci.1.lmm &lt;- confint(res.lmm, varfixef[2])</code></pre>
+<pre><code>## lower gentrif_status_2016Gentrified upper gentrif_status_2016Gentrified 
+##                         -0.12125063                          0.01898142</code></pre>
+<pre class="r"><code>ci.2.lmm &lt;- confint(res.lmm, varfixef[3])</code></pre>
+<pre><code>## lower gentrif_status_2016Non eligible upper gentrif_status_2016Non eligible 
+##                             0.2357800                             0.3642718</code></pre>
 <pre class="r"><code># Testing main effect
-res.lmm.0 &lt;- update(res.lmm, . ~ . - gentrified_2016_2011)
+res.lmm.0 &lt;- update(res.lmm, . ~ . - gentrif_status_2016)
 LRT(res.lmm.0, res.lmm)</code></pre>
-<pre><code>##      chi2_LR df      p_value
-## p_v 33.56416  1 6.895166e-09</code></pre>
+<pre><code>##      chi2_LR df p_value
+## p_v 112.0336  2       0</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm, plot = F)
   plot(simout)
 }</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-15-1.png" width="1152" /></p>
-<p>Interpretation of the <code>gentrified_2016_2011</code> coefficient (significant): we have <span class="math inline">\(e^{-0.196}\)</span> = 0.822 (95%CI: 0.769 – 0.878), which means gentrified CTs exhibit a 17.8% decrease in the percentage of greenspace area within CT in 2011.</p>
+<p>Interpretation of the <code>gentrif_status_2016</code>: No significant difference between <em>Gentrified</em> vs. <em>Not gentrified</em>. Only meaningful difference between <em>non eligible</em> and <em>not gentrified</em>.</p>
 <p>Transforming the model coefficients:</p>
 <pre class="r"><code>smy.bt &lt;- data.frame(smy$beta_table)
 round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;% 
@@ -2238,19 +2297,26 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 <tbody>
 <tr class="odd">
 <td align="left">(Intercept)</td>
-<td align="right">0.436</td>
-<td align="right">0</td>
+<td align="right">0.363</td>
+<td align="right">0.000</td>
 </tr>
 <tr class="even">
-<td align="left">gentrified_2016_2011TRUE</td>
-<td align="right">0.822</td>
-<td align="right">0</td>
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">0.950</td>
+<td align="right">0.152</td>
+</tr>
+<tr class="odd">
+<td align="left">gentrif_status_2016Non eligible</td>
+<td align="right">1.350</td>
+<td align="right">0.000</td>
 </tr>
 </tbody>
 </table>
-<pre class="r"><code>round(exp(ci.lmm$interval), 3)%&gt;%
-  data.frame(gentrified_2016_2011TRUE = ., row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
-  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<pre class="r"><code>.ci.exp &lt;- rbind(ci.1.lmm$interval, ci.2.lmm$interval) %&gt;% 
+  exp() %&gt;% round(., 3) %&gt;%
+  data.frame(., row.names = varfixef[2:3]) 
+names(.ci.exp) &lt;- c(&quot;lower&quot;, &quot;upper&quot;)
+knitr::kable(.ci.exp, caption=&quot;Model confidence interval&quot;)</code></pre>
 <table>
 <caption>Model confidence interval</caption>
 <thead>
@@ -2262,9 +2328,14 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">gentrified_2016_2011TRUE</td>
-<td align="right">0.769</td>
-<td align="right">0.878</td>
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">0.886</td>
+<td align="right">1.019</td>
+</tr>
+<tr class="even">
+<td align="left">gentrif_status_2016Non eligible</td>
+<td align="right">1.266</td>
+<td align="right">1.439</td>
 </tr>
 </tbody>
 </table>
@@ -2272,50 +2343,54 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 <div id="canopy-trees-2" class="section level3" number="4.3.3">
 <h3><span class="header-section-number">4.3.3</span> Canopy (trees)</h3>
 <p>Measuring high canopy (<em>i.e.</em> trees only) ratio within CT/buffer in 2011 (in %) at the Census tract level</p>
-<pre class="r"><code>f &lt;- area_esp_vert_high_2011ct ~ gentrified_2016_2011 + offset(log(ct_area_hct))
+<pre class="r"><code>f &lt;- area_esp_vert_high_2011ct ~ gentrif_status_2016 + offset(log(ct_area_hct))
 
 clean_bei &lt;- tidy_df(bei_df_aoi, CT16, f)
 
-res.lmm &lt;- fitme(area_esp_vert_high_2011ct ~ gentrified_2016_2011 + offset(log(ct_area_hct)) + adjacency(1|ct_no),
+res.lmm &lt;- fitme(area_esp_vert_high_2011ct ~ gentrif_status_2016 + offset(log(ct_area_hct)) + adjacency(1|ct_no),
                  data = clean_bei$df, adjMatrix = clean_bei$nbmatx, 
                  family = Poisson())
 smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
-<pre><code>## formula: area_esp_vert_high_2011ct ~ gentrified_2016_2011 + offset(log(ct_area_hct)) + 
+<pre><code>## formula: area_esp_vert_high_2011ct ~ gentrif_status_2016 + offset(log(ct_area_hct)) + 
 ##     adjacency(1 | ct_no)
 ## Estimation of corrPars and lambda by Laplace ML approximation (p_v).
 ## Estimation of fixed effects by Laplace ML approximation (p_v).
 ## Estimation of lambda by &#39;outer&#39; ML, maximizing p_v.
 ## family: poisson( link = log ) 
 ##  ------------ Fixed effects (beta) ------------
-##                          Estimate Cond. SE t-value  p-value
-## (Intercept)               -1.6372  0.03951 -41.442 0.000000
-## gentrified_2016_2011TRUE  -0.1505  0.04990  -3.015 0.002568
+##                                 Estimate Cond. SE  t-value   p-value
+## (Intercept)                     -1.79700  0.05040 -35.6538 0.000e+00
+## gentrif_status_2016Gentrified   -0.02714  0.05513  -0.4924 6.224e-01
+## gentrif_status_2016Non eligible  0.26143  0.05225   5.0035 5.629e-07
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
 ##     1.rho 
-## 0.1380114 
+## 0.1378375 
 ##            --- Variance parameters (&#39;lambda&#39;):
 ## lambda = var(u) for u ~ Gaussian; 
-##    ct_no  :  0.1457  
+##    ct_no  :  0.1378  
 ## # of obs: 688; # of groups: ct_no, 688 
 ##  ------------- Likelihood values  -------------
 ##                         logLik
-## p_v(h) (marginal L): -2174.734</code></pre>
-<pre class="r"><code>ci.lmm &lt;- confint(res.lmm, &#39;gentrified_2016_2011TRUE&#39;)</code></pre>
-<pre><code>## lower gentrified_2016_2011TRUE upper gentrified_2016_2011TRUE 
-##                    -0.24862544                    -0.05240792</code></pre>
+## p_v(h) (marginal L): -2162.531</code></pre>
+<pre class="r"><code>varfixef &lt;- names(res.lmm[[&#39;fixef&#39;]])
+ci.1.lmm &lt;- confint(res.lmm, varfixef[2])</code></pre>
+<pre><code>## lower gentrif_status_2016Gentrified upper gentrif_status_2016Gentrified 
+##                         -0.13560460                          0.08113782</code></pre>
+<pre class="r"><code>ci.2.lmm &lt;- confint(res.lmm, varfixef[3])</code></pre>
+<pre><code>## lower gentrif_status_2016Non eligible upper gentrif_status_2016Non eligible 
+##                             0.1585724                             0.3641280</code></pre>
 <pre class="r"><code># Testing main effect
-res.lmm.0 &lt;- update(res.lmm, . ~ . - gentrified_2016_2011)
+res.lmm.0 &lt;- update(res.lmm, . ~ . - gentrif_status_2016)
 LRT(res.lmm.0, res.lmm)</code></pre>
 <pre><code>##      chi2_LR df     p_value
-## p_v 9.025009  1 0.002663107</code></pre>
+## p_v 33.43143  2 5.50119e-08</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm, plot = F)
   plot(simout)
 }</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-17-1.png" width="1152" /></p>
-<p>Interpretation of the <code>gentrified_2016_2011</code> coefficient (significant): we have <span class="math inline">\(e^{-0.15}\)</span> = 0.86 (95%CI: 0.78 – 0.949), which means gentrified CTs exhibit a 14% decrease in the percentage of tree canopy area within CT in 2011</p>
+<p>Interpretation of the <code>gentrif_status_2016</code> coefficient: not significant between <em>Gentrified</em> and <em>Not gentrified</em>.</p>
 <p>Transforming the model coefficients:</p>
 <pre class="r"><code>smy.bt &lt;- data.frame(smy$beta_table)
 round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;% 
@@ -2333,19 +2408,26 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 <tbody>
 <tr class="odd">
 <td align="left">(Intercept)</td>
-<td align="right">0.195</td>
+<td align="right">0.166</td>
 <td align="right">0.000</td>
 </tr>
 <tr class="even">
-<td align="left">gentrified_2016_2011TRUE</td>
-<td align="right">0.860</td>
-<td align="right">0.003</td>
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">0.973</td>
+<td align="right">0.622</td>
+</tr>
+<tr class="odd">
+<td align="left">gentrif_status_2016Non eligible</td>
+<td align="right">1.299</td>
+<td align="right">0.000</td>
 </tr>
 </tbody>
 </table>
-<pre class="r"><code>round(exp(ci.lmm$interval), 3)%&gt;%
-  data.frame(gentrified_2016_2011TRUE = ., row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
-  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<pre class="r"><code>.ci.exp &lt;- rbind(ci.1.lmm$interval, ci.2.lmm$interval) %&gt;% 
+  exp() %&gt;% round(., 3) %&gt;%
+  data.frame(., row.names = varfixef[2:3]) 
+names(.ci.exp) &lt;- c(&quot;lower&quot;, &quot;upper&quot;)
+knitr::kable(.ci.exp, caption=&quot;Model confidence interval&quot;)</code></pre>
 <table>
 <caption>Model confidence interval</caption>
 <thead>
@@ -2357,9 +2439,14 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">gentrified_2016_2011TRUE</td>
-<td align="right">0.78</td>
-<td align="right">0.949</td>
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">0.873</td>
+<td align="right">1.085</td>
+</tr>
+<tr class="even">
+<td align="left">gentrif_status_2016Non eligible</td>
+<td align="right">1.172</td>
+<td align="right">1.439</td>
 </tr>
 </tbody>
 </table>
@@ -4549,46 +4636,53 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 <div id="bike-lane-length-change-hurdle-2" class="section level3" number="6.3.1">
 <h3><span class="header-section-number">6.3.1</span> Bike lane length change (hurdle)</h3>
 <p>Bike lane length change</p>
-<pre class="r"><code>f &lt;- Bike_lane_total.hm.2016ct ~ gentrified_2016_2011 * Bike_lane.by.street.2011ct + offset(log(street_length.hm))
+<pre class="r"><code>f &lt;- Bike_lane_total.hm.2016ct ~ gentrif_status_2016 * Bike_lane.by.street.2011ct + offset(log(street_length.hm))
 
 clean_bei &lt;- tidy_df(bei_df_aoi, CT16, f)
 
-res.lmm.zero &lt;- fitme(I(Bike_lane_total.hm.2016ct != 0) ~ gentrified_2016_2011 * Bike_lane.by.street.2011ct + offset(log(street_length.hm)) + adjacency(1|ct_no),
+res.lmm.zero &lt;- fitme(I(Bike_lane_total.hm.2016ct != 0) ~ gentrif_status_2016 * Bike_lane.by.street.2011ct + offset(log(street_length.hm)) + adjacency(1|ct_no),
                  data = clean_bei$df, adjMatrix = clean_bei$nbmatx,
                  family = binomial())
 smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</code></pre>
-<pre><code>## formula: I(Bike_lane_total.hm.2016ct != 0) ~ gentrified_2016_2011 * Bike_lane.by.street.2011ct + 
+<pre><code>## formula: I(Bike_lane_total.hm.2016ct != 0) ~ gentrif_status_2016 * Bike_lane.by.street.2011ct + 
 ##     offset(log(street_length.hm)) + adjacency(1 | ct_no)
 ## Estimation of corrPars and lambda by Laplace ML approximation (p_v).
 ## Estimation of fixed effects by Laplace ML approximation (p_v).
 ## Estimation of lambda by &#39;outer&#39; ML, maximizing p_v.
 ## family: binomial( link = logit ) 
 ##  ------------ Fixed effects (beta) ------------
-##                                                     Estimate Cond. SE t-value
-## (Intercept)                                          -4.9125   0.5014 -9.7980
-## gentrified_2016_2011TRUE                              0.1916   0.5945  0.3223
-## Bike_lane.by.street.2011ct                            3.4720   1.4214  2.4426
-## gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct  -1.6042   1.6969 -0.9454
-##                                                     p-value
-## (Intercept)                                         0.00000
-## gentrified_2016_2011TRUE                            0.74726
-## Bike_lane.by.street.2011ct                          0.01458
-## gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct 0.34445
+##                                                             Estimate  Cond. SE
+## (Intercept)                                                  -4.8806    0.5763
+## gentrif_status_2016Gentrified                                 0.1663    0.6457
+## gentrif_status_2016Non eligible                              -0.5923    0.7701
+## Bike_lane.by.street.2011ct                                  524.5915 9317.3113
+## gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct   -522.7544 9317.3116
+## gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct -521.4172 9317.3115
+##                                                             t-value p-value
+## (Intercept)                                                -8.46943  0.0000
+## gentrif_status_2016Gentrified                               0.25755  0.7968
+## gentrif_status_2016Non eligible                            -0.76911  0.4418
+## Bike_lane.by.street.2011ct                                  0.05630  0.9551
+## gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct   -0.05611  0.9553
+## gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct -0.05596  0.9554
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
-##     1.rho 
-## 0.1379985 
+##    1.rho 
+## 0.137976 
 ##            --- Variance parameters (&#39;lambda&#39;):
 ## lambda = var(u) for u ~ Gaussian; 
-##    ct_no  :  6.358  
+##    ct_no  :  6.087  
 ## # of obs: 688; # of groups: ct_no, 688 
 ##  ------------- Likelihood values  -------------
-##                         logLik
-## p_v(h) (marginal L): -146.8066</code></pre>
+##                        logLik
+## p_v(h) (marginal L): -142.484</code></pre>
 <pre class="r"><code># NB: not converging
-# ci.lmm.zero &lt;- confint(res.lmm.zero, &quot;gentrified_2016_2011TRUE&quot;)
-# ci.lmm.zero.i &lt;- confint(res.lmm.zero, &quot;gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct&quot;)
+# varfixef.zero &lt;- names(res.lmm.zero[[&#39;fixef&#39;]])
+# ci.1.lmm.zero &lt;- confint(res.lmm.zero, varfixef.zero[2])
+# ci.2.lmm.zero &lt;- confint(res.lmm.zero, varfixef.zero[3])
+
+
 
 if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.zero, plot = F)
@@ -4608,47 +4702,60 @@ clean_bei.cnt &lt;- bei_df_aoi %&gt;%
   filter(Bike_lane_total.hm.2016ct != 0) %&gt;%
   tidy_df(CT16, f)
 
-res.lmm.cnt &lt;- fitme(Bike_lane_total.hm.2016ct ~ gentrified_2016_2011 * Bike_lane.by.street.2011ct + offset(log(street_length.hm)) + adjacency(1|ct_no),
+res.lmm.cnt &lt;- fitme(Bike_lane_total.hm.2016ct ~ gentrif_status_2016 * Bike_lane.by.street.2011ct + offset(log(street_length.hm)) + adjacency(1|ct_no),
                  data = clean_bei.cnt$df, adjMatrix = clean_bei.cnt$nbmatx,
                  family = Tpoisson())
 smy.cnt &lt;- summary(res.lmm.cnt, details = c(p_value=&quot;Wald&quot;))</code></pre>
-<pre><code>## formula: Bike_lane_total.hm.2016ct ~ gentrified_2016_2011 * Bike_lane.by.street.2011ct + 
+<pre><code>## formula: Bike_lane_total.hm.2016ct ~ gentrif_status_2016 * Bike_lane.by.street.2011ct + 
 ##     offset(log(street_length.hm)) + adjacency(1 | ct_no)
 ## Estimation of corrPars and lambda by Laplace ML approximation (p_v).
 ## Estimation of fixed effects by Laplace ML approximation (p_v).
 ## Estimation of lambda by &#39;outer&#39; ML, maximizing p_v.
 ## family: 0-truncated poisson( link = log ) 
 ##  ------------ Fixed effects (beta) ------------
-##                                                     Estimate Cond. SE t-value
-## (Intercept)                                         -2.75518 0.046857 -58.800
-## gentrified_2016_2011TRUE                             0.20178 0.071981   2.803
-## Bike_lane.by.street.2011ct                           0.05753 0.002441  23.564
-## gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct -0.01157 0.004373  -2.646
-##                                                      p-value
-## (Intercept)                                         0.000000
-## gentrified_2016_2011TRUE                            0.005060
-## Bike_lane.by.street.2011ct                          0.000000
-## gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct 0.008136
+##                                                             Estimate Cond. SE
+## (Intercept)                                                -2.611252 0.060339
+## gentrif_status_2016Gentrified                               0.071340 0.079440
+## gentrif_status_2016Non eligible                            -0.274444 0.075310
+## Bike_lane.by.street.2011ct                                  0.049202 0.003573
+## gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct   -0.003605 0.005023
+## gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct  0.015340 0.004701
+##                                                             t-value   p-value
+## (Intercept)                                                -43.2764 0.0000000
+## gentrif_status_2016Gentrified                                0.8980 0.3691682
+## gentrif_status_2016Non eligible                             -3.6442 0.0002682
+## Bike_lane.by.street.2011ct                                  13.7700 0.0000000
+## gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct    -0.7177 0.4729203
+## gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct   3.2630 0.0011023
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
 ##     1.rho 
-## 0.1504352 
+## 0.1503043 
 ##            --- Variance parameters (&#39;lambda&#39;):
 ## lambda = var(u) for u ~ Gaussian; 
-##    ct_no  :  0.1088  
+##    ct_no  :  0.1055  
 ## # of obs: 564; # of groups: ct_no, 564 
 ##  ------------- Likelihood values  -------------
 ##                         logLik
-## p_v(h) (marginal L): -1877.541</code></pre>
-<pre class="r"><code>ci.lmm.cnt &lt;- confint(res.lmm.cnt, &quot;gentrified_2016_2011TRUE&quot;)</code></pre>
-<pre><code>## lower gentrified_2016_2011TRUE upper gentrified_2016_2011TRUE 
-##                     0.05956701                     0.34312556</code></pre>
-<pre class="r"><code>ci.lmm.cnt.i &lt;- confint(res.lmm.cnt, &quot;gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct&quot;)</code></pre>
-<pre><code>## lower gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct 
-##                                              -0.020172990 
-## upper gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct 
-##                                              -0.002964552</code></pre>
+## p_v(h) (marginal L): -1870.628</code></pre>
+<pre class="r"><code>varfixef.cnt &lt;- names(res.lmm.cnt[[&#39;fixef&#39;]])
+ci.1.lmm.cnt &lt;- confint(res.lmm.cnt, varfixef.cnt[2])</code></pre>
+<pre><code>## lower gentrif_status_2016Gentrified upper gentrif_status_2016Gentrified 
+##                         -0.08522824                          0.22736145</code></pre>
+<pre class="r"><code>ci.2.lmm.cnt &lt;- confint(res.lmm.cnt, varfixef.cnt[3])</code></pre>
+<pre><code>## lower gentrif_status_2016Non eligible upper gentrif_status_2016Non eligible 
+##                            -0.4230762                            -0.1264217</code></pre>
+<pre class="r"><code>ci.3.lmm.cnt &lt;- confint(res.lmm.cnt, varfixef.cnt[5]) # Interaction</code></pre>
+<pre><code>## lower gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct 
+##                                                   -0.013469303 
+## upper gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct 
+##                                                    0.006292384</code></pre>
+<pre class="r"><code>ci.4.lmm.cnt &lt;- confint(res.lmm.cnt, varfixef.cnt[6]) # Interaction</code></pre>
+<pre><code>## lower gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct 
+##                                                      0.006125593 
+## upper gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct 
+##                                                      0.024644138</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.cnt, plot = F)
   plot(simout)
@@ -4658,9 +4765,10 @@ smy.cnt &lt;- summary(res.lmm.cnt, details = c(p_value=&quot;Wald&quot;))</code>
 .t &lt;- clean_bei.cnt$df
 .t[&quot;predict&quot;] &lt;- as.vector(predict(res.lmm.cnt))
 
-g_gen_bk.hrdl &lt;- ggplot(.t, aes(y=100*predict/street_length.hm, x=Bike_lane.by.street.2011ct, colour=factor(gentrified_2016_2011), fill=factor(gentrified_2016_2011))) + 
+g_gen_bk.hrdl &lt;- ggplot(.t, aes(y=100*predict/street_length.hm, x=Bike_lane.by.street.2011ct, colour=gentrif_status_2016, fill=gentrif_status_2016)) + 
+  # geom_point() +
   geom_smooth(method = &quot;lm&quot;, alpha=.1) +
-  labs(colour=&#39;gentrified_2016_2011&#39;, fill=&#39;gentrified_2016_2011&#39;)
+  labs(colour=&#39;gentrif_status_2016&#39;, fill=&#39;gentrif_status_2016&#39;)
 g_gen_bk.hrdl</code></pre>
 <p><img src="BEI_equity_paper.final_files/figure-html/test-hurdle-0-1.png" width="1152" /></p>
 <pre class="r"><code># AIC
@@ -4671,8 +4779,8 @@ AIC(res.lmm.cnt)
 &quot;Combined Hurdle AIC:&quot;</code></pre>
 <pre><code>## [1] &quot;Combined Hurdle AIC:&quot;</code></pre>
 <pre class="r"><code>-2 * res.lmm.zero$APHLs$p_v - 2 * res.lmm.cnt$APHLs$p_v + 2 * Reduce(sum, res.lmm.cnt$dfs)</code></pre>
-<pre><code>## [1] 4060.696</code></pre>
-<p>Interpretation of the <code>gentrified_2016_2011</code> coefficient | Zero model (not significant): we have <span class="math inline">\(e^{0.192}\)</span> = 1.211 Interpretation of the <code>gentrified_2016_2011</code> coefficient | Count model (not significant): we have <span class="math inline">\(e^{0.202}\)</span> = 1.224</p>
+<pre><code>## [1] 4042.224</code></pre>
+<p>Interpretation of the <code>gentrif_status_2016</code> coefficient | Zero model: <em>Not gentrified</em> vs <em>Gentrified</em> not significant Interpretation of the <code>gentrif_status_2016</code> coefficient | Count model: idem</p>
 <p>Transforming the model coefficients:</p>
 <pre class="r"><code># Zero model
 smy.zero.bt &lt;- data.frame(smy.zero$beta_table)
@@ -4681,6 +4789,11 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
   knitr::kable(caption=&quot;Zero model transformed coeffs&quot;)</code></pre>
 <table>
 <caption>Zero model transformed coeffs</caption>
+<colgroup>
+<col width="72%" />
+<col width="17%" />
+<col width="9%" />
+</colgroup>
 <thead>
 <tr class="header">
 <th align="left"></th>
@@ -4691,23 +4804,33 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 <tbody>
 <tr class="odd">
 <td align="left">(Intercept)</td>
-<td align="right">0.007</td>
+<td align="right">8.000000e-03</td>
 <td align="right">0.000</td>
 </tr>
 <tr class="even">
-<td align="left">gentrified_2016_2011TRUE</td>
-<td align="right">1.211</td>
-<td align="right">0.747</td>
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">1.181000e+00</td>
+<td align="right">0.797</td>
 </tr>
 <tr class="odd">
-<td align="left">Bike_lane.by.street.2011ct</td>
-<td align="right">32.202</td>
-<td align="right">0.015</td>
+<td align="left">gentrif_status_2016Non eligible</td>
+<td align="right">5.530000e-01</td>
+<td align="right">0.442</td>
 </tr>
 <tr class="even">
-<td align="left">gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct</td>
-<td align="right">0.201</td>
-<td align="right">0.344</td>
+<td align="left">Bike_lane.by.street.2011ct</td>
+<td align="right">6.717115e+227</td>
+<td align="right">0.955</td>
+</tr>
+<tr class="odd">
+<td align="left">gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct</td>
+<td align="right">0.000000e+00</td>
+<td align="right">0.955</td>
+</tr>
+<tr class="even">
+<td align="left">gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct</td>
+<td align="right">0.000000e+00</td>
+<td align="right">0.955</td>
 </tr>
 </tbody>
 </table>
@@ -4733,30 +4856,41 @@ round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
 <tbody>
 <tr class="odd">
 <td align="left">(Intercept)</td>
-<td align="right">0.064</td>
+<td align="right">0.073</td>
 <td align="right">0.000</td>
 </tr>
 <tr class="even">
-<td align="left">gentrified_2016_2011TRUE</td>
-<td align="right">1.224</td>
-<td align="right">0.005</td>
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">1.074</td>
+<td align="right">0.369</td>
 </tr>
 <tr class="odd">
-<td align="left">Bike_lane.by.street.2011ct</td>
-<td align="right">1.059</td>
+<td align="left">gentrif_status_2016Non eligible</td>
+<td align="right">0.760</td>
 <td align="right">0.000</td>
 </tr>
 <tr class="even">
-<td align="left">gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct</td>
-<td align="right">0.988</td>
-<td align="right">0.008</td>
+<td align="left">Bike_lane.by.street.2011ct</td>
+<td align="right">1.050</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct</td>
+<td align="right">0.996</td>
+<td align="right">0.473</td>
+</tr>
+<tr class="even">
+<td align="left">gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct</td>
+<td align="right">1.015</td>
+<td align="right">0.001</td>
 </tr>
 </tbody>
 </table>
-<pre class="r"><code>data.frame(gentrified_2016_2011TRUE = round(exp(ci.lmm.cnt$interval), 3),
-           `gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct` = round(exp(ci.lmm.cnt.i$interval), 3),
-           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
-  knitr::kable(caption=&quot;Count model confidence interval&quot;)</code></pre>
+<pre class="r"><code>.ci.exp &lt;- rbind(ci.1.lmm.cnt$interval, ci.2.lmm.cnt$interval, ci.3.lmm.cnt$interval, ci.4.lmm.cnt$interval) %&gt;% 
+  exp() %&gt;% round(., 3) %&gt;%
+  data.frame(., row.names = c(varfixef.cnt[2:3], varfixef.cnt[5:6]))
+names(.ci.exp) &lt;- c(&quot;lower&quot;, &quot;upper&quot;)
+knitr::kable(.ci.exp, caption=&quot;Count model confidence interval&quot;)</code></pre>
 <table>
 <caption>Count model confidence interval</caption>
 <thead>
@@ -4768,14 +4902,24 @@ round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">gentrified_2016_2011TRUE</td>
-<td align="right">1.061</td>
-<td align="right">1.409</td>
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">0.918</td>
+<td align="right">1.255</td>
 </tr>
 <tr class="even">
-<td align="left">gentrified_2016_2011TRUE.Bike_lane.by.street.2011ct</td>
-<td align="right">0.980</td>
-<td align="right">0.997</td>
+<td align="left">gentrif_status_2016Non eligible</td>
+<td align="right">0.655</td>
+<td align="right">0.881</td>
+</tr>
+<tr class="odd">
+<td align="left">gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct</td>
+<td align="right">0.987</td>
+<td align="right">1.006</td>
+</tr>
+<tr class="even">
+<td align="left">gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct</td>
+<td align="right">1.006</td>
+<td align="right">1.025</td>
 </tr>
 </tbody>
 </table>
@@ -4783,51 +4927,64 @@ round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
 <div id="greenness-change-2" class="section level3" number="6.3.2">
 <h3><span class="header-section-number">6.3.2</span> Greenness change</h3>
 <p>Measuring canopy (<em>i.e.</em> greenness ~ grass &amp; trees) ratio within CT/buffer in 2011 (in %) at the Census tract level</p>
-<pre class="r"><code>f &lt;- area_esp_vert_2017ct ~ gentrified_2016_2011 * pct_esp_vert_2011ct + offset(log(ct_area_hct))
+<pre class="r"><code>f &lt;- area_esp_vert_2017ct ~ gentrif_status_2016 * pct_esp_vert_2011ct + offset(log(ct_area_hct))
 
 clean_bei &lt;- tidy_df(bei_df_aoi, CT16, f)
 
-res.lmm &lt;- fitme(area_esp_vert_2017ct ~ gentrified_2016_2011 * pct_esp_vert_2011ct + offset(log(ct_area_hct)) + adjacency(1|ct_no),
+res.lmm &lt;- fitme(area_esp_vert_2017ct ~ gentrif_status_2016 * pct_esp_vert_2011ct + offset(log(ct_area_hct)) + adjacency(1|ct_no),
                  data = clean_bei$df, adjMatrix = clean_bei$nbmatx,
                  family = poisson())
 smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
-<pre><code>## formula: area_esp_vert_2017ct ~ gentrified_2016_2011 * pct_esp_vert_2011ct + 
+<pre><code>## formula: area_esp_vert_2017ct ~ gentrif_status_2016 * pct_esp_vert_2011ct + 
 ##     offset(log(ct_area_hct)) + adjacency(1 | ct_no)
 ## Estimation of corrPars and lambda by Laplace ML approximation (p_v).
 ## Estimation of fixed effects by Laplace ML approximation (p_v).
 ## Estimation of lambda by &#39;outer&#39; ML, maximizing p_v.
 ## family: poisson( link = log ) 
 ##  ------------ Fixed effects (beta) ------------
-##                                               Estimate  Cond. SE t-value
-## (Intercept)                                  -1.613181 0.0257554 -62.635
-## gentrified_2016_2011TRUE                     -0.202648 0.0643480  -3.149
-## pct_esp_vert_2011ct                           0.018744 0.0004558  41.126
-## gentrified_2016_2011TRUE:pct_esp_vert_2011ct  0.005266 0.0016869   3.122
-##                                               p-value
-## (Intercept)                                  0.000000
-## gentrified_2016_2011TRUE                     0.001637
-## pct_esp_vert_2011ct                          0.000000
-## gentrified_2016_2011TRUE:pct_esp_vert_2011ct 0.001796
+##                                                       Estimate Cond. SE
+## (Intercept)                                         -1.8745547 0.049015
+## gentrif_status_2016Gentrified                        0.0460220 0.075265
+## gentrif_status_2016Non eligible                      0.3692139 0.056419
+## pct_esp_vert_2011ct                                  0.0253288 0.001234
+## gentrif_status_2016Gentrified:pct_esp_vert_2011ct   -0.0009989 0.002001
+## gentrif_status_2016Non eligible:pct_esp_vert_2011ct -0.0083195 0.001320
+##                                                      t-value   p-value
+## (Intercept)                                         -38.2448 0.000e+00
+## gentrif_status_2016Gentrified                         0.6115 5.409e-01
+## gentrif_status_2016Non eligible                       6.5442 5.982e-11
+## pct_esp_vert_2011ct                                  20.5308 0.000e+00
+## gentrif_status_2016Gentrified:pct_esp_vert_2011ct    -0.4991 6.177e-01
+## gentrif_status_2016Non eligible:pct_esp_vert_2011ct  -6.3018 2.942e-10
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
 ##     1.rho 
-## 0.1347727 
+## 0.1347056 
 ##            --- Variance parameters (&#39;lambda&#39;):
 ## lambda = var(u) for u ~ Gaussian; 
-##    ct_no  :  0.004844  
+##    ct_no  :  0.004222  
 ## # of obs: 688; # of groups: ct_no, 688 
 ##  ------------- Likelihood values  -------------
-##                         logLik
-## p_v(h) (marginal L): -2012.743</code></pre>
-<pre class="r"><code>ci.lmm &lt;- confint(res.lmm, &quot;gentrified_2016_2011TRUE&quot;)</code></pre>
-<pre><code>## lower gentrified_2016_2011TRUE upper gentrified_2016_2011TRUE 
-##                    -0.32923088                    -0.07618816</code></pre>
-<pre class="r"><code>ci.lmm.i &lt;- confint(res.lmm, &quot;gentrified_2016_2011TRUE:pct_esp_vert_2011ct&quot;)</code></pre>
-<pre><code>## lower gentrified_2016_2011TRUE:pct_esp_vert_2011ct 
-##                                        0.001944267 
-## upper gentrified_2016_2011TRUE:pct_esp_vert_2011ct 
-##                                        0.008578428</code></pre>
+##                        logLik
+## p_v(h) (marginal L): -1991.58</code></pre>
+<pre class="r"><code>varfixef &lt;- names(res.lmm[[&#39;fixef&#39;]])
+ci.1.lmm &lt;- confint(res.lmm, varfixef[2])</code></pre>
+<pre><code>## lower gentrif_status_2016Gentrified upper gentrif_status_2016Gentrified 
+##                          -0.1015749                           0.1934751</code></pre>
+<pre class="r"><code>ci.2.lmm &lt;- confint(res.lmm, varfixef[3])</code></pre>
+<pre><code>## lower gentrif_status_2016Non eligible upper gentrif_status_2016Non eligible 
+##                             0.2585166                             0.4799530</code></pre>
+<pre class="r"><code>ci.3.lmm &lt;- confint(res.lmm, varfixef[5]) # Interaction</code></pre>
+<pre><code>## lower gentrif_status_2016Gentrified:pct_esp_vert_2011ct 
+##                                            -0.004924989 
+## upper gentrif_status_2016Gentrified:pct_esp_vert_2011ct 
+##                                             0.002922060</code></pre>
+<pre class="r"><code>ci.4.lmm &lt;- confint(res.lmm, varfixef[6]) # Interaction</code></pre>
+<pre><code>## lower gentrif_status_2016Non eligible:pct_esp_vert_2011ct 
+##                                              -0.010910143 
+## upper gentrif_status_2016Non eligible:pct_esp_vert_2011ct 
+##                                              -0.005731823</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm, plot = F)
   plot(simout)
@@ -4837,33 +4994,12 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 .t &lt;- clean_bei$df
 .t[&quot;predict&quot;] &lt;- as.vector(predict(res.lmm))
 
-g_gen_gr &lt;- ggplot(.t, aes(y=100*predict/ct_area_hct, x=pct_esp_vert_2011ct, colour=factor(gentrified_2016_2011), fill=factor(gentrified_2016_2011))) + 
+g_gen_gr &lt;- ggplot(.t, aes(y=100*predict/ct_area_hct, x=pct_esp_vert_2011ct, colour=factor(gentrif_status_2016), fill=factor(gentrif_status_2016))) + 
   geom_smooth(method = &quot;lm&quot;, alpha=.1) +
-  labs(colour=&#39;gentrified_2016_2011&#39;, fill=&#39;gentrified_2016_2011&#39;)
+  labs(colour=&#39;gentrif_status_2016&#39;, fill=&#39;gentrif_status_2016&#39;)
 g_gen_gr</code></pre>
 <p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-46-1.png" width="1152" /></p>
-<p>Interpretation of the <code>gentrified_2016_2011</code> coefficient (significant): we have <span class="math inline">\(e^{-0.203}\)</span> = 0.817 (95%CI: 0.719 – 0.927)</p>
-<p>Coefficient interpretation (marginal + interaction) as relative risk.</p>
-<pre class="r"><code># Compute combined effects (marginal + interaction) for each quintile of SES:
-i_e &lt;- data.frame(gentrified_2016_2011=0:1)
-i_e[&quot;UC2011.effect&quot;] &lt;- res.lmm[[&quot;fixef&quot;]][&#39;pct_esp_vert_2011ct&#39;] + i_e[&quot;gentrified_2016_2011&quot;] * res.lmm[[&quot;fixef&quot;]][&#39;gentrified_2016_2011TRUE:pct_esp_vert_2011ct&#39;]
-i_e[&quot;UC2011.relative.risk&quot;] &lt;- exp(i_e[&quot;UC2011.effect&quot;])
-i_e</code></pre>
-<div data-pagedtable="false">
-<script data-pagedtable-source type="application/json">
-{"columns":[{"label":["gentrified_2016_2011"],"name":[1],"type":["int"],"align":["right"]},{"label":["UC2011.effect"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["UC2011.relative.risk"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"0","2":"0.01874432","3":"1.018921"},{"1":"1","2":"0.02401067","3":"1.024301"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
-</div>
-<pre class="r"><code># Compute combined effects (marginal + interaction) for each quintile of SES:
-i_e &lt;- data.frame(pct_esp_vert_2011ct = quantile(clean_bei$df$pct_esp_vert_2011ct)[2:4])
-i_e[&quot;SES.effect&quot;] &lt;- res.lmm[[&quot;fixef&quot;]][&#39;gentrified_2016_2011TRUE&#39;] + i_e[&quot;pct_esp_vert_2011ct&quot;] * res.lmm[[&quot;fixef&quot;]][&#39;gentrified_2016_2011TRUE:pct_esp_vert_2011ct&#39;]
-i_e[&quot;SES.relative.risk&quot;] &lt;- exp(i_e[&quot;SES.effect&quot;])
-i_e</code></pre>
-<div data-pagedtable="false">
-<script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["pct_esp_vert_2011ct"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["SES.effect"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["SES.relative.risk"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"24.800","2":"-0.07204256","3":"0.9304913","_rn_":"25%"},{"1":"35.900","2":"-0.01358600","3":"0.9865059","_rn_":"50%"},{"1":"46.925","2":"0.04447558","3":"1.0454794","_rn_":"75%"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
-</div>
+<p>Interpretation of the <code>gentrif_status_2016</code> coefficient: <em>Gentrified</em> vs <em>Not gentrified</em> not significant for main and interaction terms</p>
 <p>Transforming the model coefficients:</p>
 <pre class="r"><code>smy.bt &lt;- data.frame(smy$beta_table)
 round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;% 
@@ -4881,30 +5017,41 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 <tbody>
 <tr class="odd">
 <td align="left">(Intercept)</td>
-<td align="right">0.199</td>
+<td align="right">0.153</td>
 <td align="right">0.000</td>
 </tr>
 <tr class="even">
-<td align="left">gentrified_2016_2011TRUE</td>
-<td align="right">0.817</td>
-<td align="right">0.002</td>
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">1.047</td>
+<td align="right">0.541</td>
 </tr>
 <tr class="odd">
-<td align="left">pct_esp_vert_2011ct</td>
-<td align="right">1.019</td>
+<td align="left">gentrif_status_2016Non eligible</td>
+<td align="right">1.447</td>
 <td align="right">0.000</td>
 </tr>
 <tr class="even">
-<td align="left">gentrified_2016_2011TRUE:pct_esp_vert_2011ct</td>
-<td align="right">1.005</td>
-<td align="right">0.002</td>
+<td align="left">pct_esp_vert_2011ct</td>
+<td align="right">1.026</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">gentrif_status_2016Gentrified:pct_esp_vert_2011ct</td>
+<td align="right">0.999</td>
+<td align="right">0.618</td>
+</tr>
+<tr class="even">
+<td align="left">gentrif_status_2016Non eligible:pct_esp_vert_2011ct</td>
+<td align="right">0.992</td>
+<td align="right">0.000</td>
 </tr>
 </tbody>
 </table>
-<pre class="r"><code>data.frame(gentrified_2016_2011TRUE = round(exp(ci.lmm$interval), 3),
-           `gentrified_2016_2011TRUE:pct_esp_vert_2011ct` = round(exp(ci.lmm.i$interval), 3),
-           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
-  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<pre class="r"><code>.ci.exp &lt;- rbind(ci.1.lmm$interval, ci.2.lmm$interval, ci.3.lmm$interval, ci.4.lmm$interval) %&gt;% 
+  exp() %&gt;% round(., 3) %&gt;%
+  data.frame(., row.names = c(varfixef[2:3], varfixef[5:6]))
+names(.ci.exp) &lt;- c(&quot;lower&quot;, &quot;upper&quot;)
+knitr::kable(.ci.exp, caption=&quot;Model confidence interval&quot;)</code></pre>
 <table>
 <caption>Model confidence interval</caption>
 <thead>
@@ -4916,14 +5063,24 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">gentrified_2016_2011TRUE</td>
-<td align="right">0.719</td>
-<td align="right">0.927</td>
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">0.903</td>
+<td align="right">1.213</td>
 </tr>
 <tr class="even">
-<td align="left">gentrified_2016_2011TRUE.pct_esp_vert_2011ct</td>
-<td align="right">1.002</td>
-<td align="right">1.009</td>
+<td align="left">gentrif_status_2016Non eligible</td>
+<td align="right">1.295</td>
+<td align="right">1.616</td>
+</tr>
+<tr class="odd">
+<td align="left">gentrif_status_2016Gentrified:pct_esp_vert_2011ct</td>
+<td align="right">0.995</td>
+<td align="right">1.003</td>
+</tr>
+<tr class="even">
+<td align="left">gentrif_status_2016Non eligible:pct_esp_vert_2011ct</td>
+<td align="right">0.989</td>
+<td align="right">0.994</td>
 </tr>
 </tbody>
 </table>
@@ -4931,51 +5088,64 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 <div id="canopy-trees-change-2" class="section level3" number="6.3.3">
 <h3><span class="header-section-number">6.3.3</span> Canopy (trees) change</h3>
 <p>Measuring high canopy (<em>i.e.</em> trees only) ratio within CT/buffer in 2011 (in %) at the Census tract level</p>
-<pre class="r"><code>f &lt;- area_esp_vert_high_2017ct ~ gentrified_2016_2011 * pct_esp_vert_high_2011ct + offset(log(ct_area_hct))
+<pre class="r"><code>f &lt;- area_esp_vert_high_2017ct ~ gentrif_status_2016 * pct_esp_vert_high_2011ct + offset(log(ct_area_hct))
 
 clean_bei &lt;- tidy_df(bei_df_aoi, CT16, f)
 
-res.lmm &lt;- fitme(area_esp_vert_high_2017ct ~ gentrified_2016_2011 * pct_esp_vert_high_2011ct + offset(log(ct_area_hct)) + adjacency(1|ct_no),
+res.lmm &lt;- fitme(area_esp_vert_high_2017ct ~ gentrif_status_2016 * pct_esp_vert_high_2011ct + offset(log(ct_area_hct)) + adjacency(1|ct_no),
                  data = clean_bei$df, adjMatrix = clean_bei$nbmatx,
                  family = poisson())
 smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
-<pre><code>## formula: area_esp_vert_high_2017ct ~ gentrified_2016_2011 * pct_esp_vert_high_2011ct + 
+<pre><code>## formula: area_esp_vert_high_2017ct ~ gentrif_status_2016 * pct_esp_vert_high_2011ct + 
 ##     offset(log(ct_area_hct)) + adjacency(1 | ct_no)
 ## Estimation of corrPars and lambda by Laplace ML approximation (p_v).
 ## Estimation of fixed effects by Laplace ML approximation (p_v).
 ## Estimation of lambda by &#39;outer&#39; ML, maximizing p_v.
 ## family: poisson( link = log ) 
 ##  ------------ Fixed effects (beta) ------------
-##                                                   Estimate  Cond. SE t-value
-## (Intercept)                                       -2.35730 0.0279340 -84.388
-## gentrified_2016_2011TRUE                          -0.20459 0.0715883  -2.858
-## pct_esp_vert_high_2011ct                           0.03939 0.0009182  42.893
-## gentrified_2016_2011TRUE:pct_esp_vert_high_2011ct  0.01322 0.0035508   3.722
-##                                                     p-value
-## (Intercept)                                       0.0000000
-## gentrified_2016_2011TRUE                          0.0042654
-## pct_esp_vert_high_2011ct                          0.0000000
-## gentrified_2016_2011TRUE:pct_esp_vert_high_2011ct 0.0001974
+##                                                           Estimate Cond. SE
+## (Intercept)                                              -2.675102 0.055712
+## gentrif_status_2016Gentrified                             0.096450 0.083826
+## gentrif_status_2016Non eligible                           0.365542 0.060301
+## pct_esp_vert_high_2011ct                                  0.057734 0.002799
+## gentrif_status_2016Gentrified:pct_esp_vert_high_2011ct   -0.004383 0.004297
+## gentrif_status_2016Non eligible:pct_esp_vert_high_2011ct -0.020418 0.002912
+##                                                          t-value   p-value
+## (Intercept)                                              -48.016 0.000e+00
+## gentrif_status_2016Gentrified                              1.151 2.499e-01
+## gentrif_status_2016Non eligible                            6.062 1.345e-09
+## pct_esp_vert_high_2011ct                                  20.629 0.000e+00
+## gentrif_status_2016Gentrified:pct_esp_vert_high_2011ct    -1.020 3.077e-01
+## gentrif_status_2016Non eligible:pct_esp_vert_high_2011ct  -7.013 2.335e-12
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
 ##     1.rho 
-## 0.1380802 
+## 0.1381428 
 ##            --- Variance parameters (&#39;lambda&#39;):
 ## lambda = var(u) for u ~ Gaussian; 
-##    ct_no  :  0.01222  
+##    ct_no  :  0.00993  
 ## # of obs: 688; # of groups: ct_no, 688 
 ##  ------------- Likelihood values  -------------
 ##                         logLik
-## p_v(h) (marginal L): -1814.314</code></pre>
-<pre class="r"><code>ci.lmm &lt;- confint(res.lmm, &quot;gentrified_2016_2011TRUE&quot;)</code></pre>
-<pre><code>## lower gentrified_2016_2011TRUE upper gentrified_2016_2011TRUE 
-##                    -0.34539306                    -0.06456076</code></pre>
-<pre class="r"><code>ci.lmm.i &lt;- confint(res.lmm, &quot;gentrified_2016_2011TRUE:pct_esp_vert_high_2011ct&quot;)</code></pre>
-<pre><code>## lower gentrified_2016_2011TRUE:pct_esp_vert_high_2011ct 
-##                                             0.006232907 
-## upper gentrified_2016_2011TRUE:pct_esp_vert_high_2011ct 
-##                                             0.020169474</code></pre>
+## p_v(h) (marginal L): -1790.936</code></pre>
+<pre class="r"><code>varfixef &lt;- names(res.lmm[[&#39;fixef&#39;]])
+ci.1.lmm &lt;- confint(res.lmm, varfixef[2])</code></pre>
+<pre><code>## lower gentrif_status_2016Gentrified upper gentrif_status_2016Gentrified 
+##                         -0.06836982                          0.26047145</code></pre>
+<pre class="r"><code>ci.2.lmm &lt;- confint(res.lmm, varfixef[3])</code></pre>
+<pre><code>## lower gentrif_status_2016Non eligible upper gentrif_status_2016Non eligible 
+##                             0.2467716                             0.4840189</code></pre>
+<pre class="r"><code>ci.3.lmm &lt;- confint(res.lmm, varfixef[5]) # Interaction</code></pre>
+<pre><code>## lower gentrif_status_2016Gentrified:pct_esp_vert_high_2011ct 
+##                                                 -0.012803354 
+## upper gentrif_status_2016Gentrified:pct_esp_vert_high_2011ct 
+##                                                  0.004046371</code></pre>
+<pre class="r"><code>ci.4.lmm &lt;- confint(res.lmm, varfixef[6]) # Interaction</code></pre>
+<pre><code>## lower gentrif_status_2016Non eligible:pct_esp_vert_high_2011ct 
+##                                                    -0.02612072 
+## upper gentrif_status_2016Non eligible:pct_esp_vert_high_2011ct 
+##                                                    -0.01467440</code></pre>
 <pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm, plot = F)
   plot(simout)
@@ -4985,33 +5155,12 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 .t &lt;- clean_bei$df
 .t[&quot;predict&quot;] &lt;- as.vector(predict(res.lmm))
 
-g_gen_tc &lt;- ggplot(.t, aes(y=100*predict/ct_area_hct, x=pct_esp_vert_high_2011ct, colour=factor(gentrified_2016_2011), fill=factor(gentrified_2016_2011))) + 
+g_gen_tc &lt;- ggplot(.t, aes(y=100*predict/ct_area_hct, x=pct_esp_vert_high_2011ct, colour=factor(gentrif_status_2016), fill=factor(gentrif_status_2016))) + 
   geom_smooth(method = &quot;lm&quot;, alpha=.1) +
-  labs(colour=&#39;gentrified_2016_2011&#39;, fill=&#39;gentrified_2016_2011&#39;)
+  labs(colour=&#39;gentrif_status_2016&#39;, fill=&#39;gentrif_status_2016&#39;)
 g_gen_tc</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-49-1.png" width="1152" /></p>
-<p>Interpretation of the <code>gentrified_2016_2011</code> coefficient (significant): we have <span class="math inline">\(e^{-0.205}\)</span> = 0.815 (95%CI: 0.708 – 0.937)</p>
-<p>Coefficient interpretation (marginal + interaction) as relative risk.</p>
-<pre class="r"><code># Compute combined effects (marginal + interaction) for each quintile of SES:
-i_e &lt;- data.frame(gentrified_2016_2011=0:1)
-i_e[&quot;UC2011.effect&quot;] &lt;- res.lmm[[&quot;fixef&quot;]][&#39;pct_esp_vert_high_2011ct&#39;] + i_e[&quot;gentrified_2016_2011&quot;] * res.lmm[[&quot;fixef&quot;]][&#39;gentrified_2016_2011TRUE:pct_esp_vert_high_2011ct&#39;]
-i_e[&quot;UC2011.relative.risk&quot;] &lt;- exp(i_e[&quot;UC2011.effect&quot;])
-i_e</code></pre>
-<div data-pagedtable="false">
-<script data-pagedtable-source type="application/json">
-{"columns":[{"label":["gentrified_2016_2011"],"name":[1],"type":["int"],"align":["right"]},{"label":["UC2011.effect"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["UC2011.relative.risk"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"0","2":"0.03938631","3":"1.040172"},{"1":"1","2":"0.05260351","3":"1.054012"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
-</div>
-<pre class="r"><code># Compute combined effects (marginal + interaction) for each quintile of SES:
-i_e &lt;- data.frame(pct_esp_vert_high_2011ct = quantile(clean_bei$df$pct_esp_vert_high_2011ct)[2:4])
-i_e[&quot;SES.effect&quot;] &lt;- res.lmm[[&quot;fixef&quot;]][&#39;gentrified_2016_2011TRUE&#39;] + i_e[&quot;pct_esp_vert_high_2011ct&quot;] * res.lmm[[&quot;fixef&quot;]][&#39;gentrified_2016_2011TRUE:pct_esp_vert_high_2011ct&#39;]
-i_e[&quot;SES.relative.risk&quot;] &lt;- exp(i_e[&quot;SES.effect&quot;])
-i_e</code></pre>
-<div data-pagedtable="false">
-<script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["pct_esp_vert_high_2011ct"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["SES.effect"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["SES.relative.risk"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"11.8","2":"-0.04862431","3":"0.9525389","_rn_":"25%"},{"1":"16.4","2":"0.01217482","3":"1.0122492","_rn_":"50%"},{"1":"22.5","2":"0.09279976","3":"1.0972420","_rn_":"75%"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
-</div>
+<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-48-1.png" width="1152" /></p>
+<p>Interpretation of the <code>gentrif_status_2016</code> coefficient: <em>Gentrified</em> vs <em>Not gentrified</em> not significant for main and interaction terms</p>
 <p>Transforming the model coefficients:</p>
 <pre class="r"><code>smy.bt &lt;- data.frame(smy$beta_table)
 round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;% 
@@ -5029,30 +5178,41 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 <tbody>
 <tr class="odd">
 <td align="left">(Intercept)</td>
-<td align="right">0.095</td>
+<td align="right">0.069</td>
 <td align="right">0.000</td>
 </tr>
 <tr class="even">
-<td align="left">gentrified_2016_2011TRUE</td>
-<td align="right">0.815</td>
-<td align="right">0.004</td>
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">1.101</td>
+<td align="right">0.250</td>
 </tr>
 <tr class="odd">
-<td align="left">pct_esp_vert_high_2011ct</td>
-<td align="right">1.040</td>
+<td align="left">gentrif_status_2016Non eligible</td>
+<td align="right">1.441</td>
 <td align="right">0.000</td>
 </tr>
 <tr class="even">
-<td align="left">gentrified_2016_2011TRUE:pct_esp_vert_high_2011ct</td>
-<td align="right">1.013</td>
+<td align="left">pct_esp_vert_high_2011ct</td>
+<td align="right">1.059</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">gentrif_status_2016Gentrified:pct_esp_vert_high_2011ct</td>
+<td align="right">0.996</td>
+<td align="right">0.308</td>
+</tr>
+<tr class="even">
+<td align="left">gentrif_status_2016Non eligible:pct_esp_vert_high_2011ct</td>
+<td align="right">0.980</td>
 <td align="right">0.000</td>
 </tr>
 </tbody>
 </table>
-<pre class="r"><code>data.frame(gentrified_2016_2011TRUE = round(exp(ci.lmm$interval), 3),
-           `gentrified_2016_2011TRUE:pct_esp_vert_high_2011ct` = round(exp(ci.lmm.i$interval), 3),
-           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
-  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<pre class="r"><code>.ci.exp &lt;- rbind(ci.1.lmm$interval, ci.2.lmm$interval, ci.3.lmm$interval, ci.4.lmm$interval) %&gt;% 
+  exp() %&gt;% round(., 3) %&gt;%
+  data.frame(., row.names = c(varfixef[2:3], varfixef[5:6]))
+names(.ci.exp) &lt;- c(&quot;lower&quot;, &quot;upper&quot;)
+knitr::kable(.ci.exp, caption=&quot;Model confidence interval&quot;)</code></pre>
 <table>
 <caption>Model confidence interval</caption>
 <thead>
@@ -5064,14 +5224,24 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">gentrified_2016_2011TRUE</td>
-<td align="right">0.708</td>
-<td align="right">0.937</td>
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">0.934</td>
+<td align="right">1.298</td>
 </tr>
 <tr class="even">
-<td align="left">gentrified_2016_2011TRUE.pct_esp_vert_high_2011ct</td>
-<td align="right">1.006</td>
-<td align="right">1.020</td>
+<td align="left">gentrif_status_2016Non eligible</td>
+<td align="right">1.280</td>
+<td align="right">1.623</td>
+</tr>
+<tr class="odd">
+<td align="left">gentrif_status_2016Gentrified:pct_esp_vert_high_2011ct</td>
+<td align="right">0.987</td>
+<td align="right">1.004</td>
+</tr>
+<tr class="even">
+<td align="left">gentrif_status_2016Non eligible:pct_esp_vert_high_2011ct</td>
+<td align="right">0.974</td>
+<td align="right">0.985</td>
 </tr>
 </tbody>
 </table>
@@ -5557,7 +5727,7 @@ g_mat_gr.categ &lt;- ggplot(.t, aes(y=100*predict/ct_area_hct, x=pct_esp_vert_20
   scale_fill_manual(values = qtl[c(1, 4, 5)]) +
   labs(colour=&#39;wSCOREMAT.2011.Q&#39;, fill=&#39;wSCOREMAT.2011.Q&#39;)
 g_mat_gr.categ</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-53-1.png" width="1152" /></p>
+<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-51-1.png" width="1152" /></p>
 <p>Transforming the model coefficients:</p>
 <pre class="r"><code>smy.bt &lt;- data.frame(smy$beta_table)
 round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;% 
@@ -5797,7 +5967,7 @@ g_mat_tc.categ &lt;- ggplot(.t, aes(y=100*predict/ct_area_hct, x=pct_esp_vert_hi
   scale_fill_manual(values = qtl) +
   labs(colour=&#39;wSCOREMAT.2011.Q&#39;, fill=&#39;wSCOREMAT.2011.Q&#39;)
 g_mat_tc.categ</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-55-1.png" width="1152" /></p>
+<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-53-1.png" width="1152" /></p>
 <p>Transforming the model coefficients:</p>
 <pre class="r"><code>smy.bt &lt;- data.frame(smy$beta_table)
 round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;% 
@@ -6103,12 +6273,12 @@ smy.cnt &lt;- summary(res.lmm.cnt, details = c(p_value=&quot;Wald&quot;))</code>
 # Plotting interaction
 .t &lt;- clean_bei.cnt$df
 .t[&quot;predict&quot;] &lt;- as.vector(predict(res.lmm.cnt))
-.t &lt;- filter(.t, vis_minority_2011.Q %in% c(1)) # Keeping only significant interaction terms
+.t &lt;- filter(.t, vis_minority_2011.Q %in% c(1, 4)) # Keeping only significant interaction terms
 
 g_vis_bk.hrdl.categ &lt;- ggplot(.t, aes(y=100*predict/street_length.hm, x=Bike_lane.by.street.2011ct, colour=factor(vis_minority_2011.Q), fill=factor(vis_minority_2011.Q))) + 
   geom_smooth(method = &quot;lm&quot;, alpha=.1) +
-  scale_color_manual(values = qtl[c(1)]) +
-  scale_fill_manual(values = qtl[c(1)]) +
+  scale_color_manual(values = qtl[c(1, 4)]) +
+  scale_fill_manual(values = qtl[c(1, 4)]) +
   labs(colour=&#39;vis_minority_2011.Q&#39;, fill=&#39;vis_minority_2011.Q&#39;)
 g_vis_bk.hrdl.categ</code></pre>
 <p><img src="BEI_equity_paper.final_files/figure-html/test-hurdle-2c-1.png" width="1152" /></p>
@@ -6416,15 +6586,15 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 # Plotting interaction
 .t &lt;- clean_bei$df
 .t[&quot;predict&quot;] &lt;- as.vector(predict(res.lmm))
-.t &lt;- filter(.t, vis_minority_2011.Q %in% c(1, 5)) # Keeping only significant interaction terms
+.t &lt;- filter(.t, vis_minority_2011.Q %in% c(1, 2, 3, 4, 5)) # Keeping only significant interaction terms (all significant)
 
 g_vis_gr.categ &lt;- ggplot(.t, aes(y=100*predict/ct_area_hct, x=pct_esp_vert_2011ct, colour=factor(vis_minority_2011.Q), fill=factor(vis_minority_2011.Q))) + 
   geom_smooth(method = &quot;lm&quot;, alpha=.1) +
-  scale_color_manual(values = qtl[c(1, 5)]) +
-  scale_fill_manual(values = qtl[c(1, 5)]) +
+  scale_color_manual(values = qtl[c(1, 2, 3, 4, 5)]) +
+  scale_fill_manual(values = qtl[c(1, 2, 3, 4, 5)]) +
   labs(colour=&#39;vis_minority_2011.Q&#39;, fill=&#39;vis_minority_2011.Q&#39;)
 g_vis_gr.categ</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-58-1.png" width="1152" /></p>
+<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-56-1.png" width="1152" /></p>
 <p>Transforming the model coefficients:</p>
 <pre class="r"><code>smy.bt &lt;- data.frame(smy$beta_table)
 round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;% 
@@ -6657,15 +6827,15 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 # Plotting interaction
 .t &lt;- clean_bei$df
 .t[&quot;predict&quot;] &lt;- as.vector(predict(res.lmm))
-.t &lt;- filter(.t, vis_minority_2011.Q %in% c(1, 4, 5)) # Keeping only significant interaction terms
+.t &lt;- filter(.t, vis_minority_2011.Q %in% c(1, 2, 5)) # Keeping only significant interaction terms
 
 g_vis_tc.categ &lt;- ggplot(.t, aes(y=100*predict/ct_area_hct, x=pct_esp_vert_high_2011ct, colour=factor(vis_minority_2011.Q), fill=factor(vis_minority_2011.Q))) + 
   geom_smooth(method = &quot;lm&quot;, alpha=.1) +
-  scale_color_manual(values = qtl[c(1, 4, 5)]) +
-  scale_fill_manual(values = qtl[c(1, 4, 5)]) +
+  scale_color_manual(values = qtl[c(1, 2, 5)]) +
+  scale_fill_manual(values = qtl[c(1, 2, 5)]) +
   labs(colour=&#39;vis_minority_2011.Q&#39;, fill=&#39;vis_minority_2011.Q&#39;)
 g_vis_tc.categ</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-60-1.png" width="1152" /></p>
+<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-58-1.png" width="1152" /></p>
 <p>Transforming the model coefficients:</p>
 <pre class="r"><code>smy.bt &lt;- data.frame(smy$beta_table)
 round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;% 
@@ -6836,22 +7006,24 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 ## family: binomial( link = logit ) 
 ##  ------------ Fixed effects (beta) ------------
 ##                             Estimate Cond. SE  t-value   p-value
-## (Intercept)                -4.939506   0.8771 -5.63191 1.782e-08
-## wSCOREMAT.2011.Q            0.003004   0.2117  0.01419 9.887e-01
-## Bike_lane.by.street.2011ct  2.499779   0.6984  3.57955 3.442e-04
+## (Intercept)                -4.942748   0.8799 -5.61720 1.941e-08
+## wSCOREMAT.2011.Q            0.003258   0.2124  0.01534 9.878e-01
+## Bike_lane.by.street.2011ct  2.507305   0.7009  3.57751 3.469e-04
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
-##     1.rho 
-## 0.1377147 
+##    1.rho 
+## 0.137713 
 ##            --- Variance parameters (&#39;lambda&#39;):
 ## lambda = var(u) for u ~ Gaussian; 
-##    ct_no  :  5.786  
+##    ct_no  :  5.837  
 ## # of obs: 688; # of groups: ct_no, 688 
 ##  ------------- Likelihood values  -------------
 ##                         logLik
-## p_v(h) (marginal L): -149.7332</code></pre>
-<pre class="r"><code># Count model (Poisson)
+## p_v(h) (marginal L): -149.7333</code></pre>
+<pre class="r"><code># ci.lmm.zero &lt;- confint(res.lmm.zero, &#39;wSCOREMAT.2011.Q&#39;) # Not converging
+
+# Count model (Poisson)
 clean_bei.cnt &lt;- bei_df_aoi %&gt;%
   filter(Bike_lane_total.hm.2016ct != 0) %&gt;%
   tidy_df(CT16, f)
@@ -6883,6 +7055,9 @@ smy.cnt &lt;- summary(res.lmm.cnt, details = c(p_value=&quot;Wald&quot;))</code>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -1884.431</code></pre>
+<pre class="r"><code>ci.lmm.cnt &lt;- confint(res.lmm.cnt, &#39;wSCOREMAT.2011.Q&#39;)</code></pre>
+<pre><code>## lower wSCOREMAT.2011.Q upper wSCOREMAT.2011.Q 
+##            -0.03972596             0.02539256</code></pre>
 <pre class="r"><code># AIC
 AIC(res.lmm.zero)
 AIC(res.lmm.cnt)
@@ -6916,11 +7091,11 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 <tr class="even">
 <td align="left">wSCOREMAT.2011.Q</td>
 <td align="right">1.003</td>
-<td align="right">0.989</td>
+<td align="right">0.988</td>
 </tr>
 <tr class="odd">
 <td align="left">Bike_lane.by.street.2011ct</td>
-<td align="right">12.180</td>
+<td align="right">12.272</td>
 <td align="right">0.000</td>
 </tr>
 </tbody>
@@ -6957,6 +7132,26 @@ round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>data.frame(wSCOREMAT.2011.Q = round(exp(ci.lmm.cnt$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Count model confidence interval&quot;)</code></pre>
+<table>
+<caption>Count model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q</td>
+<td align="right">0.961</td>
+<td align="right">1.026</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="greenness-change-5" class="section level3" number="8.1.2">
 <h3><span class="header-section-number">8.1.2</span> Greenness change</h3>
@@ -6977,21 +7172,24 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ## family: poisson( link = log ) 
 ##  ------------ Fixed effects (beta) ------------
 ##                     Estimate  Cond. SE t-value p-value
-## (Intercept)         -1.58398 0.0342580  -46.24  0.0000
+## (Intercept)         -1.58398 0.0342581  -46.24  0.0000
 ## wSCOREMAT.2011.Q    -0.01166 0.0058885   -1.98  0.0477
 ## pct_esp_vert_2011ct  0.01875 0.0004615   40.63  0.0000
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
 ##     1.rho 
-## 0.1359291 
+## 0.1359288 
 ##            --- Variance parameters (&#39;lambda&#39;):
 ## lambda = var(u) for u ~ Gaussian; 
-##    ct_no  :  0.004773  
+##    ct_no  :  0.004774  
 ## # of obs: 688; # of groups: ct_no, 688 
 ##  ------------- Likelihood values  -------------
 ##                        logLik
 ## p_v(h) (marginal L): -2016.65</code></pre>
+<pre class="r"><code>ci.lmm &lt;- confint(res.lmm, &quot;wSCOREMAT.2011.Q&quot;)</code></pre>
+<pre><code>## lower wSCOREMAT.2011.Q upper wSCOREMAT.2011.Q 
+##          -0.0233052328           0.0000756461</code></pre>
 <pre class="r"><code># Wald-test p-value for wSCOREMAT.2011.Q close to threshold, using LRT to improve accuracy
 res.lmm.0 &lt;- update(res.lmm, . ~ . -wSCOREMAT.2011.Q)
 LRT(res.lmm.0, res.lmm)</code></pre>
@@ -7029,6 +7227,26 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>data.frame(wSCOREMAT.2011.Q = round(exp(ci.lmm$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q</td>
+<td align="right">0.977</td>
+<td align="right">1</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="canopy-trees-change-5" class="section level3" number="8.1.3">
 <h3><span class="header-section-number">8.1.3</span> Canopy (trees) change</h3>
@@ -7049,8 +7267,8 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ## family: poisson( link = log ) 
 ##  ------------ Fixed effects (beta) ------------
 ##                          Estimate  Cond. SE t-value p-value
-## (Intercept)              -2.32838 0.0424926 -54.795  0.0000
-## wSCOREMAT.2011.Q         -0.01022 0.0090720  -1.126  0.2601
+## (Intercept)              -2.32838 0.0424925 -54.795  0.0000
+## wSCOREMAT.2011.Q         -0.01022 0.0090719  -1.126  0.2601
 ## pct_esp_vert_high_2011ct  0.03961 0.0009664  40.985  0.0000
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
@@ -7064,6 +7282,9 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -1823.392</code></pre>
+<pre class="r"><code>ci.lmm &lt;- confint(res.lmm, &quot;wSCOREMAT.2011.Q&quot;)</code></pre>
+<pre><code>## lower wSCOREMAT.2011.Q upper wSCOREMAT.2011.Q 
+##           -0.028001030            0.007626908</code></pre>
 <p>Transforming the model coefficients:</p>
 <pre class="r"><code>smy.bt &lt;- data.frame(smy$beta_table)
 round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;% 
@@ -7096,6 +7317,26 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>data.frame(wSCOREMAT.2011.Q = round(exp(ci.lmm$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q</td>
+<td align="right">0.972</td>
+<td align="right">1.008</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div id="ui-vs-visible-minority-2" class="section level2 tabset" number="8.2">
@@ -7119,9 +7360,9 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 ## family: binomial( link = logit ) 
 ##  ------------ Fixed effects (beta) ------------
 ##                            Estimate Cond. SE t-value   p-value
-## (Intercept)                  -3.072   0.9195  -3.341 0.0008346
-## vis_minority_2011.Q          -0.516   0.2337  -2.208 0.0272379
-## Bike_lane.by.street.2011ct    2.861   0.8190   3.493 0.0004781
+## (Intercept)                  -3.072   0.9195  -3.341 0.0008352
+## vis_minority_2011.Q          -0.516   0.2337  -2.208 0.0272372
+## Bike_lane.by.street.2011ct    2.861   0.8191   3.493 0.0004782
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
@@ -7129,12 +7370,14 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 ## 0.1378998 
 ##            --- Variance parameters (&#39;lambda&#39;):
 ## lambda = var(u) for u ~ Gaussian; 
-##    ct_no  :  6.962  
+##    ct_no  :  6.963  
 ## # of obs: 688; # of groups: ct_no, 688 
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -145.6995</code></pre>
-<pre class="r"><code># Count model (Poisson)
+<pre class="r"><code># ci.lmm.zero &lt;- confint(res.lmm.zero, &#39;vis_minority_2011.Q&#39;) # Not converging
+
+# Count model (Poisson)
 clean_bei.cnt &lt;- bei_df_aoi %&gt;%
   filter(Bike_lane_total.hm.2016ct != 0) %&gt;%
   tidy_df(CT16, f)
@@ -7166,6 +7409,9 @@ smy.cnt &lt;- summary(res.lmm.cnt, details = c(p_value=&quot;Wald&quot;))</code>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -1880.959</code></pre>
+<pre class="r"><code>ci.lmm.cnt &lt;- confint(res.lmm.cnt, &#39;vis_minority_2011.Q&#39;)</code></pre>
+<pre><code>## lower vis_minority_2011.Q upper vis_minority_2011.Q 
+##               -0.05513113                0.01280403</code></pre>
 <pre class="r"><code># AIC
 AIC(res.lmm.zero)
 AIC(res.lmm.cnt)
@@ -7203,7 +7449,7 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 <tr class="odd">
 <td align="left">Bike_lane.by.street.2011ct</td>
-<td align="right">17.472</td>
+<td align="right">17.474</td>
 <td align="right">0.000</td>
 </tr>
 </tbody>
@@ -7240,6 +7486,26 @@ round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>data.frame(vis_minority_2011.Q = round(exp(ci.lmm.cnt$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Count model confidence interval&quot;)</code></pre>
+<table>
+<caption>Count model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q</td>
+<td align="right">0.946</td>
+<td align="right">1.013</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="greenness-change-6" class="section level3" number="8.2.2">
 <h3><span class="header-section-number">8.2.2</span> Greenness change</h3>
@@ -7260,14 +7526,14 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ## family: poisson( link = log ) 
 ##  ------------ Fixed effects (beta) ------------
 ##                      Estimate  Cond. SE t-value p-value
-## (Intercept)         -1.608537 0.0323275 -49.758  0.0000
-## vis_minority_2011.Q -0.007267 0.0057005  -1.275  0.2023
+## (Intercept)         -1.608537 0.0323274 -49.758  0.0000
+## vis_minority_2011.Q -0.007268 0.0057005  -1.275  0.2023
 ## pct_esp_vert_2011ct  0.018988 0.0004481  42.376  0.0000
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
-##     1.rho 
-## 0.1358024 
+##    1.rho 
+## 0.135802 
 ##            --- Variance parameters (&#39;lambda&#39;):
 ## lambda = var(u) for u ~ Gaussian; 
 ##    ct_no  :  0.004891  
@@ -7275,6 +7541,9 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -2016.956</code></pre>
+<pre class="r"><code>ci.lmm &lt;- confint(res.lmm, &quot;vis_minority_2011.Q&quot;)</code></pre>
+<pre><code>## lower vis_minority_2011.Q upper vis_minority_2011.Q 
+##              -0.018457359               0.004070078</code></pre>
 <p>Transforming the model coefficients:</p>
 <pre class="r"><code>smy.bt &lt;- data.frame(smy$beta_table)
 round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;% 
@@ -7307,6 +7576,26 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>data.frame(vis_minority_2011.Q = round(exp(ci.lmm$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q</td>
+<td align="right">0.982</td>
+<td align="right">1.004</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="canopy-trees-change-6" class="section level3" number="8.2.3">
 <h3><span class="header-section-number">8.2.3</span> Canopy (trees) change</h3>
@@ -7333,8 +7622,8 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
-##    1.rho 
-## 0.138067 
+##     1.rho 
+## 0.1380669 
 ##            --- Variance parameters (&#39;lambda&#39;):
 ## lambda = var(u) for u ~ Gaussian; 
 ##    ct_no  :  0.01303  
@@ -7342,6 +7631,9 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ##  ------------- Likelihood values  -------------
 ##                         logLik
 ## p_v(h) (marginal L): -1821.833</code></pre>
+<pre class="r"><code>ci.lmm &lt;- confint(res.lmm, &quot;vis_minority_2011.Q&quot;)</code></pre>
+<pre><code>## lower vis_minority_2011.Q upper vis_minority_2011.Q 
+##               -0.01989805                0.01470987</code></pre>
 <p>Transforming the model coefficients:</p>
 <pre class="r"><code>smy.bt &lt;- data.frame(smy$beta_table)
 round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;% 
@@ -7374,6 +7666,26 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>data.frame(vis_minority_2011.Q = round(exp(ci.lmm$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q</td>
+<td align="right">0.98</td>
+<td align="right">1.015</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div id="ui-vs-gentrified-ct-2" class="section level2 tabset" number="8.3">
@@ -7382,69 +7694,83 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 <div id="bike-lane-length-change-hurdle-7" class="section level3" number="8.3.1">
 <h3><span class="header-section-number">8.3.1</span> Bike lane length change (hurdle)</h3>
 <p>Bike lane length change</p>
-<pre class="r"><code>f &lt;- Bike_lane_total.hm.2016ct ~ gentrified_2016_2011 + Bike_lane.by.street.2011ct + offset(log(street_length.hm))
+<pre class="r"><code>f &lt;- Bike_lane_total.hm.2016ct ~ gentrif_status_2016 + Bike_lane.by.street.2011ct + offset(log(street_length.hm))
 
 clean_bei &lt;- tidy_df(bei_df_aoi, CT16, f)
 
-res.lmm.zero &lt;- fitme(I(Bike_lane_total.hm.2016ct != 0) ~ gentrified_2016_2011 + Bike_lane.by.street.2011ct + offset(log(street_length.hm)) + adjacency(1|ct_no),
+res.lmm.zero &lt;- fitme(I(Bike_lane_total.hm.2016ct != 0) ~ gentrif_status_2016 + Bike_lane.by.street.2011ct + offset(log(street_length.hm)) + adjacency(1|ct_no),
                  data = clean_bei$df, adjMatrix = clean_bei$nbmatx,
                  family = binomial())
 smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</code></pre>
-<pre><code>## formula: I(Bike_lane_total.hm.2016ct != 0) ~ gentrified_2016_2011 + Bike_lane.by.street.2011ct + 
+<pre><code>## formula: I(Bike_lane_total.hm.2016ct != 0) ~ gentrif_status_2016 + Bike_lane.by.street.2011ct + 
 ##     offset(log(street_length.hm)) + adjacency(1 | ct_no)
 ## Estimation of corrPars and lambda by Laplace ML approximation (p_v).
 ## Estimation of fixed effects by Laplace ML approximation (p_v).
 ## Estimation of lambda by &#39;outer&#39; ML, maximizing p_v.
 ## family: binomial( link = logit ) 
 ##  ------------ Fixed effects (beta) ------------
-##                            Estimate Cond. SE t-value   p-value
-## (Intercept)                -4.82262   0.5165 -9.3369 0.0000000
-## gentrified_2016_2011TRUE   -0.07812   0.6074 -0.1286 0.8976628
-## Bike_lane.by.street.2011ct  2.81386   0.8174  3.4424 0.0005766
+##                                 Estimate Cond. SE t-value   p-value
+## (Intercept)                      -4.4609   0.5702 -7.8230 5.107e-15
+## gentrif_status_2016Gentrified    -0.3921   0.6452 -0.6077 5.434e-01
+## gentrif_status_2016Non eligible  -0.9084   0.7571 -1.1998 2.302e-01
+## Bike_lane.by.street.2011ct        2.8642   0.7980  3.5894 3.315e-04
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
 ##     1.rho 
-## 0.1380204 
+## 0.1380079 
 ##            --- Variance parameters (&#39;lambda&#39;):
 ## lambda = var(u) for u ~ Gaussian; 
-##    ct_no  :  7.002  
+##    ct_no  :  6.455  
 ## # of obs: 688; # of groups: ct_no, 688 
 ##  ------------- Likelihood values  -------------
 ##                         logLik
-## p_v(h) (marginal L): -147.7386</code></pre>
-<pre class="r"><code># Count model (Poisson)
+## p_v(h) (marginal L): -147.1316</code></pre>
+<pre class="r"><code># NB: not converging
+# varfixef.zero &lt;- names(res.lmm.zero[[&#39;fixef&#39;]])
+# ci.1.lmm.zero &lt;- confint(res.lmm.zero, varfixef.zero[2])
+# ci.2.lmm.zero &lt;- confint(res.lmm.zero, varfixef.zero[3])
+
+# Count model (Poisson)
 clean_bei.cnt &lt;- bei_df_aoi %&gt;%
   filter(Bike_lane_total.hm.2016ct != 0) %&gt;%
   tidy_df(CT16, f)
 
-res.lmm.cnt &lt;- fitme(Bike_lane_total.hm.2016ct ~ gentrified_2016_2011 + Bike_lane.by.street.2011ct + offset(log(street_length.hm)) + adjacency(1|ct_no),
+res.lmm.cnt &lt;- fitme(Bike_lane_total.hm.2016ct ~ gentrif_status_2016 + Bike_lane.by.street.2011ct + offset(log(street_length.hm)) + adjacency(1|ct_no),
                  data = clean_bei.cnt$df, adjMatrix = clean_bei.cnt$nbmatx,
                  family = Tpoisson())
 smy.cnt &lt;- summary(res.lmm.cnt, details = c(p_value=&quot;Wald&quot;))</code></pre>
-<pre><code>## formula: Bike_lane_total.hm.2016ct ~ gentrified_2016_2011 + Bike_lane.by.street.2011ct + 
+<pre><code>## formula: Bike_lane_total.hm.2016ct ~ gentrif_status_2016 + Bike_lane.by.street.2011ct + 
 ##     offset(log(street_length.hm)) + adjacency(1 | ct_no)
 ## Estimation of corrPars and lambda by Laplace ML approximation (p_v).
 ## Estimation of fixed effects by Laplace ML approximation (p_v).
 ## Estimation of lambda by &#39;outer&#39; ML, maximizing p_v.
 ## family: 0-truncated poisson( link = log ) 
 ##  ------------ Fixed effects (beta) ------------
-##                            Estimate Cond. SE t-value p-value
-## (Intercept)                -2.71508  0.04457 -60.912  0.0000
-## gentrified_2016_2011TRUE    0.05633  0.04724   1.192  0.2331
-## Bike_lane.by.street.2011ct  0.05436  0.00214  25.397  0.0000
+##                                 Estimate Cond. SE  t-value p-value
+## (Intercept)                     -2.67024 0.051575 -51.7738 0.00000
+## gentrif_status_2016Gentrified    0.01749 0.052408   0.3337 0.73862
+## gentrif_status_2016Non eligible -0.08667 0.051077  -1.6969 0.08972
+## Bike_lane.by.street.2011ct       0.05452 0.002136  25.5250 0.00000
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
-##    1.rho 
-## 0.150439 
+##     1.rho 
+## 0.1503576 
 ##            --- Variance parameters (&#39;lambda&#39;):
 ## lambda = var(u) for u ~ Gaussian; 
-##    ct_no  :  0.1116  
+##    ct_no  :  0.1108  
 ## # of obs: 564; # of groups: ct_no, 564 
 ##  ------------- Likelihood values  -------------
-##                      logLik
-## p_v(h) (marginal L):  -1881</code></pre>
+##                        logLik
+## p_v(h) (marginal L): -1879.57</code></pre>
+<pre class="r"><code>varfixef.cnt &lt;- names(res.lmm.cnt[[&#39;fixef&#39;]])
+ci.1.lmm.cnt &lt;- confint(res.lmm.cnt, varfixef.cnt[2])</code></pre>
+<pre><code>## lower gentrif_status_2016Gentrified upper gentrif_status_2016Gentrified 
+##                         -0.08579097                          0.12055257</code></pre>
+<pre class="r"><code>ci.2.lmm.cnt &lt;- confint(res.lmm.cnt, varfixef.cnt[3])</code></pre>
+<pre><code>## lower gentrif_status_2016Non eligible upper gentrif_status_2016Non eligible 
+##                           -0.18737397                            0.01381807</code></pre>
 <pre class="r"><code># AIC
 AIC(res.lmm.zero)
 AIC(res.lmm.cnt)
@@ -7453,7 +7779,7 @@ AIC(res.lmm.cnt)
 &quot;Combined Hurdle AIC:&quot;</code></pre>
 <pre><code>## [1] &quot;Combined Hurdle AIC:&quot;</code></pre>
 <pre class="r"><code>-2 * res.lmm.zero$APHLs$p_v - 2 * res.lmm.cnt$APHLs$p_v + 2 * Reduce(sum, res.lmm.cnt$dfs)</code></pre>
-<pre><code>## [1] 4067.478</code></pre>
+<pre><code>## [1] 4065.403</code></pre>
 <p>Transforming the model coefficients:</p>
 <pre class="r"><code># Zero model
 smy.zero.bt &lt;- data.frame(smy.zero$beta_table)
@@ -7472,18 +7798,23 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 <tbody>
 <tr class="odd">
 <td align="left">(Intercept)</td>
-<td align="right">0.008</td>
+<td align="right">0.012</td>
 <td align="right">0.000</td>
 </tr>
 <tr class="even">
-<td align="left">gentrified_2016_2011TRUE</td>
-<td align="right">0.925</td>
-<td align="right">0.898</td>
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">0.676</td>
+<td align="right">0.543</td>
 </tr>
 <tr class="odd">
+<td align="left">gentrif_status_2016Non eligible</td>
+<td align="right">0.403</td>
+<td align="right">0.230</td>
+</tr>
+<tr class="even">
 <td align="left">Bike_lane.by.street.2011ct</td>
-<td align="right">16.674</td>
-<td align="right">0.001</td>
+<td align="right">17.536</td>
+<td align="right">0.000</td>
 </tr>
 </tbody>
 </table>
@@ -7504,18 +7835,50 @@ round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
 <tbody>
 <tr class="odd">
 <td align="left">(Intercept)</td>
-<td align="right">0.066</td>
+<td align="right">0.069</td>
 <td align="right">0.000</td>
 </tr>
 <tr class="even">
-<td align="left">gentrified_2016_2011TRUE</td>
-<td align="right">1.058</td>
-<td align="right">0.233</td>
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">1.018</td>
+<td align="right">0.739</td>
 </tr>
 <tr class="odd">
+<td align="left">gentrif_status_2016Non eligible</td>
+<td align="right">0.917</td>
+<td align="right">0.090</td>
+</tr>
+<tr class="even">
 <td align="left">Bike_lane.by.street.2011ct</td>
 <td align="right">1.056</td>
 <td align="right">0.000</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>.ci.exp &lt;- rbind(ci.1.lmm.cnt$interval, ci.2.lmm.cnt$interval) %&gt;% 
+  exp() %&gt;% round(., 3) %&gt;%
+  data.frame(., row.names = varfixef.cnt[2:3])
+names(.ci.exp) &lt;- c(&quot;lower&quot;, &quot;upper&quot;)
+knitr::kable(.ci.exp, caption=&quot;Count model confidence interval&quot;)</code></pre>
+<table>
+<caption>Count model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">0.918</td>
+<td align="right">1.128</td>
+</tr>
+<tr class="even">
+<td align="left">gentrif_status_2016Non eligible</td>
+<td align="right">0.829</td>
+<td align="right">1.014</td>
 </tr>
 </tbody>
 </table>
@@ -7523,37 +7886,45 @@ round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
 <div id="greenness-change-7" class="section level3" number="8.3.2">
 <h3><span class="header-section-number">8.3.2</span> Greenness change</h3>
 <p>Measuring canopy (<em>i.e.</em> greenness ~ grass &amp; trees) ratio within CT/buffer in 2011 (in %) at the Census tract level</p>
-<pre class="r"><code>f &lt;- area_esp_vert_2017ct ~ gentrified_2016_2011 + pct_esp_vert_2011ct + offset(log(ct_area_hct))
+<pre class="r"><code>f &lt;- area_esp_vert_2017ct ~ gentrif_status_2016 + pct_esp_vert_2011ct + offset(log(ct_area_hct))
 
 clean_bei &lt;- tidy_df(bei_df_aoi, CT16, f)
 
-res.lmm &lt;- fitme(area_esp_vert_2017ct ~ gentrified_2016_2011 + pct_esp_vert_2011ct + offset(log(ct_area_hct)) + adjacency(1|ct_no),
+res.lmm &lt;- fitme(area_esp_vert_2017ct ~ gentrif_status_2016 + pct_esp_vert_2011ct + offset(log(ct_area_hct)) + adjacency(1|ct_no),
                  data = clean_bei$df, adjMatrix = clean_bei$nbmatx,
                  family = poisson())
 smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
-<pre><code>## formula: area_esp_vert_2017ct ~ gentrified_2016_2011 + pct_esp_vert_2011ct + 
+<pre><code>## formula: area_esp_vert_2017ct ~ gentrif_status_2016 + pct_esp_vert_2011ct + 
 ##     offset(log(ct_area_hct)) + adjacency(1 | ct_no)
 ## Estimation of corrPars and lambda by Laplace ML approximation (p_v).
 ## Estimation of fixed effects by Laplace ML approximation (p_v).
 ## Estimation of lambda by &#39;outer&#39; ML, maximizing p_v.
 ## family: poisson( link = log ) 
 ##  ------------ Fixed effects (beta) ------------
-##                          Estimate  Cond. SE  t-value p-value
-## (Intercept)              -1.63121 0.0255404 -63.8678   0.000
-## gentrified_2016_2011TRUE -0.01288 0.0206032  -0.6249   0.532
-## pct_esp_vert_2011ct       0.01909 0.0004486  42.5551   0.000
+##                                   Estimate  Cond. SE   t-value p-value
+## (Intercept)                     -1.6342820 0.0256582 -63.69429  0.0000
+## gentrif_status_2016Gentrified   -0.0005478 0.0229022  -0.02392  0.9809
+## gentrif_status_2016Non eligible  0.0243985 0.0196308   1.24287  0.2139
+## pct_esp_vert_2011ct              0.0188103 0.0004948  38.01250  0.0000
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
 ##     1.rho 
-## 0.1360248 
+## 0.1361005 
 ##            --- Variance parameters (&#39;lambda&#39;):
 ## lambda = var(u) for u ~ Gaussian; 
-##    ct_no  :  0.004979  
+##    ct_no  :  0.004886  
 ## # of obs: 688; # of groups: ct_no, 688 
 ##  ------------- Likelihood values  -------------
 ##                         logLik
-## p_v(h) (marginal L): -2017.555</code></pre>
+## p_v(h) (marginal L): -2016.792</code></pre>
+<pre class="r"><code>varfixef &lt;- names(res.lmm[[&#39;fixef&#39;]])
+ci.1.lmm &lt;- confint(res.lmm, varfixef[2])</code></pre>
+<pre><code>## lower gentrif_status_2016Gentrified upper gentrif_status_2016Gentrified 
+##                         -0.04547711                          0.04429753</code></pre>
+<pre class="r"><code>ci.2.lmm &lt;- confint(res.lmm, varfixef[3])</code></pre>
+<pre><code>## lower gentrif_status_2016Non eligible upper gentrif_status_2016Non eligible 
+##                           -0.01436648                            0.06295422</code></pre>
 <p>Transforming the model coefficients:</p>
 <pre class="r"><code>smy.bt &lt;- data.frame(smy$beta_table)
 round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;% 
@@ -7571,18 +7942,50 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 <tbody>
 <tr class="odd">
 <td align="left">(Intercept)</td>
-<td align="right">0.196</td>
+<td align="right">0.195</td>
 <td align="right">0.000</td>
 </tr>
 <tr class="even">
-<td align="left">gentrified_2016_2011TRUE</td>
-<td align="right">0.987</td>
-<td align="right">0.532</td>
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">0.999</td>
+<td align="right">0.981</td>
 </tr>
 <tr class="odd">
+<td align="left">gentrif_status_2016Non eligible</td>
+<td align="right">1.025</td>
+<td align="right">0.214</td>
+</tr>
+<tr class="even">
 <td align="left">pct_esp_vert_2011ct</td>
 <td align="right">1.019</td>
 <td align="right">0.000</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>.ci.exp &lt;- rbind(ci.1.lmm$interval, ci.2.lmm$interval) %&gt;% 
+  exp() %&gt;% round(., 3) %&gt;%
+  data.frame(., row.names = varfixef[2:3])
+names(.ci.exp) &lt;- c(&quot;lower&quot;, &quot;upper&quot;)
+knitr::kable(.ci.exp, caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">0.956</td>
+<td align="right">1.045</td>
+</tr>
+<tr class="even">
+<td align="left">gentrif_status_2016Non eligible</td>
+<td align="right">0.986</td>
+<td align="right">1.065</td>
 </tr>
 </tbody>
 </table>
@@ -7590,37 +7993,45 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 <div id="canopy-trees-change-7" class="section level3" number="8.3.3">
 <h3><span class="header-section-number">8.3.3</span> Canopy (trees) change</h3>
 <p>Measuring high canopy (<em>i.e.</em> trees only) ratio within CT/buffer in 2011 (in %) at the Census tract level</p>
-<pre class="r"><code>f &lt;- area_esp_vert_high_2017ct ~ gentrified_2016_2011 + pct_esp_vert_high_2011ct + offset(log(ct_area_hct))
+<pre class="r"><code>f &lt;- area_esp_vert_high_2017ct ~ gentrif_status_2016 + pct_esp_vert_high_2011ct + offset(log(ct_area_hct))
 
 clean_bei &lt;- tidy_df(bei_df_aoi, CT16, f)
 
-res.lmm &lt;- fitme(area_esp_vert_high_2017ct ~ gentrified_2016_2011 + pct_esp_vert_high_2011ct + offset(log(ct_area_hct)) + adjacency(1|ct_no),
+res.lmm &lt;- fitme(area_esp_vert_high_2017ct ~ gentrif_status_2016 + pct_esp_vert_high_2011ct + offset(log(ct_area_hct)) + adjacency(1|ct_no),
                  data = clean_bei$df, adjMatrix = clean_bei$nbmatx,
                  family = poisson())
 smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
-<pre><code>## formula: area_esp_vert_high_2017ct ~ gentrified_2016_2011 + pct_esp_vert_high_2011ct + 
+<pre><code>## formula: area_esp_vert_high_2017ct ~ gentrif_status_2016 + pct_esp_vert_high_2011ct + 
 ##     offset(log(ct_area_hct)) + adjacency(1 | ct_no)
 ## Estimation of corrPars and lambda by Laplace ML approximation (p_v).
 ## Estimation of fixed effects by Laplace ML approximation (p_v).
 ## Estimation of lambda by &#39;outer&#39; ML, maximizing p_v.
 ## family: poisson( link = log ) 
 ##  ------------ Fixed effects (beta) ------------
-##                          Estimate  Cond. SE t-value p-value
-## (Intercept)              -2.37670 0.0279253 -85.109  0.0000
-## gentrified_2016_2011TRUE  0.03580 0.0293925   1.218  0.2233
-## pct_esp_vert_high_2011ct  0.04024 0.0009101  44.218  0.0000
+##                                 Estimate Cond. SE  t-value p-value
+## (Intercept)                     -2.36855 0.031175 -75.9765  0.0000
+## gentrif_status_2016Gentrified    0.02606 0.033652   0.7744  0.4387
+## gentrif_status_2016Non eligible -0.01694 0.028555  -0.5932  0.5530
+## pct_esp_vert_high_2011ct         0.04041 0.000949  42.5774  0.0000
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
 ##     1.rho 
-## 0.1380247 
+## 0.1380142 
 ##            --- Variance parameters (&#39;lambda&#39;):
 ## lambda = var(u) for u ~ Gaussian; 
-##    ct_no  :  0.01293  
+##    ct_no  :  0.01296  
 ## # of obs: 688; # of groups: ct_no, 688 
 ##  ------------- Likelihood values  -------------
 ##                         logLik
-## p_v(h) (marginal L): -1821.142</code></pre>
+## p_v(h) (marginal L): -1820.966</code></pre>
+<pre class="r"><code>varfixef &lt;- names(res.lmm[[&#39;fixef&#39;]])
+ci.1.lmm &lt;- confint(res.lmm, varfixef[2])</code></pre>
+<pre><code>## lower gentrif_status_2016Gentrified upper gentrif_status_2016Gentrified 
+##                         -0.04013564                          0.09196287</code></pre>
+<pre class="r"><code>ci.2.lmm &lt;- confint(res.lmm, varfixef[3])</code></pre>
+<pre><code>## lower gentrif_status_2016Non eligible upper gentrif_status_2016Non eligible 
+##                           -0.07300702                            0.03909955</code></pre>
 <p>Transforming the model coefficients:</p>
 <pre class="r"><code>smy.bt &lt;- data.frame(smy$beta_table)
 round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;% 
@@ -7638,18 +8049,50 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 <tbody>
 <tr class="odd">
 <td align="left">(Intercept)</td>
-<td align="right">0.093</td>
+<td align="right">0.094</td>
 <td align="right">0.000</td>
 </tr>
 <tr class="even">
-<td align="left">gentrified_2016_2011TRUE</td>
-<td align="right">1.036</td>
-<td align="right">0.223</td>
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">1.026</td>
+<td align="right">0.439</td>
 </tr>
 <tr class="odd">
+<td align="left">gentrif_status_2016Non eligible</td>
+<td align="right">0.983</td>
+<td align="right">0.553</td>
+</tr>
+<tr class="even">
 <td align="left">pct_esp_vert_high_2011ct</td>
 <td align="right">1.041</td>
 <td align="right">0.000</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>.ci.exp &lt;- rbind(ci.1.lmm$interval, ci.2.lmm$interval) %&gt;% 
+  exp() %&gt;% round(., 3) %&gt;%
+  data.frame(., row.names = varfixef[2:3])
+names(.ci.exp) &lt;- c(&quot;lower&quot;, &quot;upper&quot;)
+knitr::kable(.ci.exp, caption=&quot;Model confidence interval&quot;)</code></pre>
+<table>
+<caption>Model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">0.961</td>
+<td align="right">1.096</td>
+</tr>
+<tr class="even">
+<td align="left">gentrif_status_2016Non eligible</td>
+<td align="right">0.930</td>
+<td align="right">1.040</td>
 </tr>
 </tbody>
 </table>
@@ -7658,7 +8101,7 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 </div>
 <div id="association-between-ses-and-ui-main-effect-no-interaction-ses-as-categories" class="section level1" number="9">
 <h1><span class="header-section-number">9</span> Association between SES and UI | Main effect, no interaction, SES as categories</h1>
-<p>As discussed with Yan and Behzad, we rerun the UI models, without the interaction term <span class="math inline">\(SES \times UC_{2011}\)</span>, SES as categories instaed of continuous</p>
+<p>As discussed with Yan and Behzad, we rerun the UI models, without the interaction term <span class="math inline">\(SES \times UC_{2011}\)</span>, SES as categories instead of continuous</p>
 <div id="ui-vs-pampalon-material-3" class="section level2 tabset" number="9.1">
 <h2 class="tabset"><span class="header-section-number">9.1</span> UI vs Pampalon | material</h2>
 <div id="bike-lane-length-change-hurdle-8" class="section level3" number="9.1.1">
@@ -7681,20 +8124,20 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 ## family: binomial( link = logit ) 
 ##  ------------ Fixed effects (beta) ------------
 ##                            Estimate Cond. SE t-value   p-value
-## (Intercept)                 -6.3856   1.0786 -5.9203 3.214e-09
-## factor(wSCOREMAT.2011.Q)2    1.7258   1.1186  1.5427 1.229e-01
-## factor(wSCOREMAT.2011.Q)3    2.1690   1.1961  1.8134 6.978e-02
-## factor(wSCOREMAT.2011.Q)4    1.9994   1.1965  1.6711 9.471e-02
-## factor(wSCOREMAT.2011.Q)5    0.7118   1.1437  0.6224 5.337e-01
-## Bike_lane.by.street.2011ct   2.7278   0.8022  3.4002 6.734e-04
+## (Intercept)                 -6.3865   1.0790 -5.9188 3.243e-09
+## factor(wSCOREMAT.2011.Q)2    1.7265   1.1191  1.5428 1.229e-01
+## factor(wSCOREMAT.2011.Q)3    2.1701   1.1966  1.8136 6.974e-02
+## factor(wSCOREMAT.2011.Q)4    2.0004   1.1970  1.6712 9.468e-02
+## factor(wSCOREMAT.2011.Q)5    0.7121   1.1441  0.6224 5.337e-01
+## Bike_lane.by.street.2011ct   2.7290   0.8027  3.3999 6.742e-04
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
-##    1.rho 
-## 0.137608 
+##     1.rho 
+## 0.1376075 
 ##            --- Variance parameters (&#39;lambda&#39;):
 ## lambda = var(u) for u ~ Gaussian; 
-##    ct_no  :  7.869  
+##    ct_no  :  7.877  
 ## # of obs: 688; # of groups: ct_no, 688 
 ##  ------------- Likelihood values  -------------
 ##                         logLik
@@ -7766,17 +8209,17 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 <tr class="even">
 <td align="left">factor(wSCOREMAT.2011.Q)2</td>
-<td align="right">5.617</td>
+<td align="right">5.621</td>
 <td align="right">0.123</td>
 </tr>
 <tr class="odd">
 <td align="left">factor(wSCOREMAT.2011.Q)3</td>
-<td align="right">8.749</td>
+<td align="right">8.759</td>
 <td align="right">0.070</td>
 </tr>
 <tr class="even">
 <td align="left">factor(wSCOREMAT.2011.Q)4</td>
-<td align="right">7.385</td>
+<td align="right">7.392</td>
 <td align="right">0.095</td>
 </tr>
 <tr class="odd">
@@ -7786,7 +8229,7 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 <tr class="even">
 <td align="left">Bike_lane.by.street.2011ct</td>
-<td align="right">15.298</td>
+<td align="right">15.317</td>
 <td align="right">0.001</td>
 </tr>
 </tbody>
@@ -7858,11 +8301,11 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ## family: poisson( link = log ) 
 ##  ------------ Fixed effects (beta) ------------
 ##                           Estimate  Cond. SE t-value  p-value
-## (Intercept)               -1.58982 0.0305516 -52.037 0.000000
-## factor(wSCOREMAT.2011.Q)2 -0.03055 0.0189787  -1.609 0.107508
-## factor(wSCOREMAT.2011.Q)3 -0.02366 0.0203601  -1.162 0.245144
-## factor(wSCOREMAT.2011.Q)4 -0.02242 0.0222606  -1.007 0.313860
-## factor(wSCOREMAT.2011.Q)5 -0.06958 0.0269580  -2.581 0.009854
+## (Intercept)               -1.58981 0.0305515 -52.037 0.000000
+## factor(wSCOREMAT.2011.Q)2 -0.03055 0.0189787  -1.610 0.107507
+## factor(wSCOREMAT.2011.Q)3 -0.02366 0.0203601  -1.162 0.245143
+## factor(wSCOREMAT.2011.Q)4 -0.02242 0.0222606  -1.007 0.313859
+## factor(wSCOREMAT.2011.Q)5 -0.06958 0.0269579  -2.581 0.009854
 ## pct_esp_vert_2011ct        0.01872 0.0004635  40.389 0.000000
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
@@ -7948,7 +8391,7 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ## factor(wSCOREMAT.2011.Q)3  0.02160 0.0318033   0.6791 0.49710
 ## factor(wSCOREMAT.2011.Q)4  0.02420 0.0345149   0.7011 0.48325
 ## factor(wSCOREMAT.2011.Q)5 -0.07695 0.0416488  -1.8475 0.06467
-## pct_esp_vert_high_2011ct   0.03951 0.0009565  41.3107 0.00000
+## pct_esp_vert_high_2011ct   0.03951 0.0009565  41.3108 0.00000
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
@@ -8032,24 +8475,24 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 ## family: binomial( link = logit ) 
 ##  ------------ Fixed effects (beta) ------------
 ##                              Estimate Cond. SE t-value   p-value
-## (Intercept)                    -4.984   1.0698 -4.6590 3.178e-06
-## factor(vis_minority_2011.Q)2    1.341   1.2324  1.0879 2.766e-01
-## factor(vis_minority_2011.Q)3    1.155   1.1732  0.9843 3.250e-01
-## factor(vis_minority_2011.Q)4    0.143   1.2173  0.1175 9.065e-01
-## factor(vis_minority_2011.Q)5   -1.565   1.1917 -1.3133 1.891e-01
-## Bike_lane.by.street.2011ct      3.053   0.9437  3.2348 1.217e-03
+## (Intercept)                   -5.0891    1.154 -4.4088 0.0000104
+## factor(vis_minority_2011.Q)2   1.5144    1.327  1.1414 0.2536842
+## factor(vis_minority_2011.Q)3   1.3318    1.264  1.0540 0.2918978
+## factor(vis_minority_2011.Q)4   0.2021    1.311  0.1542 0.8774569
+## factor(vis_minority_2011.Q)5  -1.6660    1.287 -1.2945 0.1955054
+## Bike_lane.by.street.2011ct     3.2583    1.029  3.1668 0.0015411
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
 ##     1.rho 
-## 0.1378492 
+## 0.1378281 
 ##            --- Variance parameters (&#39;lambda&#39;):
 ## lambda = var(u) for u ~ Gaussian; 
-##    ct_no  :  9.459  
+##    ct_no  :  11.28  
 ## # of obs: 688; # of groups: ct_no, 688 
 ##  ------------- Likelihood values  -------------
-##                         logLik
-## p_v(h) (marginal L): -143.4744</code></pre>
+##                        logLik
+## p_v(h) (marginal L): -143.463</code></pre>
 <pre class="r"><code># Count model (Poisson)
 clean_bei.cnt &lt;- bei_df_aoi %&gt;%
   filter(Bike_lane_total.hm.2016ct != 0) %&gt;%
@@ -8093,7 +8536,7 @@ AIC(res.lmm.cnt)
 &quot;Combined Hurdle AIC:&quot;</code></pre>
 <pre><code>## [1] &quot;Combined Hurdle AIC:&quot;</code></pre>
 <pre class="r"><code>-2 * res.lmm.zero$APHLs$p_v - 2 * res.lmm.cnt$APHLs$p_v + 2 * Reduce(sum, res.lmm.cnt$dfs)</code></pre>
-<pre><code>## [1] 4063.697</code></pre>
+<pre><code>## [1] 4063.675</code></pre>
 <p>Transforming the model coefficients:</p>
 <pre class="r"><code># Zero model
 smy.zero.bt &lt;- data.frame(smy.zero$beta_table)
@@ -8112,33 +8555,33 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 <tbody>
 <tr class="odd">
 <td align="left">(Intercept)</td>
-<td align="right">0.007</td>
+<td align="right">0.006</td>
 <td align="right">0.000</td>
 </tr>
 <tr class="even">
 <td align="left">factor(vis_minority_2011.Q)2</td>
-<td align="right">3.822</td>
-<td align="right">0.277</td>
+<td align="right">4.547</td>
+<td align="right">0.254</td>
 </tr>
 <tr class="odd">
 <td align="left">factor(vis_minority_2011.Q)3</td>
-<td align="right">3.173</td>
-<td align="right">0.325</td>
+<td align="right">3.788</td>
+<td align="right">0.292</td>
 </tr>
 <tr class="even">
 <td align="left">factor(vis_minority_2011.Q)4</td>
-<td align="right">1.154</td>
-<td align="right">0.906</td>
+<td align="right">1.224</td>
+<td align="right">0.877</td>
 </tr>
 <tr class="odd">
 <td align="left">factor(vis_minority_2011.Q)5</td>
-<td align="right">0.209</td>
 <td align="right">0.189</td>
+<td align="right">0.196</td>
 </tr>
 <tr class="even">
 <td align="left">Bike_lane.by.street.2011ct</td>
-<td align="right">21.173</td>
-<td align="right">0.001</td>
+<td align="right">26.004</td>
+<td align="right">0.002</td>
 </tr>
 </tbody>
 </table>
@@ -8209,17 +8652,17 @@ smy &lt;- summary(res.lmm, details = c(p_value=&quot;Wald&quot;))</code></pre>
 ## family: poisson( link = log ) 
 ##  ------------ Fixed effects (beta) ------------
 ##                                Estimate  Cond. SE   t-value p-value
-## (Intercept)                  -1.6151915 0.0296828 -54.41502  0.0000
-## factor(vis_minority_2011.Q)2 -0.0190767 0.0195996  -0.97332  0.3304
-## factor(vis_minority_2011.Q)3 -0.0005611 0.0216980  -0.02586  0.9794
-## factor(vis_minority_2011.Q)4 -0.0183086 0.0215031  -0.85144  0.3945
-## factor(vis_minority_2011.Q)5 -0.0396667 0.0254608  -1.55795  0.1192
-## pct_esp_vert_2011ct           0.0189953 0.0004495  42.26255  0.0000
+## (Intercept)                  -1.6151901 0.0296830 -54.41461  0.0000
+## factor(vis_minority_2011.Q)2 -0.0190763 0.0195996  -0.97330  0.3304
+## factor(vis_minority_2011.Q)3 -0.0005607 0.0216980  -0.02584  0.9794
+## factor(vis_minority_2011.Q)4 -0.0183083 0.0215032  -0.85142  0.3945
+## factor(vis_minority_2011.Q)5 -0.0396666 0.0254609  -1.55794  0.1192
+## pct_esp_vert_2011ct           0.0189953 0.0004495  42.26230  0.0000
 ##  --------------- Random effects ---------------
 ## Family: gaussian( link = identity ) 
 ##                    --- Correlation parameters:
 ##     1.rho 
-## 0.1358657 
+## 0.1358669 
 ##            --- Variance parameters (&#39;lambda&#39;):
 ## lambda = var(u) for u ~ Gaussian; 
 ##    ct_no  :  0.004871  
@@ -8422,24 +8865,6 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 <td align="center"><strong>0.896</strong> (p&lt;0.001)</td>
 <td align="center"><strong>0.926</strong> (p&lt;0.001)</td>
 </tr>
-<tr class="odd">
-<td>Gentrified 2011-2016 (zero + cnt)</td>
-<td>Bike lane</td>
-<td align="center">0.936 (p=0.789) &amp; 1.1 (p=0.236)</td>
-<td align="center">1.211 (p=0.747) &amp; <strong>1.224</strong> (p=0.005)</td>
-</tr>
-<tr class="even">
-<td>Gentrified 2011-2016</td>
-<td>Greenness</td>
-<td align="center"><strong>0.822</strong> (p&lt;0.001)</td>
-<td align="center"><strong>0.817</strong> (p=0.002)</td>
-</tr>
-<tr class="odd">
-<td>Gentrified 2011-2016</td>
-<td>Tree canopy</td>
-<td align="center"><strong>0.86</strong> (p=0.003)</td>
-<td align="center"><strong>0.815</strong> (p=0.004)</td>
-</tr>
 </tbody>
 </table>
 <p>p-values: Wald t-tests except when p-value close to threshold where Likelihood ratio test has been used (marked with *) <strong>Bold</strong>: significant</p>
@@ -8514,7 +8939,7 @@ pcol2 &lt;- plot_grid(
 
 # output all graphs
 plot_grid(pcol1, pcol2, nrow=1)</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-92-1.png" width="1000px" style="display: block; margin: auto;" /></p>
+<p><img src="BEI_equity_paper.final_files/figure-html/bec-bei-maps-1.png" width="1000px" style="display: block; margin: auto;" /></p>
 </div>
 <div id="ses-and-bei-outcomes" class="section level2" number="11.2">
 <h2><span class="header-section-number">11.2</span> SES and BEI outcomes</h2>
@@ -9668,6 +10093,7 @@ Tree canopy area (ha)
 <h2><span class="header-section-number">11.3</span> Interactions in UI associations</h2>
 <div id="continuous-ses-variables" class="section level3" number="11.3.1">
 <h3><span class="header-section-number">11.3.1</span> Continuous SES variables</h3>
+<p><em>NB</em> Update 2023-01-17: we graph gentrification separately now</p>
 <pre class="r"><code>base_size_all = 20
 # extract the legend from one of the plots
 legend.row1 &lt;- get_legend(
@@ -9705,6 +10131,11 @@ prow2.1 &lt;- plot_grid(
 
 prow2 &lt;- plot_grid(prow2.1, legend.row2, rel_widths = c(3, .4))
 
+# output all graphs
+plot_grid(prow1, prow2, ncol=1)</code></pre>
+<p><img src="BEI_equity_paper.final_files/figure-html/ui-interaction-graphs-1.png" width="1152" /></p>
+<pre class="r"><code>base_size_all = 20
+
 # extract the legend from one of the plots
 legend.row3 &lt;- get_legend(
   # create some space to the left of the legend
@@ -9716,20 +10147,16 @@ prow3.1 &lt;- plot_grid(
   g_gen_gr + xlab(&quot;% green space within CT 2011&quot;) + ylab(&quot;% green space within CT 2016&quot;) + theme_classic(base_size = base_size_all) + theme(legend.position = &quot;none&quot;),
   g_gen_tc + xlab(&quot;% tree canopy within CT 2011&quot;) + ylab(&quot;% tree canopy within CT 2016&quot;) + theme_classic(base_size = base_size_all) + theme(legend.position = &quot;none&quot;),
   align = &quot;vh&quot;,
-  labels = c(&quot;G&quot;, &quot;H&quot;, &quot;I&quot;),
+  labels = c(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;),
   hjust = -1,
   nrow = 1
 )
 
-prow3 &lt;- plot_grid(prow3.1, legend.row3, rel_widths = c(3, .4))
-
-# output all graphs
-plot_grid(prow1, prow2, prow3, ncol=1)</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-97-1.png" width="1152" /></p>
+plot_grid(prow3.1, legend.row3, rel_widths = c(3, .4))</code></pre>
+<p><img src="BEI_equity_paper.final_files/figure-html/ui-interaction-gentrif-graphs-1.png" width="1152" /></p>
 </div>
 <div id="categorical-ses-variables" class="section level3" number="11.3.2">
 <h3><span class="header-section-number">11.3.2</span> Categorical SES variables</h3>
-<p><em>NB</em> Gentrification models are the same as the ones displayed above (continuous SES models)</p>
 <pre class="r"><code>base_size_all = 20
 # extract the legend from one of the plots
 legend.row1 &lt;- get_legend(
@@ -9752,7 +10179,7 @@ prow1 &lt;- plot_grid(prow1.1, legend.row1, rel_widths = c(3, .4))
 # extract the legend from one of the plots
 legend.row2 &lt;- get_legend(
   # create some space to the left of the legend
-  g_vis_tc.categ + labs(colour=&#39;Visible minorities\n(Quintiles) as\ncategorical variables&#39;, fill=&#39;Visible minorities\n(Quintiles) as\ncategorical variables&#39;) + theme(legend.box.margin = margin(0, 0, 0, 12))+ theme_classic(base_size = base_size_all)
+  g_vis_gr.categ + labs(colour=&#39;Visible minorities\n(Quintiles) as\ncategorical variables&#39;, fill=&#39;Visible minorities\n(Quintiles) as\ncategorical variables&#39;) + theme(legend.box.margin = margin(0, 0, 0, 12))+ theme_classic(base_size = base_size_all)
 )
 
 prow2.1 &lt;- plot_grid(
@@ -9767,28 +10194,9 @@ prow2.1 &lt;- plot_grid(
 
 prow2 &lt;- plot_grid(prow2.1, legend.row2, rel_widths = c(3, .4))
 
-# extract the legend from one of the plots
-legend.row3 &lt;- get_legend(
-  # create some space to the left of the legend
-  g_gen_gr + labs(colour=&#39;Gentrified&#39;, fill=&#39;Gentrified&#39;) + theme(legend.box.margin = margin(0, 0, 0, 12))+ theme_classic(base_size = base_size_all)
-)
-
-prow3.1 &lt;- plot_grid(
-  g_gen_bk.hrdl + xlab(&quot;% Bike lane to streets 2011&quot;) + ylab(&quot;% Bike lane to streets 2016&quot;)  + theme_classic(base_size = base_size_all) + theme(legend.position = &quot;none&quot;),
-  g_gen_gr + xlab(&quot;% green space within CT 2011&quot;) + ylab(&quot;% green space within CT 2016&quot;) + theme_classic(base_size = base_size_all) + theme(legend.position = &quot;none&quot;),
-  g_gen_tc + xlab(&quot;% tree canopy within CT 2011&quot;) + ylab(&quot;% tree canopy within CT 2016&quot;) + theme_classic(base_size = base_size_all) + theme(legend.position = &quot;none&quot;),
-  align = &quot;vh&quot;,
-  labels = c(&quot;G&quot;, &quot;H&quot;, &quot;I&quot;),
-  hjust = -1,
-  nrow = 1
-)
-
-prow3 &lt;- plot_grid(prow3.1, legend.row3, rel_widths = c(3, .4))
-
-
 # output all graphs
-plot_grid(prow1, prow2, prow3, ncol=1)</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/unnamed-chunk-98-1.png" width="1152" /></p>
+plot_grid(prow1, prow2, ncol=1)</code></pre>
+<p><img src="BEI_equity_paper.final_files/figure-html/ui-interaction-graphs-categ-1.png" width="1152" /></p>
 </div>
 </div>
 </div>
@@ -9818,42 +10226,41 @@ plot_grid(prow1, prow2, prow3, ncol=1)</code></pre>
 ## [25] dplyr_1.0.9     
 ## 
 ## loaded via a namespace (and not attached):
-##   [1] ggnewscale_0.4.7      minqa_1.2.4           colorspace_2.0-3     
-##   [4] rjson_0.2.21          deldir_1.0-6          ellipsis_0.3.2       
-##   [7] class_7.3-20          rstudioapi_0.14       proxy_0.4-27         
-##  [10] farver_2.1.1          bit64_4.0.5           RSpectra_0.16-1      
-##  [13] fansi_1.0.3           lubridate_1.8.0       xml2_1.3.3           
-##  [16] codetools_0.2-18      splines_4.1.2         knitr_1.39           
-##  [19] jsonlite_1.8.0        nloptr_2.0.3          png_0.1-7            
-##  [22] readr_2.1.2           compiler_4.1.2        httr_1.4.4           
-##  [25] assertthat_0.2.1      fastmap_1.1.0         cli_3.3.0            
-##  [28] s2_1.1.0              ROI.plugin.glpk_1.0-0 htmltools_0.5.3      
-##  [31] tools_4.1.2           coda_0.19-4           gtable_0.3.0         
-##  [34] glue_1.6.2            wk_0.6.0              gmodels_2.18.1.1     
-##  [37] Rcpp_1.0.9            slam_0.1-50           jquerylib_0.1.4      
-##  [40] raster_3.5-21         vctrs_0.4.1           svglite_2.1.0        
-##  [43] gdata_2.18.0.1        nlme_3.1-159          lwgeom_0.2-8         
-##  [46] xfun_0.32             rvest_1.0.3           lifecycle_1.0.1      
-##  [49] gtools_3.9.3          terra_1.5-21          ROI_1.0-0            
-##  [52] LearnBayes_2.15.1     MASS_7.3-58.1         scales_1.2.1         
-##  [55] vroom_1.5.7           hms_1.1.2             parallel_4.1.2       
-##  [58] expm_0.999-6          RColorBrewer_1.1-3    yaml_2.3.5           
-##  [61] pbapply_1.5-0         sass_0.4.2            stringi_1.7.8        
-##  [64] highr_0.9             e1071_1.7-11          boot_1.3-28          
-##  [67] zip_2.2.0             systemfonts_1.0.4     RgoogleMaps_1.4.5.3  
-##  [70] rlang_1.0.4           pkgconfig_2.0.3       bitops_1.0-7         
-##  [73] evaluate_0.16         lattice_0.20-45       purrr_0.3.4          
-##  [76] labeling_0.4.2        bit_4.0.4             tidyselect_1.1.2     
-##  [79] geojsonsf_2.0.3       plyr_1.8.7            magrittr_2.0.3       
-##  [82] R6_2.5.1              generics_0.1.3        mgcv_1.8-40          
-##  [85] pillar_1.8.1          withr_2.5.0           units_0.8-0          
-##  [88] tibble_3.1.8          crayon_1.5.1          Rglpk_0.6-4          
-##  [91] KernSmooth_2.23-20    utf8_1.2.2            tzdb_0.3.0           
-##  [94] rmarkdown_2.15        jpeg_0.1-9            grid_4.1.2           
-##  [97] blob_1.2.3            webshot_0.5.3         digest_0.6.29        
-## [100] classInt_0.4-7        numDeriv_2016.8-1.1   munsell_0.5.0        
-## [103] viridisLite_0.4.1     kableExtra_1.3.4      registry_0.5-1       
-## [106] bslib_0.4.0</code></pre>
+##   [1] ggnewscale_0.4.7    minqa_1.2.4         colorspace_2.0-3   
+##   [4] rjson_0.2.21        deldir_1.0-6        ellipsis_0.3.2     
+##   [7] class_7.3-20        rstudioapi_0.14     proxy_0.4-27       
+##  [10] farver_2.1.1        bit64_4.0.5         RSpectra_0.16-1    
+##  [13] fansi_1.0.3         lubridate_1.8.0     xml2_1.3.3         
+##  [16] codetools_0.2-18    splines_4.1.2       knitr_1.39         
+##  [19] jsonlite_1.8.0      nloptr_2.0.3        png_0.1-7          
+##  [22] readr_2.1.2         compiler_4.1.2      httr_1.4.4         
+##  [25] assertthat_0.2.1    fastmap_1.1.0       cli_3.3.0          
+##  [28] s2_1.1.0            htmltools_0.5.3     tools_4.1.2        
+##  [31] coda_0.19-4         gtable_0.3.0        glue_1.6.2         
+##  [34] wk_0.6.0            gmodels_2.18.1.1    Rcpp_1.0.9         
+##  [37] slam_0.1-50         jquerylib_0.1.4     raster_3.5-21      
+##  [40] vctrs_0.4.1         svglite_2.1.0       gdata_2.18.0.1     
+##  [43] nlme_3.1-159        lwgeom_0.2-8        xfun_0.32          
+##  [46] rvest_1.0.3         lifecycle_1.0.1     gtools_3.9.3       
+##  [49] terra_1.5-21        ROI_1.0-0           LearnBayes_2.15.1  
+##  [52] MASS_7.3-58.1       scales_1.2.1        vroom_1.5.7        
+##  [55] hms_1.1.2           parallel_4.1.2      expm_0.999-6       
+##  [58] RColorBrewer_1.1-3  yaml_2.3.5          pbapply_1.5-0      
+##  [61] sass_0.4.2          stringi_1.7.8       highr_0.9          
+##  [64] e1071_1.7-11        boot_1.3-28         zip_2.2.0          
+##  [67] systemfonts_1.0.4   RgoogleMaps_1.4.5.3 rlang_1.0.4        
+##  [70] pkgconfig_2.0.3     bitops_1.0-7        evaluate_0.16      
+##  [73] lattice_0.20-45     purrr_0.3.4         labeling_0.4.2     
+##  [76] bit_4.0.4           tidyselect_1.1.2    geojsonsf_2.0.3    
+##  [79] plyr_1.8.7          magrittr_2.0.3      R6_2.5.1           
+##  [82] generics_0.1.3      mgcv_1.8-40         pillar_1.8.1       
+##  [85] withr_2.5.0         units_0.8-0         tibble_3.1.8       
+##  [88] crayon_1.5.1        KernSmooth_2.23-20  utf8_1.2.2         
+##  [91] tzdb_0.3.0          rmarkdown_2.15      jpeg_0.1-9         
+##  [94] grid_4.1.2          blob_1.2.3          forcats_0.5.2      
+##  [97] webshot_0.5.3       digest_0.6.29       classInt_0.4-7     
+## [100] numDeriv_2016.8-1.1 munsell_0.5.0       viridisLite_0.4.1  
+## [103] kableExtra_1.3.4    registry_0.5-1      bslib_0.4.0</code></pre>
 </div>
 
 
