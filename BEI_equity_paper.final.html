@@ -14,7 +14,7 @@
 
 <title>BEI and equity paper analyses | FINAL | Hurdle models</title>
 
-<script src="BEI_equity_paper.final_files/header-attrs-2.15/header-attrs.js"></script>
+<script src="BEI_equity_paper.final_files/header-attrs-2.20/header-attrs.js"></script>
 <script src="BEI_equity_paper.final_files/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="BEI_equity_paper.final_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
@@ -113,8 +113,8 @@ pre code {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -122,16 +122,9 @@ pre code {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "&#xe258;";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -262,7 +255,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">BEI and equity paper analyses | FINAL | Hurdle models</h1>
 <h4 class="author">B. Thierry, Spherelab</h4>
-<h4 class="date">17 January, 2023</h4>
+<h4 class="date">27 January, 2023</h4>
 
 </div>
 
@@ -896,8 +889,10 @@ rm(lut_da, lut_da.1, pampalon11.16, pampalon06.11, pampalon11, pampalon06)
   theme(panel.background = element_rect(fill = &quot;white&quot;),
         #axis.ticks = element_blank(),
         #axis.text = element_blank(),
-        panel.grid = element_line(color = &quot;darkgray&quot;, size = 0.2))
-.legend &lt;- bi_legend(pal = &quot;DkBlue&quot;,
+        panel.grid = element_line(color = &quot;darkgray&quot;, size = 0.2))</code></pre>
+<pre><code>## Warning: The `size` argument of `element_line()` is deprecated as of ggplot2 3.4.0.
+## ℹ Please use the `linewidth` argument instead.</code></pre>
+<pre class="r"><code>.legend &lt;- bi_legend(pal = &quot;DkBlue&quot;,
                     dim = 3,
                     xlab = &quot;Material &quot;,
                     ylab = &quot;Social &quot;,
@@ -1175,7 +1170,7 @@ bei_df_aoi &lt;- filter(bei_df, interact_aoi) %&gt;%
 ggplot(.bei_df_long, aes(value)) +
   geom_histogram() + 
   facet_wrap(~name) #, scales = &quot;free&quot;)</code></pre>
-<pre><code>## Warning: Removed 86 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>## Warning: Removed 86 rows containing non-finite values (`stat_bin()`).</code></pre>
 <p><img src="BEI_equity_paper.final_files/figure-html/outcome-distribution-aoi-1.png" width="1152" /></p>
 <pre class="r"><code>.bei_df_long &lt;- bei_df_aoi %&gt;%
   select(CT_UID, CD_UID, starts_with(&quot;vis_minority&quot;), starts_with(&quot;low_income&quot;)) %&gt;%
@@ -1185,7 +1180,7 @@ ggplot(.bei_df_long, aes(value)) +
 ggplot(.bei_df_long, aes(value)) +
   geom_histogram() + 
   facet_wrap(~name) #, scales = &quot;free&quot;)</code></pre>
-<pre><code>## Warning: Removed 85 rows containing non-finite values (stat_bin).</code></pre>
+<pre><code>## Warning: Removed 85 rows containing non-finite values (`stat_bin()`).</code></pre>
 <p><img src="BEI_equity_paper.final_files/figure-html/outcome-distribution-aoi-2.png" width="1152" /></p>
 <pre class="r"><code>.bei_df_long &lt;- bei_df_aoi %&gt;%
   select(CT_UID, CD_UID, starts_with(&quot;gentrif_status&quot;)) %&gt;%
@@ -8809,70 +8804,74 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 <p>No new models here, as <code>gentrified</code> variable is already used as a pure categorical variable.</p>
 </div>
 </div>
-<div id="summary-of-association-between-ses-and-built-environment" class="section level1" number="10">
-<h1><span class="header-section-number">10</span> Summary of association between SES and Built Environment</h1>
-<p><strong>NOTICE: This section needs to be updated</strong></p>
-<p>Presenting interaction terms (<a href="https://journals.plos.org/plosmedicine/article?id=10.1371/journal.pmed.0040297">STROBE</a> and more <a href="https://academic.oup.com/ije/article/41/2/514/692957#81280954">specifically here</a>): best practice suggests we should include interaction terms for specific values of covariates.</p>
-<table>
-<colgroup>
-<col width="18%" />
-<col width="18%" />
-<col width="31%" />
-<col width="31%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th>SES metric</th>
-<th>BE metric</th>
-<th align="center">UC 2011 trend</th>
-<th align="center">UI 2011 -&gt; 2016 trend (SES effect only, no interaction)</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Pampalon / MAT 2011 (zero + cnt)</td>
-<td>Bike lane</td>
-<td align="center"><strong>0.790</strong> (p=0.016) &amp; <strong>0.954</strong> (p=0.031*)</td>
-<td align="center">1.054 (p=0.807) &amp; 0.992 (p=0.723)</td>
-</tr>
-<tr class="even">
-<td>Pampalon / MAT 2011</td>
-<td>Greenness</td>
-<td align="center"><strong>0.911</strong> (p&lt;0.001)</td>
-<td align="center"><strong>0.940</strong> (p&lt;0.001)</td>
-</tr>
-<tr class="odd">
-<td>Pampalon / MAT 2011</td>
-<td>Tree canopy</td>
-<td align="center"><strong>0.879</strong> (p&lt;0.001)</td>
-<td align="center"><strong>0.888</strong> (p&lt;0.001)</td>
-</tr>
-<tr class="even">
-<td>Visible Minority 2011 (zero + cnt)</td>
-<td>Bike lane</td>
-<td align="center"><strong>0.809</strong> (p=0.018) &amp; <strong>0.933</strong> (p=0.016)</td>
-<td align="center">0.623 (p=0.061*) &amp; 0.979 (p=0.401)</td>
-</tr>
-<tr class="odd">
-<td>Visible Minority 2011</td>
-<td>Greenness</td>
-<td align="center"><strong>0.934</strong> (p&lt;0.001)</td>
-<td align="center"><strong>0.943</strong> (p&lt;0.001)</td>
-</tr>
-<tr class="even">
-<td>Visible Minority 2011</td>
-<td>Tree canopy</td>
-<td align="center"><strong>0.896</strong> (p&lt;0.001)</td>
-<td align="center"><strong>0.926</strong> (p&lt;0.001)</td>
-</tr>
-</tbody>
-</table>
-<p>p-values: Wald t-tests except when p-value close to threshold where Likelihood ratio test has been used (marked with *) <strong>Bold</strong>: significant</p>
+<div id="tables-and-figures" class="section level1" number="10">
+<h1><span class="header-section-number">10</span> Tables and figures</h1>
+<div id="ses-map-and-inset-map" class="section level2" number="10.1">
+<h2><span class="header-section-number">10.1</span> SES map and inset map</h2>
+<pre class="r"><code># inset map
+csd_data &lt;- get_census(dataset=&#39;CA16&#39;, regions=list(PR=&#39;24&#39;), level=&#39;CSD&#39;, geo_format = &quot;sf&quot;) %&gt;%
+  mutate(interact_aoi = CD_UID %in% c(2466, 2465, 2458),
+         interact_name = case_when(CD_UID == 2466 ~ &#39;Montréal&#39;,
+                                   TRUE ~ str_remove(name, &quot; \\([[:upper:]-]+\\)&quot;)))
+pr_data &lt;- get_census(dataset = &#39;CA16&#39;, regions=list(C=&#39;1&#39;), level = &#39;PR&#39;, geo_format = &quot;sf&quot;)
+
+inset_lim &lt;- st_bbox(st_transform(filter(CT16, interact_aoi), st_crs(4326)))
+# inset_map &lt;- ggplot() +
+#   geom_sf(data = csd_data, aes(fill=factor(interact_aoi)), color = NA, show.legend = F) +
+#   scale_fill_manual(values = c(&quot;TRUE&quot; = &quot;light blue&quot;, &quot;FALSE&quot; = &quot;gray&quot;), labels=NULL) +
+#   coord_sf(xlim = c(-77, -69), ylim = c(45, 49), crs = st_crs(4326), default_crs = st_crs(4326), expand = FALSE) +
+#   theme(axis.text=element_text(size=15), axis.title.x=element_blank(), axis.title.y=element_blank()) +
+#   scale_x_continuous(breaks = seq(-76, -70, by = 2)) +
+#   scale_y_continuous(breaks = seq(45.5, 49, by = 1)) 
+# inset_map &lt;- inset_map + 
+#   annotate(&quot;rect&quot;, xmin = inset_lim[&#39;xmin&#39;], ymin = inset_lim[&#39;ymin&#39;], xmax = inset_lim[&#39;xmax&#39;], ymax = inset_lim[&#39;ymax&#39;], fill = NA, color = &quot;black&quot;, size = 1) +
+#   annotate(&quot;text&quot;, label = &quot;Quebec, Canada&quot;, x = (-77 - 69) / 2, y = (45 + 49)/2, size = 8)
+
+exp_fact = 1.05
+inset_map &lt;- ggplot() +
+  geom_sf(data = pr_data, color = &quot;black&quot;, show.legend = F) +
+  coord_sf(xlim = c(-55, -140), ylim = c(40, 75), crs = st_crs(4326), default_crs = st_crs(4326), expand = FALSE) +
+  theme(axis.text=element_text(size=15), axis.title.x=element_blank(), axis.title.y=element_blank()) +
+  scale_x_continuous(breaks = seq(-130, -60, by = 20)) +
+  scale_y_continuous(breaks = seq(45, 70, by = 10)) 
+inset_map &lt;- inset_map + 
+  annotate(&quot;rect&quot;, 
+           xmin = inset_lim[&#39;xmin&#39;] - exp_fact * (inset_lim[&#39;xmax&#39;] - inset_lim[&#39;xmin&#39;]), 
+           ymin = inset_lim[&#39;ymin&#39;] - exp_fact * (inset_lim[&#39;ymax&#39;] - inset_lim[&#39;ymin&#39;]), 
+           xmax = inset_lim[&#39;xmax&#39;] + exp_fact * (inset_lim[&#39;xmax&#39;] - inset_lim[&#39;xmin&#39;]), 
+           ymax = inset_lim[&#39;ymax&#39;] + exp_fact * (inset_lim[&#39;ymax&#39;] - inset_lim[&#39;ymin&#39;]), 
+           fill = NA, color = &quot;red&quot;, size = 2)
+
+  
+# SES map
+.ses_data_sf &lt;- CT16 %&gt;%
+  inner_join(bei_df_aoi, by = c(&quot;GeoUID&quot; = &quot;CT_UID&quot;))
+
+.ses_data &lt;- bi_class(.ses_data_sf, x = vis_minority_2011, y = wSCOREMAT.2011, style = &quot;quantile&quot;, dim = 3)
+ses_map &lt;- ggplot() + 
+  geom_sf(data = .ses_data, mapping = aes(fill = bi_class), color = &quot;white&quot;, size = 0.1, show.legend = FALSE) +
+  bi_scale_fill(pal = &quot;Brown&quot;, dim = 3) +
+  geom_sf_label(data = filter(csd_data, (GeoUID == &quot;2466023&quot;) | (CD_UID %in% c(&quot;2465&quot;, &quot;2458&quot;))),
+                aes(label=interact_name), check_overlap = T, size = 8) + 
+  scalebar(data = .ses_data, dist = 5, dist_unit = &quot;km&quot;, transform = F) +
+  theme(panel.background = element_rect(fill = &quot;white&quot;),
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        axis.title = element_blank(),
+        panel.grid = element_blank())
+ses_legend &lt;- bi_legend(pal = &quot;Brown&quot;,
+                    dim = 3,
+                    xlab = &quot;Visible Minority &quot;,
+                    ylab = &quot;Material deprivation &quot;,
+                    size = 14)
+ggdraw() +
+  draw_plot(ses_map, 0, 0, 1, 1) +
+  draw_plot(ses_legend, 0.8, .75, 0.2, 0.2) +
+  draw_plot(inset_map, 0.02, .7, 0.25, 0.25)</code></pre>
+<p><img src="BEI_equity_paper.final_img/SES_map.png" /></p>
 </div>
-<div id="tables-and-figures" class="section level1" number="11">
-<h1><span class="header-section-number">11</span> Tables and figures</h1>
-<div id="maps-of-bec-and-bei" class="section level2" number="11.1">
-<h2><span class="header-section-number">11.1</span> Maps of BEC and BEI</h2>
+<div id="maps-of-bec-and-bei" class="section level2" number="10.2">
+<h2><span class="header-section-number">10.2</span> Maps of BEC and BEI</h2>
 <pre class="r"><code># Green space
 g_bec_bike &lt;- ggplot() +
    geom_sf(data=filter(bike_lane_changes, interact_aoi), mapping = aes(fill=as.numeric(Bike_lane.by.street.2011ct)), lwd = 0) +
@@ -8939,10 +8938,10 @@ pcol2 &lt;- plot_grid(
 
 # output all graphs
 plot_grid(pcol1, pcol2, nrow=1)</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/bec-bei-maps-1.png" width="1000px" style="display: block; margin: auto;" /></p>
+<p><img src="BEI_equity_paper.final_img/BEC-BEI_maps.png" /></p>
 </div>
-<div id="ses-and-bei-outcomes" class="section level2" number="11.2">
-<h2><span class="header-section-number">11.2</span> SES and BEI outcomes</h2>
+<div id="ses-and-bei-outcomes" class="section level2" number="10.3">
+<h2><span class="header-section-number">10.3</span> SES and BEI outcomes</h2>
 <pre class="r"><code># Extract SES and BEI in 2011
 .tab1_2011 &lt;- bei_df_aoi %&gt;%
   transmute(year = &quot;2011&quot;,
@@ -9141,8 +9140,8 @@ Tree canopy area (ha)
 </tr>
 </tbody>
 </table>
-<div id="by-q1-q5" class="section level3" number="11.2.1">
-<h3><span class="header-section-number">11.2.1</span> By Q1 / Q5</h3>
+<div id="by-q1-q5" class="section level3" number="10.3.1">
+<h3><span class="header-section-number">10.3.1</span> By Q1 / Q5</h3>
 <p>We look at Urban conditions in 2011 and 2016 within Q1 and Q5 of 2011 equity metrics</p>
 <pre class="r"><code># Extract SES and BEI in 2011
 .tab1_2011 &lt;- bei_df_aoi %&gt;%
@@ -9773,13 +9772,13 @@ Tree canopy area (ha)
 </tbody>
 </table>
 </div>
-<div id="by-gentrification-status" class="section level3" number="11.2.2">
-<h3><span class="header-section-number">11.2.2</span> By gentrification status</h3>
+<div id="by-gentrification-status" class="section level3" number="10.3.2">
+<h3><span class="header-section-number">10.3.2</span> By gentrification status</h3>
 <pre class="r"><code># Extract SES and BEI in 2011
 .tab1_2011 &lt;- bei_df_aoi %&gt;%
+  filter(!is.na(gentrif_status_2016)) %&gt;%
   transmute(year = &quot;2011&quot;,
-            quintile = case_when(gentrified_2016_2011 ~ &quot;Gentrified&quot;,
-                                 TRUE ~ &quot;Not gentrified&quot;),
+            quintile = gentrif_status_2016,
             zone = zone,
             CT_UID = CT_UID,
             Population = Population,
@@ -9796,9 +9795,9 @@ Tree canopy area (ha)
 
 # Extract SES and BEI in 2016
 .tab1_2016 &lt;- bei_df_aoi %&gt;%
+  filter(!is.na(gentrif_status_2016)) %&gt;%
   transmute(year = &quot;2016&quot;,
-            quintile = case_when(gentrified_2016_2011 ~ &quot;Gentrified&quot;,
-                                 TRUE ~ &quot;Not gentrified&quot;),
+            quintile = gentrif_status_2016,
             zone = zone,
             CT_UID = CT_UID,
             `Bike lane` = Bike_lane_total.2016ct &gt; 0,
@@ -9858,16 +9857,22 @@ tab1 %&gt;% knitr::kable() %&gt;%
 <th style="text-align:left;">
 </th>
 <th style="text-align:left;">
+2011 Not gentrified
+</th>
+<th style="text-align:left;">
 2011 Gentrified
 </th>
 <th style="text-align:left;">
-2011 Not gentrified
+2011 Non eligible
+</th>
+<th style="text-align:left;">
+2016 Not gentrified
 </th>
 <th style="text-align:left;">
 2016 Gentrified
 </th>
 <th style="text-align:left;">
-2016 Not gentrified
+2016 Non eligible
 </th>
 </tr>
 </thead>
@@ -9883,6 +9888,12 @@ year
 2011
 </td>
 <td style="text-align:left;">
+2011
+</td>
+<td style="text-align:left;">
+2016
+</td>
+<td style="text-align:left;">
 2016
 </td>
 <td style="text-align:left;">
@@ -9894,10 +9905,15 @@ year
 Population
 </td>
 <td style="text-align:left;">
+3833.5 (2732.5 - 5212.2)
+</td>
+<td style="text-align:left;">
 3159.5 (2266.8 - 4505.8)
 </td>
 <td style="text-align:left;">
-4043 (2862 - 5345)
+4327.5 (3234.5 - 5532.5)
+</td>
+<td style="text-align:left;">
 </td>
 <td style="text-align:left;">
 </td>
@@ -9909,10 +9925,15 @@ Population
 Material score
 </td>
 <td style="text-align:left;">
+0.024 (0.001 - 0.046)
+</td>
+<td style="text-align:left;">
 0.018 (-0.004 - 0.039)
 </td>
 <td style="text-align:left;">
-0.002 (-0.026 - 0.027)
+-0.017 (-0.044 - 0.006)
+</td>
+<td style="text-align:left;">
 </td>
 <td style="text-align:left;">
 </td>
@@ -9924,10 +9945,15 @@ Material score
 % visible minorities
 </td>
 <td style="text-align:left;">
+28.2 (17.5 - 43.4)
+</td>
+<td style="text-align:left;">
 21 (13.9 - 32.4)
 </td>
 <td style="text-align:left;">
-21.7 (14.5 - 34.7)
+19 (11.4 - 28)
+</td>
+<td style="text-align:left;">
 </td>
 <td style="text-align:left;">
 </td>
@@ -9939,10 +9965,15 @@ Material score
 % gentrified CTs
 </td>
 <td style="text-align:left;">
+0
+</td>
+<td style="text-align:left;">
 100
 </td>
 <td style="text-align:left;">
 0
+</td>
+<td style="text-align:left;">
 </td>
 <td style="text-align:left;">
 </td>
@@ -9954,16 +9985,22 @@ Material score
 Bike lane presence (N)
 </td>
 <td style="text-align:left;">
+142
+</td>
+<td style="text-align:left;">
 130
 </td>
 <td style="text-align:left;">
-373
+219
+</td>
+<td style="text-align:left;">
+176
 </td>
 <td style="text-align:left;">
 171
 </td>
 <td style="text-align:left;">
-421
+233
 </td>
 </tr>
 <tr>
@@ -9971,16 +10008,22 @@ Bike lane presence (N)
 Bike lane absence (N)
 </td>
 <td style="text-align:left;">
+80
+</td>
+<td style="text-align:left;">
 78
 </td>
 <td style="text-align:left;">
-124
+41
+</td>
+<td style="text-align:left;">
+46
 </td>
 <td style="text-align:left;">
 37
 </td>
 <td style="text-align:left;">
-76
+27
 </td>
 </tr>
 <tr>
@@ -9988,16 +10031,22 @@ Bike lane absence (N)
 Bike lane length (hm)
 </td>
 <td style="text-align:left;">
+4.2 (0 - 13.2)
+</td>
+<td style="text-align:left;">
 3.7 (0 - 11)
 </td>
 <td style="text-align:left;">
-9.1 (0 - 23.5)
+16.4 (3.8 - 33.2)
+</td>
+<td style="text-align:left;">
+7.8 (2 - 16.2)
 </td>
 <td style="text-align:left;">
 8 (2.4 - 15.4)
 </td>
 <td style="text-align:left;">
-12.5 (3.7 - 26.8)
+18.5 (7.4 - 38.5)
 </td>
 </tr>
 <tr>
@@ -10005,16 +10054,22 @@ Bike lane length (hm)
 % Bike lane to streets
 </td>
 <td style="text-align:left;">
+5.8 (0 - 12.1)
+</td>
+<td style="text-align:left;">
 5.9 (0 - 14.4)
 </td>
 <td style="text-align:left;">
-7.1 (0 - 13.7)
+7.9 (2.1 - 14)
+</td>
+<td style="text-align:left;">
+9.6 (3 - 17.2)
 </td>
 <td style="text-align:left;">
 13.3 (3.9 - 19.8)
 </td>
 <td style="text-align:left;">
-10.1 (3.7 - 17.6)
+10.2 (4.1 - 17.2)
 </td>
 </tr>
 <tr>
@@ -10022,16 +10077,22 @@ Bike lane length (hm)
 Green space area (ha)
 </td>
 <td style="text-align:left;">
+17 (7.2 - 28)
+</td>
+<td style="text-align:left;">
 9 (4 - 22.2)
 </td>
 <td style="text-align:left;">
-34 (15 - 84)
+69 (37.8 - 129.5)
+</td>
+<td style="text-align:left;">
+19 (9 - 30.8)
 </td>
 <td style="text-align:left;">
 10.5 (5 - 25.2)
 </td>
 <td style="text-align:left;">
-38 (17 - 87)
+71.5 (40.8 - 134.5)
 </td>
 </tr>
 <tr>
@@ -10039,16 +10100,22 @@ Green space area (ha)
 % green space within CT
 </td>
 <td style="text-align:left;">
+31.4 (22.7 - 38.7)
+</td>
+<td style="text-align:left;">
 27.5 (20.7 - 35.3)
 </td>
 <td style="text-align:left;">
-40.5 (29.1 - 51.3)
+48.7 (40.7 - 58.2)
+</td>
+<td style="text-align:left;">
+36.5 (27.1 - 43.3)
 </td>
 <td style="text-align:left;">
 32.8 (25.7 - 40.6)
 </td>
 <td style="text-align:left;">
-44.7 (34 - 54.6)
+51.6 (44.6 - 61.6)
 </td>
 </tr>
 <tr>
@@ -10056,16 +10123,22 @@ Green space area (ha)
 Tree canopy area (ha)
 </td>
 <td style="text-align:left;">
+8 (4 - 12)
+</td>
+<td style="text-align:left;">
 5 (3 - 10)
 </td>
 <td style="text-align:left;">
-14 (6 - 33)
+26 (14 - 56.2)
+</td>
+<td style="text-align:left;">
+9 (5 - 15)
 </td>
 <td style="text-align:left;">
 6 (4 - 12)
 </td>
 <td style="text-align:left;">
-17 (8 - 37)
+30 (17 - 63.2)
 </td>
 </tr>
 <tr>
@@ -10073,26 +10146,32 @@ Tree canopy area (ha)
 % tree canopy within CT
 </td>
 <td style="text-align:left;">
+15.2 (11.6 - 19.7)
+</td>
+<td style="text-align:left;">
 15.2 (11.4 - 19.5)
 </td>
 <td style="text-align:left;">
-17 (11.9 - 24.2)
+20.6 (12.9 - 30)
+</td>
+<td style="text-align:left;">
+19.1 (13.6 - 23.6)
 </td>
 <td style="text-align:left;">
 19.4 (15 - 23.8)
 </td>
 <td style="text-align:left;">
-20.7 (14.1 - 28.4)
+24 (15.2 - 33.9)
 </td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
-<div id="interactions-in-ui-associations" class="section level2" number="11.3">
-<h2><span class="header-section-number">11.3</span> Interactions in UI associations</h2>
-<div id="continuous-ses-variables" class="section level3" number="11.3.1">
-<h3><span class="header-section-number">11.3.1</span> Continuous SES variables</h3>
+<div id="interactions-in-ui-associations" class="section level2" number="10.4">
+<h2><span class="header-section-number">10.4</span> Interactions in UI associations</h2>
+<div id="continuous-ses-variables" class="section level3" number="10.4.1">
+<h3><span class="header-section-number">10.4.1</span> Continuous SES variables</h3>
 <p><em>NB</em> Update 2023-01-17: we graph gentrification separately now</p>
 <pre class="r"><code>base_size_all = 20
 # extract the legend from one of the plots
@@ -10133,7 +10212,7 @@ prow2 &lt;- plot_grid(prow2.1, legend.row2, rel_widths = c(3, .4))
 
 # output all graphs
 plot_grid(prow1, prow2, ncol=1)</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/ui-interaction-graphs-1.png" width="1152" /></p>
+<p><img src="BEI_equity_paper.final_img/cont_interactions.png" /></p>
 <pre class="r"><code>base_size_all = 20
 
 # extract the legend from one of the plots
@@ -10153,10 +10232,10 @@ prow3.1 &lt;- plot_grid(
 )
 
 plot_grid(prow3.1, legend.row3, rel_widths = c(3, .4))</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/ui-interaction-gentrif-graphs-1.png" width="1152" /></p>
+<p><img src="BEI_equity_paper.final_img/cont_interactions_bike.png" /></p>
 </div>
-<div id="categorical-ses-variables" class="section level3" number="11.3.2">
-<h3><span class="header-section-number">11.3.2</span> Categorical SES variables</h3>
+<div id="categorical-ses-variables" class="section level3" number="10.4.2">
+<h3><span class="header-section-number">10.4.2</span> Categorical SES variables</h3>
 <pre class="r"><code>base_size_all = 20
 # extract the legend from one of the plots
 legend.row1 &lt;- get_legend(
@@ -10196,12 +10275,12 @@ prow2 &lt;- plot_grid(prow2.1, legend.row2, rel_widths = c(3, .4))
 
 # output all graphs
 plot_grid(prow1, prow2, ncol=1)</code></pre>
-<p><img src="BEI_equity_paper.final_files/figure-html/ui-interaction-graphs-categ-1.png" width="1152" /></p>
+<p><img src="BEI_equity_paper.final_img/disc_interactions.png" /></p>
 </div>
 </div>
 </div>
-<div id="annexes" class="section level1" number="12">
-<h1><span class="header-section-number">12</span> Annexes</h1>
+<div id="annexes" class="section level1" number="11">
+<h1><span class="header-section-number">11</span> Annexes</h1>
 <pre><code>## R version 4.1.2 (2021-11-01)
 ## Platform: x86_64-apple-darwin17.0 (64-bit)
 ## Running under: macOS Big Sur 10.16
@@ -10214,53 +10293,54 @@ plot_grid(prow1, prow2, ncol=1)</code></pre>
 ## [1] en_CA.UTF-8/en_CA.UTF-8/en_CA.UTF-8/C/en_CA.UTF-8/en_CA.UTF-8
 ## 
 ## attached base packages:
-## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## [1] grid      stats     graphics  grDevices utils     datasets  methods  
+## [8] base     
 ## 
 ## other attached packages:
-##  [1] cancensus_0.5.2  stringr_1.4.1    DHARMa_0.4.5     stargazer_5.2.3 
+##  [1] cancensus_0.5.5  stringr_1.5.0    DHARMa_0.4.5     stargazer_5.2.3 
 ##  [5] spaMM_3.12.0     cachem_1.0.6     memoise_2.0.1    spatialreg_1.2-5
-##  [9] spdep_1.2-5      spData_2.0.1     sp_1.5-0         lme4_1.1-30     
+##  [9] spdep_1.2-5      spData_2.0.1     sp_1.5-0         lme4_1.1-31     
 ## [13] Matrix_1.5-1     cowplot_1.1.1    biscale_1.0.0    openxlsx_4.2.5  
-## [17] RPostgres_1.4.4  DBI_1.1.3        ggmap_3.0.0      ggplot2_3.3.6   
-## [21] stars_0.5-5      abind_1.4-5      sf_1.0-7         tidyr_1.2.0     
-## [25] dplyr_1.0.9     
+## [17] RPostgres_1.4.5  DBI_1.1.3        ggsn_0.5.0       ggmap_3.0.1     
+## [21] ggplot2_3.4.0    stars_0.5-5      abind_1.4-5      sf_1.0-9        
+## [25] tidyr_1.2.1      dplyr_1.0.10    
 ## 
 ## loaded via a namespace (and not attached):
-##   [1] ggnewscale_0.4.7    minqa_1.2.4         colorspace_2.0-3   
-##   [4] rjson_0.2.21        deldir_1.0-6        ellipsis_0.3.2     
-##   [7] class_7.3-20        rstudioapi_0.14     proxy_0.4-27       
-##  [10] farver_2.1.1        bit64_4.0.5         RSpectra_0.16-1    
-##  [13] fansi_1.0.3         lubridate_1.8.0     xml2_1.3.3         
-##  [16] codetools_0.2-18    splines_4.1.2       knitr_1.39         
-##  [19] jsonlite_1.8.0      nloptr_2.0.3        png_0.1-7          
-##  [22] readr_2.1.2         compiler_4.1.2      httr_1.4.4         
-##  [25] assertthat_0.2.1    fastmap_1.1.0       cli_3.3.0          
-##  [28] s2_1.1.0            htmltools_0.5.3     tools_4.1.2        
-##  [31] coda_0.19-4         gtable_0.3.0        glue_1.6.2         
-##  [34] wk_0.6.0            gmodels_2.18.1.1    Rcpp_1.0.9         
-##  [37] slam_0.1-50         jquerylib_0.1.4     raster_3.5-21      
-##  [40] vctrs_0.4.1         svglite_2.1.0       gdata_2.18.0.1     
-##  [43] nlme_3.1-159        lwgeom_0.2-8        xfun_0.32          
-##  [46] rvest_1.0.3         lifecycle_1.0.1     gtools_3.9.3       
-##  [49] terra_1.5-21        ROI_1.0-0           LearnBayes_2.15.1  
-##  [52] MASS_7.3-58.1       scales_1.2.1        vroom_1.5.7        
-##  [55] hms_1.1.2           parallel_4.1.2      expm_0.999-6       
-##  [58] RColorBrewer_1.1-3  yaml_2.3.5          pbapply_1.5-0      
-##  [61] sass_0.4.2          stringi_1.7.8       highr_0.9          
+##   [1] minqa_1.2.4         colorspace_2.0-3    deldir_1.0-6       
+##   [4] ellipsis_0.3.2      class_7.3-20        rstudioapi_0.14    
+##   [7] proxy_0.4-27        farver_2.1.1        bit64_4.0.5        
+##  [10] RSpectra_0.16-1     fansi_1.0.3         lubridate_1.9.0    
+##  [13] xml2_1.3.3          codetools_0.2-18    splines_4.1.2      
+##  [16] knitr_1.41          jsonlite_1.8.0      nloptr_2.0.3       
+##  [19] png_0.1-7           readr_2.1.3         compiler_4.1.2     
+##  [22] httr_1.4.4          assertthat_0.2.1    fastmap_1.1.0      
+##  [25] cli_3.6.0           s2_1.1.0            htmltools_0.5.3    
+##  [28] tools_4.1.2         coda_0.19-4         gtable_0.3.0       
+##  [31] glue_1.6.2          wk_0.6.0            gmodels_2.18.1.1   
+##  [34] Rcpp_1.0.9          slam_0.1-50         jquerylib_0.1.4    
+##  [37] raster_3.5-21       vctrs_0.5.1         svglite_2.1.0      
+##  [40] gdata_2.18.0.1      nlme_3.1-161        lwgeom_0.2-11      
+##  [43] xfun_0.36           rvest_1.0.3         timechange_0.2.0   
+##  [46] lifecycle_1.0.3     gtools_3.9.3        terra_1.5-21       
+##  [49] ROI_1.0-0           LearnBayes_2.15.1   MASS_7.3-58.1      
+##  [52] scales_1.2.1        vroom_1.6.0         hms_1.1.2          
+##  [55] parallel_4.1.2      expm_0.999-6        RColorBrewer_1.1-3 
+##  [58] yaml_2.3.5          pbapply_1.5-0       sass_0.4.2         
+##  [61] stringi_1.7.8       highr_0.9           maptools_1.1-4     
 ##  [64] e1071_1.7-11        boot_1.3-28         zip_2.2.0          
-##  [67] systemfonts_1.0.4   RgoogleMaps_1.4.5.3 rlang_1.0.4        
+##  [67] systemfonts_1.0.4   RgoogleMaps_1.4.5.3 rlang_1.0.6        
 ##  [70] pkgconfig_2.0.3     bitops_1.0-7        evaluate_0.16      
-##  [73] lattice_0.20-45     purrr_0.3.4         labeling_0.4.2     
+##  [73] lattice_0.20-45     purrr_1.0.1         labeling_0.4.2     
 ##  [76] bit_4.0.4           tidyselect_1.1.2    geojsonsf_2.0.3    
 ##  [79] plyr_1.8.7          magrittr_2.0.3      R6_2.5.1           
-##  [82] generics_0.1.3      mgcv_1.8-40         pillar_1.8.1       
+##  [82] generics_0.1.3      pillar_1.8.1        foreign_0.8-82     
 ##  [85] withr_2.5.0         units_0.8-0         tibble_3.1.8       
 ##  [88] crayon_1.5.1        KernSmooth_2.23-20  utf8_1.2.2         
-##  [91] tzdb_0.3.0          rmarkdown_2.15      jpeg_0.1-9         
-##  [94] grid_4.1.2          blob_1.2.3          forcats_0.5.2      
-##  [97] webshot_0.5.3       digest_0.6.29       classInt_0.4-7     
-## [100] numDeriv_2016.8-1.1 munsell_0.5.0       viridisLite_0.4.1  
-## [103] kableExtra_1.3.4    registry_0.5-1      bslib_0.4.0</code></pre>
+##  [91] tzdb_0.3.0          rmarkdown_2.20      jpeg_0.1-9         
+##  [94] blob_1.2.3          forcats_0.5.2       webshot_0.5.3      
+##  [97] digest_0.6.29       classInt_0.4-7      numDeriv_2016.8-1.1
+## [100] munsell_0.5.0       viridisLite_0.4.1   kableExtra_1.3.4   
+## [103] registry_0.5-1      bslib_0.4.0</code></pre>
 </div>
 
 
