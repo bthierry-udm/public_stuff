@@ -255,7 +255,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">BEI and equity paper analyses | FINAL | AOI ok | Hurdle models</h1>
 <h4 class="author">B. Thierry, Spherelab</h4>
-<h4 class="date">20 February, 2023</h4>
+<h4 class="date">21 March, 2023</h4>
 
 </div>
 
@@ -393,6 +393,11 @@ tidy_df &lt;- function(src_df, ct, f, drop_islands=TRUE) {
 <p><strong>UPDATE 2023-02-20</strong></p>
 <ul>
 <li>Fix study area to exclude Boucherville</li>
+</ul>
+<p><strong>UPDATE 2023-03-16</strong></p>
+<ul>
+<li>Discard true hurdle model approach by processing separately the change in bike lanes (no change vs. having a bike lane in 2026 when no bike lanes existed in 2011) and the amount of change when there is a bike lane in 2016. || <em>NB</em>: this does not improve the model convergence</li>
+<li>Added manual CI computation when not converging with <code>confint</code> function</li>
 </ul>
 </div>
 <div id="a-few-references" class="section level2" number="1.4">
@@ -1069,13 +1074,20 @@ bei_df &lt;- CT16 %&gt;%
          vis_minority_2006.Q = ntile(vis_minority_2006, 5),
          vis_minority_2011.Q = ntile(vis_minority_2011, 5),
          vis_minority_2016.Q = ntile(vis_minority_2016, 5)) %&gt;%
-  units::drop_units()
+  units::drop_units() %&gt;%
+  # UPDATE 2023-03-16: adding change dependent variables
+  mutate(change.2011.2016.2states = case_when((Bike_lane_total.2011ct &gt; 0) &amp; (Bike_lane_total.2016ct &gt; 0) ~ FALSE,
+                                              (Bike_lane_total.2011ct == 0) &amp; (Bike_lane_total.2016ct == 0) ~ FALSE,
+                                              TRUE ~ TRUE),
+         change.2011.2016.3states = case_when((Bike_lane_total.2011ct == 0) &amp; (Bike_lane_total.2016ct == 0) ~ &#39;No bike lane&#39;,
+                                              (Bike_lane_total.2011ct == 0) &amp; (Bike_lane_total.2016ct &gt; 0) ~ &#39;New bike lanes&#39;,
+                                              (Bike_lane_total.2011ct &gt; 0) &amp; (Bike_lane_total.2016ct &gt; 0) ~ &#39;No new bike lane&#39;))
   
   
 head(bei_df)</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["CT_UID"],"name":[1],"type":["chr"],"align":["left"]},{"label":["CD_UID"],"name":[2],"type":["chr"],"align":["left"]},{"label":["CSD_UID"],"name":[3],"type":["chr"],"align":["left"]},{"label":["interact_aoi"],"name":[4],"type":["lgl"],"align":["right"]},{"label":["zone"],"name":[5],"type":["chr"],"align":["left"]},{"label":["Population"],"name":[6],"type":["int"],"align":["right"]},{"label":["wSCOREMAT.2016"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["wSCORESOC.2016"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["wSCOREMAT.2011"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["wSCORESOC.2011"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["wSCOREMAT.2006"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["wSCORESOC.2006"],"name":[12],"type":["dbl"],"align":["right"]},{"label":["gentrified_2016_2011"],"name":[13],"type":["lgl"],"align":["right"]},{"label":["gentrifiable_2011"],"name":[14],"type":["lgl"],"align":["right"]},{"label":["gentrif_status_2016"],"name":[15],"type":["fct"],"align":["left"]},{"label":["gentrified_2011_2006"],"name":[16],"type":["lgl"],"align":["right"]},{"label":["gentrifiable_2006"],"name":[17],"type":["lgl"],"align":["right"]},{"label":["gentrif_status_2011"],"name":[18],"type":["fct"],"align":["left"]},{"label":["gentrified_2006_2001"],"name":[19],"type":["lgl"],"align":["right"]},{"label":["gentrifiable_2001"],"name":[20],"type":["lgl"],"align":["right"]},{"label":["gentrif_status_2006"],"name":[21],"type":["fct"],"align":["left"]},{"label":["vis_minority_2016"],"name":[22],"type":["dbl"],"align":["right"]},{"label":["low_income_2016"],"name":[23],"type":["dbl"],"align":["right"]},{"label":["vis_minority_2011"],"name":[24],"type":["dbl"],"align":["right"]},{"label":["low_income_2011"],"name":[25],"type":["dbl"],"align":["right"]},{"label":["vis_minority_2006"],"name":[26],"type":["dbl"],"align":["right"]},{"label":["low_income_2006"],"name":[27],"type":["dbl"],"align":["right"]},{"label":["street_length"],"name":[28],"type":["dbl"],"align":["right"]},{"label":["street_length.hm"],"name":[29],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_total.2016ct"],"name":[30],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_total.2011ct"],"name":[31],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_total.2006ct"],"name":[32],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_total.hm.2016ct"],"name":[33],"type":["int"],"align":["right"]},{"label":["Bike_lane_total.hm.2011ct"],"name":[34],"type":["int"],"align":["right"]},{"label":["Bike_lane_total.hm.2006ct"],"name":[35],"type":["int"],"align":["right"]},{"label":["Bike_lane.by.street.2016ct"],"name":[36],"type":["dbl"],"align":["right"]},{"label":["Bike_lane.by.street.2011ct"],"name":[37],"type":["dbl"],"align":["right"]},{"label":["Bike_lane.by.street.2006ct"],"name":[38],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_diff.2011.2016ct"],"name":[39],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_diff.by.street.2011.2016ct"],"name":[40],"type":["dbl"],"align":["right"]},{"label":["ct_area_hct"],"name":[41],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_2011ct"],"name":[42],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_high_2011ct"],"name":[43],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_high_2011ct"],"name":[44],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_2011ct"],"name":[45],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_2015ct"],"name":[46],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_high_2015ct"],"name":[47],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_high_2015ct"],"name":[48],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_2015ct"],"name":[49],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_2017ct"],"name":[50],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_high_2017ct"],"name":[51],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_high_2017ct"],"name":[52],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_2017ct"],"name":[53],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_2019ct"],"name":[54],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_high_2019ct"],"name":[55],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_high_2019ct"],"name":[56],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_2019ct"],"name":[57],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_2011.2015ct"],"name":[58],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_2011.2017ct"],"name":[59],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_2015.2017ct"],"name":[60],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_high_2011.2015ct"],"name":[61],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_high_2011.2017ct"],"name":[62],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_high_2015.2017ct"],"name":[63],"type":["dbl"],"align":["right"]},{"label":["wSCOREMAT.2006.Q"],"name":[64],"type":["int"],"align":["right"]},{"label":["wSCOREMAT.2011.Q"],"name":[65],"type":["int"],"align":["right"]},{"label":["wSCOREMAT.2016.Q"],"name":[66],"type":["int"],"align":["right"]},{"label":["low_income_2006.Q"],"name":[67],"type":["int"],"align":["right"]},{"label":["low_income_2011.Q"],"name":[68],"type":["int"],"align":["right"]},{"label":["low_income_2016.Q"],"name":[69],"type":["int"],"align":["right"]},{"label":["vis_minority_2006.Q"],"name":[70],"type":["int"],"align":["right"]},{"label":["vis_minority_2011.Q"],"name":[71],"type":["int"],"align":["right"]},{"label":["vis_minority_2016.Q"],"name":[72],"type":["int"],"align":["right"]}],"data":[{"1":"4620149.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"3161","7":"-0.049248759","8":"0.057190321","9":"-0.02978953","10":"0.0594421910","11":"-0.02369179","12":"0.037338622","13":"FALSE","14":"TRUE","15":"Not gentrified","16":"TRUE","17":"TRUE","18":"Gentrified","19":"TRUE","20":"TRUE","21":"Gentrified","22":"15.35948","23":"22.0","24":"15.54828","25":"30.8","26":"12.59843","27":"23.91","28":"3154.205","29":"31.54205","30":"1208.5717","31":"688.5246","32":"577.1925","33":"12","34":"7","35":"6","36":"38.31620","37":"21.82878","38":"18.29914","39":"520.0470959","40":"16.487419915","41":"13.8","42":"3","43":"3","44":"21.8","45":"24.8","46":"4","47":"4","48":"26.4","49":"28.7","50":"4","51":"4","52":"29.2","53":"31.4","54":"4","55":"4","56":"28.7","57":"32.1","58":"3.9","59":"6.6","60":"2.7","61":"4.6","62":"7.4","63":"2.8","64":"2","65":"1","66":"1","67":"4","68":"5","69":"4","70":"3","71":"3","72":"3","_rn_":"1"},{"1":"4620185.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"5217","7":"0.002586202","8":"0.052690760","9":"0.01135986","10":"0.0457714081","11":"0.02030788","12":"0.046134103","13":"TRUE","14":"TRUE","15":"Gentrified","16":"TRUE","17":"TRUE","18":"Gentrified","19":"FALSE","20":"TRUE","21":"Not gentrified","22":"16.13217","23":"20.1","24":"17.59082","25":"27.6","26":"12.25490","27":"23.29","28":"7641.672","29":"76.41672","30":"1069.1814","31":"1069.4042","32":"0.0000","33":"11","34":"11","35":"0","36":"13.99146","37":"13.99437","38":"0.00000","39":"-0.2227721","40":"-0.002915228","41":"39.3","42":"12","43":"8","44":"20.6","45":"29.4","46":"11","47":"8","48":"20.0","49":"29.0","50":"13","51":"10","52":"24.3","53":"33.7","54":"14","55":"9","56":"22.1","57":"34.7","58":"-0.4","59":"4.3","60":"4.7","61":"-0.6","62":"3.7","63":"4.3","64":"4","65":"3","66":"3","67":"4","68":"4","69":"4","70":"3","71":"3","72":"3","_rn_":"2"},{"1":"4620222.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"3587","7":"0.082313210","8":"0.014476934","9":"0.09282443","10":"0.0052905841","11":"0.09663123","12":"-0.004537943","13":"FALSE","14":"TRUE","15":"Not gentrified","16":"TRUE","17":"TRUE","18":"Gentrified","19":"FALSE","20":"TRUE","21":"Not gentrified","22":"57.91610","23":"35.1","24":"57.56359","25":"39.5","26":"50.00000","27":"41.79","28":"4155.251","29":"41.55251","30":"1059.5655","31":"0.0000","32":"0.0000","33":"11","34":"0","35":"0","36":"25.49944","37":"0.00000","38":"0.00000","39":"1059.5654725","40":"25.499435195","41":"19.9","42":"5","43":"2","44":"11.7","45":"24.9","46":"5","47":"2","48":"11.4","49":"24.0","50":"6","51":"3","52":"14.2","53":"29.6","54":"5","55":"3","56":"13.6","57":"26.9","58":"-0.9","59":"4.7","60":"5.6","61":"-0.3","62":"2.5","63":"2.8","64":"5","65":"5","66":"5","67":"5","68":"5","69":"5","70":"5","71":"5","72":"5","_rn_":"3"},{"1":"4620117.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"4359","7":"0.034245133","8":"0.006085192","9":"0.06315153","10":"0.0009442053","11":"0.03645207","12":"0.010056370","13":"TRUE","14":"TRUE","15":"Gentrified","16":"FALSE","17":"TRUE","18":"Not gentrified","19":"TRUE","20":"TRUE","21":"Gentrified","22":"84.76071","23":"27.5","24":"80.62201","25":"40.6","26":"73.28520","27":"41.64","28":"3360.624","29":"33.60624","30":"0.0000","31":"0.0000","32":"0.0000","33":"0","34":"0","35":"0","36":"0.00000","37":"0.00000","38":"0.00000","39":"0.0000000","40":"0.000000000","41":"27.1","42":"6","43":"4","44":"14.7","45":"20.9","46":"6","47":"4","48":"15.2","49":"22.7","50":"8","51":"5","52":"17.8","53":"27.8","54":"7","55":"4","56":"16.1","57":"26.8","58":"1.8","59":"6.9","60":"5.1","61":"0.5","62":"3.1","63":"2.6","64":"5","65":"5","66":"5","67":"5","68":"5","69":"5","70":"5","71":"5","72":"5","_rn_":"4"},{"1":"4620124.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"5729","7":"0.020820044","8":"0.047056282","9":"0.02972110","10":"0.0401421555","11":"0.02970024","12":"0.039865255","13":"FALSE","14":"TRUE","15":"Not gentrified","16":"TRUE","17":"TRUE","18":"Gentrified","19":"TRUE","20":"TRUE","21":"Gentrified","22":"55.86690","23":"36.6","24":"51.55172","25":"47.0","26":"41.18151","27":"47.58","28":"5169.698","29":"51.69698","30":"781.5758","31":"0.0000","32":"0.0000","33":"8","34":"0","35":"0","36":"15.11840","37":"0.00000","38":"0.00000","39":"781.5758193","40":"15.118404503","41":"37.7","42":"12","43":"9","44":"23.4","45":"32.3","46":"13","47":"10","48":"25.9","49":"34.2","50":"15","51":"11","52":"29.4","53":"38.8","54":"14","55":"11","56":"28.3","57":"37.6","58":"1.9","59":"6.5","60":"4.6","61":"2.5","62":"6.0","63":"3.5","64":"5","65":"4","66":"4","67":"5","68":"5","69":"5","70":"5","71":"5","72":"5","_rn_":"5"},{"1":"4620306.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"2847","7":"0.030925210","8":"0.054219900","9":"0.03587117","10":"0.0427824009","11":"0.04348091","12":"0.040864073","13":"TRUE","14":"TRUE","15":"Gentrified","16":"TRUE","17":"TRUE","18":"Gentrified","19":"TRUE","20":"TRUE","21":"Gentrified","22":"16.21129","23":"24.4","24":"19.69981","25":"29.3","26":"14.71049","27":"32.79","28":"3734.591","29":"37.34591","30":"1086.4298","31":"537.5893","32":"537.5893","33":"11","34":"5","35":"5","36":"29.09100","37":"14.39486","38":"14.39486","39":"548.8405550","40":"14.696136132","41":"22.3","42":"7","43":"2","44":"9.6","45":"33.0","46":"8","47":"3","48":"11.7","49":"36.3","50":"9","51":"3","52":"13.7","53":"39.6","54":"7","55":"3","56":"14.0","57":"30.1","58":"3.3","59":"6.6","60":"3.3","61":"2.1","62":"4.1","63":"2.0","64":"5","65":"5","66":"5","67":"5","68":"5","69":"4","70":"3","71":"3","72":"3","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["CT_UID"],"name":[1],"type":["chr"],"align":["left"]},{"label":["CD_UID"],"name":[2],"type":["chr"],"align":["left"]},{"label":["CSD_UID"],"name":[3],"type":["chr"],"align":["left"]},{"label":["interact_aoi"],"name":[4],"type":["lgl"],"align":["right"]},{"label":["zone"],"name":[5],"type":["chr"],"align":["left"]},{"label":["Population"],"name":[6],"type":["int"],"align":["right"]},{"label":["wSCOREMAT.2016"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["wSCORESOC.2016"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["wSCOREMAT.2011"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["wSCORESOC.2011"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["wSCOREMAT.2006"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["wSCORESOC.2006"],"name":[12],"type":["dbl"],"align":["right"]},{"label":["gentrified_2016_2011"],"name":[13],"type":["lgl"],"align":["right"]},{"label":["gentrifiable_2011"],"name":[14],"type":["lgl"],"align":["right"]},{"label":["gentrif_status_2016"],"name":[15],"type":["fct"],"align":["left"]},{"label":["gentrified_2011_2006"],"name":[16],"type":["lgl"],"align":["right"]},{"label":["gentrifiable_2006"],"name":[17],"type":["lgl"],"align":["right"]},{"label":["gentrif_status_2011"],"name":[18],"type":["fct"],"align":["left"]},{"label":["gentrified_2006_2001"],"name":[19],"type":["lgl"],"align":["right"]},{"label":["gentrifiable_2001"],"name":[20],"type":["lgl"],"align":["right"]},{"label":["gentrif_status_2006"],"name":[21],"type":["fct"],"align":["left"]},{"label":["vis_minority_2016"],"name":[22],"type":["dbl"],"align":["right"]},{"label":["low_income_2016"],"name":[23],"type":["dbl"],"align":["right"]},{"label":["vis_minority_2011"],"name":[24],"type":["dbl"],"align":["right"]},{"label":["low_income_2011"],"name":[25],"type":["dbl"],"align":["right"]},{"label":["vis_minority_2006"],"name":[26],"type":["dbl"],"align":["right"]},{"label":["low_income_2006"],"name":[27],"type":["dbl"],"align":["right"]},{"label":["street_length"],"name":[28],"type":["dbl"],"align":["right"]},{"label":["street_length.hm"],"name":[29],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_total.2016ct"],"name":[30],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_total.2011ct"],"name":[31],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_total.2006ct"],"name":[32],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_total.hm.2016ct"],"name":[33],"type":["int"],"align":["right"]},{"label":["Bike_lane_total.hm.2011ct"],"name":[34],"type":["int"],"align":["right"]},{"label":["Bike_lane_total.hm.2006ct"],"name":[35],"type":["int"],"align":["right"]},{"label":["Bike_lane.by.street.2016ct"],"name":[36],"type":["dbl"],"align":["right"]},{"label":["Bike_lane.by.street.2011ct"],"name":[37],"type":["dbl"],"align":["right"]},{"label":["Bike_lane.by.street.2006ct"],"name":[38],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_diff.2011.2016ct"],"name":[39],"type":["dbl"],"align":["right"]},{"label":["Bike_lane_diff.by.street.2011.2016ct"],"name":[40],"type":["dbl"],"align":["right"]},{"label":["ct_area_hct"],"name":[41],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_2011ct"],"name":[42],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_high_2011ct"],"name":[43],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_high_2011ct"],"name":[44],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_2011ct"],"name":[45],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_2015ct"],"name":[46],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_high_2015ct"],"name":[47],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_high_2015ct"],"name":[48],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_2015ct"],"name":[49],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_2017ct"],"name":[50],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_high_2017ct"],"name":[51],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_high_2017ct"],"name":[52],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_2017ct"],"name":[53],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_2019ct"],"name":[54],"type":["dbl"],"align":["right"]},{"label":["area_esp_vert_high_2019ct"],"name":[55],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_high_2019ct"],"name":[56],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_2019ct"],"name":[57],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_2011.2015ct"],"name":[58],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_2011.2017ct"],"name":[59],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_2015.2017ct"],"name":[60],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_high_2011.2015ct"],"name":[61],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_high_2011.2017ct"],"name":[62],"type":["dbl"],"align":["right"]},{"label":["pct_esp_vert_diff_high_2015.2017ct"],"name":[63],"type":["dbl"],"align":["right"]},{"label":["wSCOREMAT.2006.Q"],"name":[64],"type":["int"],"align":["right"]},{"label":["wSCOREMAT.2011.Q"],"name":[65],"type":["int"],"align":["right"]},{"label":["wSCOREMAT.2016.Q"],"name":[66],"type":["int"],"align":["right"]},{"label":["low_income_2006.Q"],"name":[67],"type":["int"],"align":["right"]},{"label":["low_income_2011.Q"],"name":[68],"type":["int"],"align":["right"]},{"label":["low_income_2016.Q"],"name":[69],"type":["int"],"align":["right"]},{"label":["vis_minority_2006.Q"],"name":[70],"type":["int"],"align":["right"]},{"label":["vis_minority_2011.Q"],"name":[71],"type":["int"],"align":["right"]},{"label":["vis_minority_2016.Q"],"name":[72],"type":["int"],"align":["right"]},{"label":["change.2011.2016.2states"],"name":[73],"type":["lgl"],"align":["right"]},{"label":["change.2011.2016.3states"],"name":[74],"type":["chr"],"align":["left"]}],"data":[{"1":"4620149.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"3161","7":"-0.049248759","8":"0.057190321","9":"-0.02978953","10":"0.0594421910","11":"-0.02369179","12":"0.037338622","13":"FALSE","14":"TRUE","15":"Not gentrified","16":"TRUE","17":"TRUE","18":"Gentrified","19":"TRUE","20":"TRUE","21":"Gentrified","22":"15.35948","23":"22.0","24":"15.54828","25":"30.8","26":"12.59843","27":"23.91","28":"3154.205","29":"31.54205","30":"1208.5717","31":"688.5246","32":"577.1925","33":"12","34":"7","35":"6","36":"38.31620","37":"21.82878","38":"18.29914","39":"520.0470959","40":"16.487419915","41":"13.8","42":"3","43":"3","44":"21.8","45":"24.8","46":"4","47":"4","48":"26.4","49":"28.7","50":"4","51":"4","52":"29.2","53":"31.4","54":"4","55":"4","56":"28.7","57":"32.1","58":"3.9","59":"6.6","60":"2.7","61":"4.6","62":"7.4","63":"2.8","64":"2","65":"1","66":"1","67":"4","68":"5","69":"4","70":"3","71":"3","72":"3","73":"FALSE","74":"No new bike lane","_rn_":"1"},{"1":"4620185.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"5217","7":"0.002586202","8":"0.052690760","9":"0.01135986","10":"0.0457714081","11":"0.02030788","12":"0.046134103","13":"TRUE","14":"TRUE","15":"Gentrified","16":"TRUE","17":"TRUE","18":"Gentrified","19":"FALSE","20":"TRUE","21":"Not gentrified","22":"16.13217","23":"20.1","24":"17.59082","25":"27.6","26":"12.25490","27":"23.29","28":"7641.672","29":"76.41672","30":"1069.1814","31":"1069.4042","32":"0.0000","33":"11","34":"11","35":"0","36":"13.99146","37":"13.99437","38":"0.00000","39":"-0.2227721","40":"-0.002915228","41":"39.3","42":"12","43":"8","44":"20.6","45":"29.4","46":"11","47":"8","48":"20.0","49":"29.0","50":"13","51":"10","52":"24.3","53":"33.7","54":"14","55":"9","56":"22.1","57":"34.7","58":"-0.4","59":"4.3","60":"4.7","61":"-0.6","62":"3.7","63":"4.3","64":"4","65":"3","66":"3","67":"4","68":"4","69":"4","70":"3","71":"3","72":"3","73":"FALSE","74":"No new bike lane","_rn_":"2"},{"1":"4620222.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"3587","7":"0.082313210","8":"0.014476934","9":"0.09282443","10":"0.0052905841","11":"0.09663123","12":"-0.004537943","13":"FALSE","14":"TRUE","15":"Not gentrified","16":"TRUE","17":"TRUE","18":"Gentrified","19":"FALSE","20":"TRUE","21":"Not gentrified","22":"57.91610","23":"35.1","24":"57.56359","25":"39.5","26":"50.00000","27":"41.79","28":"4155.251","29":"41.55251","30":"1059.5655","31":"0.0000","32":"0.0000","33":"11","34":"0","35":"0","36":"25.49944","37":"0.00000","38":"0.00000","39":"1059.5654725","40":"25.499435195","41":"19.9","42":"5","43":"2","44":"11.7","45":"24.9","46":"5","47":"2","48":"11.4","49":"24.0","50":"6","51":"3","52":"14.2","53":"29.6","54":"5","55":"3","56":"13.6","57":"26.9","58":"-0.9","59":"4.7","60":"5.6","61":"-0.3","62":"2.5","63":"2.8","64":"5","65":"5","66":"5","67":"5","68":"5","69":"5","70":"5","71":"5","72":"5","73":"TRUE","74":"New bike lanes","_rn_":"3"},{"1":"4620117.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"4359","7":"0.034245133","8":"0.006085192","9":"0.06315153","10":"0.0009442053","11":"0.03645207","12":"0.010056370","13":"TRUE","14":"TRUE","15":"Gentrified","16":"FALSE","17":"TRUE","18":"Not gentrified","19":"TRUE","20":"TRUE","21":"Gentrified","22":"84.76071","23":"27.5","24":"80.62201","25":"40.6","26":"73.28520","27":"41.64","28":"3360.624","29":"33.60624","30":"0.0000","31":"0.0000","32":"0.0000","33":"0","34":"0","35":"0","36":"0.00000","37":"0.00000","38":"0.00000","39":"0.0000000","40":"0.000000000","41":"27.1","42":"6","43":"4","44":"14.7","45":"20.9","46":"6","47":"4","48":"15.2","49":"22.7","50":"8","51":"5","52":"17.8","53":"27.8","54":"7","55":"4","56":"16.1","57":"26.8","58":"1.8","59":"6.9","60":"5.1","61":"0.5","62":"3.1","63":"2.6","64":"5","65":"5","66":"5","67":"5","68":"5","69":"5","70":"5","71":"5","72":"5","73":"FALSE","74":"No bike lane","_rn_":"4"},{"1":"4620124.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"5729","7":"0.020820044","8":"0.047056282","9":"0.02972110","10":"0.0401421555","11":"0.02970024","12":"0.039865255","13":"FALSE","14":"TRUE","15":"Not gentrified","16":"TRUE","17":"TRUE","18":"Gentrified","19":"TRUE","20":"TRUE","21":"Gentrified","22":"55.86690","23":"36.6","24":"51.55172","25":"47.0","26":"41.18151","27":"47.58","28":"5169.698","29":"51.69698","30":"781.5758","31":"0.0000","32":"0.0000","33":"8","34":"0","35":"0","36":"15.11840","37":"0.00000","38":"0.00000","39":"781.5758193","40":"15.118404503","41":"37.7","42":"12","43":"9","44":"23.4","45":"32.3","46":"13","47":"10","48":"25.9","49":"34.2","50":"15","51":"11","52":"29.4","53":"38.8","54":"14","55":"11","56":"28.3","57":"37.6","58":"1.9","59":"6.5","60":"4.6","61":"2.5","62":"6.0","63":"3.5","64":"5","65":"4","66":"4","67":"5","68":"5","69":"5","70":"5","71":"5","72":"5","73":"TRUE","74":"New bike lanes","_rn_":"5"},{"1":"4620306.00","2":"2466","3":"2466023","4":"TRUE","5":"Montreal","6":"2847","7":"0.030925210","8":"0.054219900","9":"0.03587117","10":"0.0427824009","11":"0.04348091","12":"0.040864073","13":"TRUE","14":"TRUE","15":"Gentrified","16":"TRUE","17":"TRUE","18":"Gentrified","19":"TRUE","20":"TRUE","21":"Gentrified","22":"16.21129","23":"24.4","24":"19.69981","25":"29.3","26":"14.71049","27":"32.79","28":"3734.591","29":"37.34591","30":"1086.4298","31":"537.5893","32":"537.5893","33":"11","34":"5","35":"5","36":"29.09100","37":"14.39486","38":"14.39486","39":"548.8405550","40":"14.696136132","41":"22.3","42":"7","43":"2","44":"9.6","45":"33.0","46":"8","47":"3","48":"11.7","49":"36.3","50":"9","51":"3","52":"13.7","53":"39.6","54":"7","55":"3","56":"14.0","57":"30.1","58":"3.3","59":"6.6","60":"3.3","61":"2.1","62":"4.1","63":"2.0","64":"5","65":"5","66":"5","67":"5","68":"5","69":"4","70":"3","71":"3","72":"3","73":"FALSE","74":"No new bike lane","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 <pre class="r"><code>write.csv(bei_df, &quot;data/_results/bei_equity.csv&quot;, na=&quot;&quot;, row.names = FALSE)
@@ -3586,7 +3598,6 @@ round(exp(res.lmm[[&quot;fixef&quot;]]), 3) %&gt;%
 <h2 class="tabset"><span class="header-section-number">6.1</span> UI vs Pampalon | material</h2>
 <div id="bike-lane-length-change-hurdle" class="section level3" number="6.1.1">
 <h3><span class="header-section-number">6.1.1</span> Bike lane length change (hurdle)</h3>
-<p>Bike lane length change</p>
 <pre class="r"><code>f &lt;- Bike_lane_total.hm.2016ct ~ wSCOREMAT.2011.Q * Bike_lane.by.street.2011ct + offset(log(street_length.hm))
 
 clean_bei &lt;- tidy_df(bei_df_aoi, CT16, f)
@@ -3622,7 +3633,21 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 <pre class="r"><code># ci.lmm.zero &lt;- confint(res.lmm.zero, &#39;wSCOREMAT.2011.Q&#39;) # Not converging
 # ci.lmm.zero.i &lt;- confint(res.lmm.zero, &#39;wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct&#39;)
 
-if (plot.resid) {
+# Manually compute CI (see https://stats.stackexchange.com/questions/512789/converting-between-confidence-interval-and-standard-error)
+bt &lt;- smy.zero$beta_table
+lower &lt;- bt[,1] - bt[,2] * 1.959964
+names(lower) &lt;- paste(&#39;lower&#39;, names(lower))
+upper &lt;- bt[,1] + bt[,2] * 1.959964
+names(upper) &lt;- paste(&#39;upper&#39;, names(upper))
+ci.lmm.zero &lt;- cbind(lower, upper)
+rownames(ci.lmm.zero) &lt;- rownames(bt)
+print(ci.lmm.zero)</code></pre>
+<pre><code>##                                                  lower      upper
+## (Intercept)                                 -6.7856968 -3.3724170
+## wSCOREMAT.2011.Q                            -0.3723756  0.4553285
+## Bike_lane.by.street.2011ct                  -1.0529751  8.9210966
+## wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct -1.5672386  0.7698642</code></pre>
+<pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.zero, plot = F)
   plot(simout)
 }
@@ -3740,12 +3765,33 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
-<pre class="r"><code># data.frame(wSCOREMAT.2011.Q = round(exp(ci.lmm.zero$interval), 3),
-#            `wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct` = round(exp(ci.lmm.zero.i$interval), 3),
-#            row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
-#   knitr::kable(caption=&quot;Zero model confidence interval&quot;)
-
-# Count model
+<pre class="r"><code>ci.lmm.zero[c(2,4),] %&gt;% 
+  data.frame() %&gt;% 
+  exp() %&gt;% 
+  knitr::kable(caption=&quot;Zero model confidence interval&quot;, digits=3)</code></pre>
+<table>
+<caption>Zero model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q</td>
+<td align="right">0.689</td>
+<td align="right">1.577</td>
+</tr>
+<tr class="even">
+<td align="left">wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct</td>
+<td align="right">0.209</td>
+<td align="right">2.159</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># Count model
 smy.cnt.bt &lt;- data.frame(smy.cnt$beta_table)
 round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
   data.frame(fixef = ., p.value = round(smy.cnt.bt$p.value, 3)) %&gt;%
@@ -4145,7 +4191,21 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 <pre class="r"><code># ci.lmm.zero &lt;- confint(res.lmm.zero, &#39;vis_minority_2011.Q&#39;)
 # ci.lmm.zero.i &lt;- confint(res.lmm.zero, &#39;vis_minority_2011.Q:Bike_lane.by.street.2011ct&#39;)
 
-# p-value not far from 0.05, use LRT to refine test
+# Manually compute CI (see https://stats.stackexchange.com/questions/512789/converting-between-confidence-interval-and-standard-error)
+bt &lt;- smy.zero$beta_table
+lower &lt;- bt[,1] - bt[,2] * 1.959964
+names(lower) &lt;- paste(&#39;lower&#39;, names(lower))
+upper &lt;- bt[,1] + bt[,2] * 1.959964
+names(upper) &lt;- paste(&#39;upper&#39;, names(upper))
+ci.lmm.zero &lt;- cbind(lower, upper)
+rownames(ci.lmm.zero) &lt;- rownames(bt)
+print(ci.lmm.zero)</code></pre>
+<pre><code>##                                                     lower       upper
+## (Intercept)                                    -4.9198346 -1.36188456
+## vis_minority_2011.Q                            -0.9490133 -0.04838061
+## Bike_lane.by.street.2011ct                     -3.2884041 13.22078203
+## vis_minority_2011.Q:Bike_lane.by.street.2011ct -2.3826317  1.33597310</code></pre>
+<pre class="r"><code># p-value not far from 0.05, use LRT to refine test
 res.lmm.0 &lt;- update(res.lmm.zero, . ~ . - vis_minority_2011.Q)
 LRT(res.lmm.0, res.lmm.zero)</code></pre>
 <pre><code>##      chi2_LR df    p_value
@@ -4265,12 +4325,33 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
-<pre class="r"><code># data.frame(vis_minority_2011.Q = round(exp(ci.lmm.zero$interval), 3),
-#            `vis_minority_2011.Q:Bike_lane.by.street.2011ct` = round(exp(ci.lmm.zero.i$interval), 3),
-#            row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
-#   knitr::kable(caption=&quot;Zero model confidence interval&quot;)
-
-# Count model
+<pre class="r"><code>ci.lmm.zero[c(2,4),] %&gt;% 
+  data.frame() %&gt;% 
+  exp() %&gt;% 
+  knitr::kable(caption=&quot;Zero model confidence interval&quot;, digits=3)</code></pre>
+<table>
+<caption>Zero model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q</td>
+<td align="right">0.387</td>
+<td align="right">0.953</td>
+</tr>
+<tr class="even">
+<td align="left">vis_minority_2011.Q:Bike_lane.by.street.2011ct</td>
+<td align="right">0.092</td>
+<td align="right">3.804</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># Count model
 smy.cnt.bt &lt;- data.frame(smy.cnt$beta_table)
 round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
   data.frame(fixef = ., p.value = round(smy.cnt.bt$p.value, 3)) %&gt;%
@@ -4682,9 +4763,30 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 # ci.1.lmm.zero &lt;- confint(res.lmm.zero, varfixef.zero[2])
 # ci.2.lmm.zero &lt;- confint(res.lmm.zero, varfixef.zero[3])
 
-
-
-if (plot.resid) {
+# Manually compute CI (see https://stats.stackexchange.com/questions/512789/converting-between-confidence-interval-and-standard-error)
+bt &lt;- smy.zero$beta_table
+lower &lt;- bt[,1] - bt[,2] * 1.959964
+names(lower) &lt;- paste(&#39;lower&#39;, names(lower))
+upper &lt;- bt[,1] + bt[,2] * 1.959964
+names(upper) &lt;- paste(&#39;upper&#39;, names(upper))
+ci.lmm.zero &lt;- cbind(lower, upper)
+rownames(ci.lmm.zero) &lt;- rownames(bt)
+print(ci.lmm.zero)</code></pre>
+<pre><code>##                                                                    lower
+## (Intercept)                                                    -6.009078
+## gentrif_status_2016Gentrified                                  -1.098685
+## gentrif_status_2016Non eligible                                -2.100875
+## Bike_lane.by.street.2011ct                                 -18697.621907
+## gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct   -19755.005061
+## gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct -19753.667318
+##                                                                    upper
+## (Intercept)                                                   -3.7513654
+## gentrif_status_2016Gentrified                                  1.4313003
+## gentrif_status_2016Non eligible                                0.9164636
+## Bike_lane.by.street.2011ct                                 19756.8404143
+## gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct   18699.4586692
+## gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct 18700.7960624</code></pre>
+<pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.zero, plot = F)
   plot(simout)
 }
@@ -4834,12 +4936,43 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 </tr>
 </tbody>
 </table>
-<pre class="r"><code># data.frame(gentrified_2016_2011TRUE = round(exp(ci.lmm.zero$interval), 3),
-#            `gentrified_2016_2011TRUE:Bike_lane.by.street.2011ct` = round(exp(ci.lmm.zero.i$interval), 3),
-#            row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
-#   knitr::kable(caption=&quot;Zero model confidence interval&quot;)
-
-# Count model
+<pre class="r"><code>ci.lmm.zero[c(2,3,5,6),] %&gt;% 
+  data.frame() %&gt;% 
+  exp() %&gt;% 
+  knitr::kable(caption=&quot;Zero model confidence interval&quot;, digits=3)</code></pre>
+<table>
+<caption>Zero model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">0.333</td>
+<td align="right">4.184</td>
+</tr>
+<tr class="even">
+<td align="left">gentrif_status_2016Non eligible</td>
+<td align="right">0.122</td>
+<td align="right">2.500</td>
+</tr>
+<tr class="odd">
+<td align="left">gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct</td>
+<td align="right">0.000</td>
+<td align="right">Inf</td>
+</tr>
+<tr class="even">
+<td align="left">gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct</td>
+<td align="right">0.000</td>
+<td align="right">Inf</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># Count model
 smy.cnt.bt &lt;- data.frame(smy.cnt$beta_table)
 round(exp(res.lmm.cnt[[&quot;fixef&quot;]]), 3) %&gt;%
   data.frame(fixef = ., p.value = round(smy.cnt.bt$p.value, 3)) %&gt;%
@@ -5316,7 +5449,27 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 # ci.lmm.zero.4.i &lt;- confint(res.lmm.zero, &#39;factor(wSCOREMAT.2011.Q)4:Bike_lane.by.street.2011ct&#39;)
 # ci.lmm.zero.5.i &lt;- confint(res.lmm.zero, &#39;factor(wSCOREMAT.2011.Q)5:Bike_lane.by.street.2011ct&#39;)
 
-if (plot.resid) {
+# Manually compute CI (see https://stats.stackexchange.com/questions/512789/converting-between-confidence-interval-and-standard-error)
+bt &lt;- smy.zero$beta_table
+lower &lt;- bt[,1] - bt[,2] * 1.959964
+names(lower) &lt;- paste(&#39;lower&#39;, names(lower))
+upper &lt;- bt[,1] + bt[,2] * 1.959964
+names(upper) &lt;- paste(&#39;upper&#39;, names(upper))
+ci.lmm.zero &lt;- cbind(lower, upper)
+rownames(ci.lmm.zero) &lt;- rownames(bt)
+print(ci.lmm.zero)</code></pre>
+<pre><code>##                                                              lower        upper
+## (Intercept)                                          -3.176951e+01 3.257861e+00
+## factor(wSCOREMAT.2011.Q)2                            -2.004476e+01 2.302961e+01
+## factor(wSCOREMAT.2011.Q)3                            -3.559626e+00 4.266098e+01
+## factor(wSCOREMAT.2011.Q)4                            -2.236240e+01 2.378345e+01
+## factor(wSCOREMAT.2011.Q)5                            -2.083780e+01 2.164691e+01
+## Bike_lane.by.street.2011ct                           -1.936377e+04 2.053112e+04
+## factor(wSCOREMAT.2011.Q)2:Bike_lane.by.street.2011ct -2.051543e+04 1.937953e+04
+## factor(wSCOREMAT.2011.Q)3:Bike_lane.by.street.2011ct -9.219986e+05 9.714160e+05
+## factor(wSCOREMAT.2011.Q)4:Bike_lane.by.street.2011ct -2.274054e+04 2.375447e+04
+## factor(wSCOREMAT.2011.Q)5:Bike_lane.by.street.2011ct -2.051731e+04 1.937761e+04</code></pre>
+<pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.zero, plot = F)
   plot(simout)
 }
@@ -6174,7 +6327,38 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 # ci.lmm.zero.4.i &lt;- confint(res.lmm.zero, &#39;factor(vis_minority_2011.Q)4:Bike_lane.by.street.2011ct&#39;)
 # ci.lmm.zero.5.i &lt;- confint(res.lmm.zero, &#39;factor(vis_minority_2011.Q)5:Bike_lane.by.street.2011ct&#39;)
 
-if (plot.resid) {
+# Manually compute CI (see https://stats.stackexchange.com/questions/512789/converting-between-confidence-interval-and-standard-error)
+bt &lt;- smy.zero$beta_table
+lower &lt;- bt[,1] - bt[,2] * 1.959964
+names(lower) &lt;- paste(&#39;lower&#39;, names(lower))
+upper &lt;- bt[,1] + bt[,2] * 1.959964
+names(upper) &lt;- paste(&#39;upper&#39;, names(upper))
+ci.lmm.zero &lt;- cbind(lower, upper)
+rownames(ci.lmm.zero) &lt;- rownames(bt)
+print(ci.lmm.zero)</code></pre>
+<pre><code>##                                                                 lower
+## (Intercept)                                                -4.9662174
+## factor(vis_minority_2011.Q)2                               -0.7361522
+## factor(vis_minority_2011.Q)3                               -1.0551810
+## factor(vis_minority_2011.Q)4                               -2.7175925
+## factor(vis_minority_2011.Q)5                               -2.6960217
+## Bike_lane.by.street.2011ct                               -128.4506849
+## factor(vis_minority_2011.Q)2:Bike_lane.by.street.2011ct -1222.9406865
+## factor(vis_minority_2011.Q)3:Bike_lane.by.street.2011ct  -188.4323522
+## factor(vis_minority_2011.Q)4:Bike_lane.by.street.2011ct  -968.8319099
+## factor(vis_minority_2011.Q)5:Bike_lane.by.street.2011ct  -188.2815866
+##                                                                 upper
+## (Intercept)                                             -3.146243e+00
+## factor(vis_minority_2011.Q)2                             1.940566e+00
+## factor(vis_minority_2011.Q)3                             1.409797e+00
+## factor(vis_minority_2011.Q)4                            -2.703756e-04
+## factor(vis_minority_2011.Q)5                            -3.556815e-01
+## Bike_lane.by.street.2011ct                               1.896903e+02
+## factor(vis_minority_2011.Q)2:Bike_lane.by.street.2011ct  1.620786e+03
+## factor(vis_minority_2011.Q)3:Bike_lane.by.street.2011ct  1.297270e+02
+## factor(vis_minority_2011.Q)4:Bike_lane.by.street.2011ct  1.486837e+03
+## factor(vis_minority_2011.Q)5:Bike_lane.by.street.2011ct  1.298667e+02</code></pre>
+<pre class="r"><code>if (plot.resid) {
   simout &lt;- simulateResiduals(fittedModel = res.lmm.zero, plot = F)
   plot(simout)
 }
@@ -6987,7 +7171,7 @@ data.frame(vis_minority_2011.Q.2 = round(exp(ci.lmm.2$interval), 3),
 clean_bei &lt;- tidy_df(bei_df_aoi, CT16, f)
 
 res.lmm.zero &lt;- fitme(I(Bike_lane_total.hm.2016ct != 0) ~ wSCOREMAT.2011.Q + Bike_lane.by.street.2011ct + offset(log(street_length.hm)) + adjacency(1|ct_no),
-                 data = clean_bei$df, adjMatrix = clean_bei$nbmatx,
+                  data = clean_bei$df, adjMatrix = clean_bei$nbmatx,
                  family = binomial())
 smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</code></pre>
 <pre><code>## formula: I(Bike_lane_total.hm.2016ct != 0) ~ wSCOREMAT.2011.Q + Bike_lane.by.street.2011ct + 
@@ -7014,8 +7198,20 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 ##                         logLik
 ## logL       (p_v(h)): -149.7328</code></pre>
 <pre class="r"><code># ci.lmm.zero &lt;- confint(res.lmm.zero, &#39;wSCOREMAT.2011.Q&#39;) # Not converging
-
-# Count model (Poisson)
+# Manually compute CI (see https://stats.stackexchange.com/questions/512789/converting-between-confidence-interval-and-standard-error)
+bt &lt;- smy.zero$beta_table
+lower &lt;- bt[,1] - bt[,2] * 1.959964
+names(lower) &lt;- paste(&#39;lower&#39;, names(lower))
+upper &lt;- bt[,1] + bt[,2] * 1.959964
+names(upper) &lt;- paste(&#39;upper&#39;, names(upper))
+ci.lmm.zero &lt;- cbind(lower, upper)
+rownames(ci.lmm.zero) &lt;- rownames(bt)
+print(ci.lmm.zero)</code></pre>
+<pre><code>##                                 lower      upper
+## (Intercept)                -6.5918014 -3.2217345
+## wSCOREMAT.2011.Q           -0.4143207  0.4023376
+## Bike_lane.by.street.2011ct  1.1287003  3.8635916</code></pre>
+<pre class="r"><code># Count model (Poisson)
 clean_bei.cnt &lt;- bei_df_aoi %&gt;%
   filter(Bike_lane_total.hm.2016ct != 0) %&gt;%
   tidy_df(CT16, f)
@@ -7089,6 +7285,28 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 <td align="left">Bike_lane.by.street.2011ct</td>
 <td align="right">12.136</td>
 <td align="right">0.000</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>ci.lmm.zero %&gt;% 
+  data.frame() %&gt;% 
+  slice(2) %&gt;%
+  exp() %&gt;% 
+  knitr::kable(caption=&quot;Zero model confidence interval&quot;, digits=3)</code></pre>
+<table>
+<caption>Zero model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">wSCOREMAT.2011.Q</td>
+<td align="right">0.661</td>
+<td align="right">1.495</td>
 </tr>
 </tbody>
 </table>
@@ -7368,8 +7586,20 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 ##                         logLik
 ## logL       (p_v(h)): -145.4916</code></pre>
 <pre class="r"><code># ci.lmm.zero &lt;- confint(res.lmm.zero, &#39;vis_minority_2011.Q&#39;) # Not converging
-
-# Count model (Poisson)
+# Manually compute CI (see https://stats.stackexchange.com/questions/512789/converting-between-confidence-interval-and-standard-error)
+bt &lt;- smy.zero$beta_table
+lower &lt;- bt[,1] - bt[,2] * 1.959964
+names(lower) &lt;- paste(&#39;lower&#39;, names(lower))
+upper &lt;- bt[,1] + bt[,2] * 1.959964
+names(upper) &lt;- paste(&#39;upper&#39;, names(upper))
+ci.lmm.zero &lt;- cbind(lower, upper)
+rownames(ci.lmm.zero) &lt;- rownames(bt)
+print(ci.lmm.zero)</code></pre>
+<pre><code>##                                lower       upper
+## (Intercept)                -4.805563 -1.17767746
+## vis_minority_2011.Q        -1.002032 -0.08073096
+## Bike_lane.by.street.2011ct  1.270430  4.52407931</code></pre>
+<pre class="r"><code># Count model (Poisson)
 clean_bei.cnt &lt;- bei_df_aoi %&gt;%
   filter(Bike_lane_total.hm.2016ct != 0) %&gt;%
   tidy_df(CT16, f)
@@ -7443,6 +7673,28 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 <td align="left">Bike_lane.by.street.2011ct</td>
 <td align="right">18.124</td>
 <td align="right">0.000</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>ci.lmm.zero %&gt;% 
+  data.frame() %&gt;% 
+  slice(2) %&gt;%
+  exp() %&gt;% 
+  knitr::kable(caption=&quot;Zero model confidence interval&quot;, digits=3)</code></pre>
+<table>
+<caption>Zero model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">vis_minority_2011.Q</td>
+<td align="right">0.367</td>
+<td align="right">0.922</td>
 </tr>
 </tbody>
 </table>
@@ -7722,8 +7974,21 @@ smy.zero &lt;- summary(res.lmm.zero, details = c(p_value=&quot;Wald&quot;))</cod
 # varfixef.zero &lt;- names(res.lmm.zero[[&#39;fixef&#39;]])
 # ci.1.lmm.zero &lt;- confint(res.lmm.zero, varfixef.zero[2])
 # ci.2.lmm.zero &lt;- confint(res.lmm.zero, varfixef.zero[3])
-
-# Count model (Poisson)
+# Manually compute CI (see https://stats.stackexchange.com/questions/512789/converting-between-confidence-interval-and-standard-error)
+bt &lt;- smy.zero$beta_table
+lower &lt;- bt[,1] - bt[,2] * 1.959964
+names(lower) &lt;- paste(&#39;lower&#39;, names(lower))
+upper &lt;- bt[,1] + bt[,2] * 1.959964
+names(upper) &lt;- paste(&#39;upper&#39;, names(upper))
+ci.lmm.zero &lt;- cbind(lower, upper)
+rownames(ci.lmm.zero) &lt;- rownames(bt)
+print(ci.lmm.zero)</code></pre>
+<pre><code>##                                     lower      upper
+## (Intercept)                     -5.578439 -3.3432538
+## gentrif_status_2016Gentrified   -1.656693  0.8725414
+## gentrif_status_2016Non eligible -2.392202  0.5755399
+## Bike_lane.by.street.2011ct       1.300204  4.4281284</code></pre>
+<pre class="r"><code># Count model (Poisson)
 clean_bei.cnt &lt;- bei_df_aoi %&gt;%
   filter(Bike_lane_total.hm.2016ct != 0) %&gt;%
   tidy_df(CT16, f)
@@ -7807,6 +8072,28 @@ round(exp(res.lmm.zero[[&quot;fixef&quot;]]), 3) %&gt;%
 <td align="left">Bike_lane.by.street.2011ct</td>
 <td align="right">17.534</td>
 <td align="right">0.000</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>ci.lmm.zero %&gt;% 
+  data.frame() %&gt;% 
+  slice(2) %&gt;%
+  exp() %&gt;% 
+  knitr::kable(caption=&quot;Zero model confidence interval&quot;, digits=3)</code></pre>
+<table>
+<caption>Zero model confidence interval</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">lower</th>
+<th align="right">upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">gentrif_status_2016Gentrified</td>
+<td align="right">0.191</td>
+<td align="right">2.393</td>
 </tr>
 </tbody>
 </table>
@@ -8869,6 +9156,8 @@ ggdraw() +
 </div>
 <div id="maps-of-bec-and-bei" class="section level2" number="10.2">
 <h2><span class="header-section-number">10.2</span> Maps of BEC and BEI</h2>
+<div id="greenness-5" class="section level3" number="10.2.1">
+<h3><span class="header-section-number">10.2.1</span> Greenness</h3>
 <pre class="r"><code># Green space
 g_bec_bike &lt;- ggplot() +
    geom_sf(data=filter(bike_lane_changes, interact_aoi), mapping = aes(fill=as.numeric(Bike_lane.by.street.2011ct)), lwd = 0) +
@@ -8938,6 +9227,20 @@ pcol2 &lt;- plot_grid(
 plot_grid(pcol1, pcol2, nrow=1)</code></pre>
 <p><img src="BEI_equity_paper.final.aoiOK_img/BEC-BEI_maps.png" /></p>
 </div>
+<div id="bike-lanes" class="section level3" number="10.2.2">
+<h3><span class="header-section-number">10.2.2</span> Bike lanes</h3>
+<pre class="r"><code># Create grid of maps
+plot_grid(
+  g_bec_bike + theme_void(), 
+  g_bei_bike + theme_void(),
+  align = &quot;vh&quot;,
+  labels = c(&quot;A&quot;, &quot;B&quot;),
+  hjust = -30,
+  ncol = 1
+)</code></pre>
+<p><img src="BEI_equity_paper.final.aoiOK_img/BEC-BEI_maps.bikes.png" /></p>
+</div>
+</div>
 <div id="ses-and-bei-outcomes" class="section level2" number="10.3">
 <h2><span class="header-section-number">10.3</span> SES and BEI outcomes</h2>
 <pre class="r"><code># Extract SES and BEI in 2011
@@ -8950,6 +9253,7 @@ plot_grid(pcol1, pcol2, nrow=1)</code></pre>
             `% visible minorities` = vis_minority_2011,
             `gentrified` = gentrified_2016_2011,
             `Bike lane` = Bike_lane_total.2011ct &gt; 0,
+            `No bike lane` = Bike_lane_total.2011ct == 0,
             `Bike lane length (hm)` = Bike_lane_total.2011ct/100,
             `% Bike lane to streets` = Bike_lane.by.street.2011ct,
             `Green space area (ha)` = area_esp_vert_2011ct,
@@ -8963,6 +9267,7 @@ plot_grid(pcol1, pcol2, nrow=1)</code></pre>
             zone = zone,
             CT_UID = CT_UID,
             `Bike lane` = Bike_lane_total.2016ct &gt; 0,
+            `No bike lane` = Bike_lane_total.2016ct == 0,
             `Bike lane length (hm)` = Bike_lane_total.2016ct/100,
             `% Bike lane to streets` = Bike_lane.by.street.2016ct,
             `Green space area (ha)` = area_esp_vert_2017ct,
@@ -8974,7 +9279,8 @@ plot_grid(pcol1, pcol2, nrow=1)</code></pre>
   group_by(year) %&gt;%
   summarize(across(where(is.numeric), median, na.rm=TRUE), 
             `% gentrified` = 100 * sum(`gentrified`, na.rm = TRUE) / n(),
-            `Bike lane presence` = sum(`Bike lane`))</code></pre>
+            `Bike lane presence` = sum(`Bike lane`),
+            `Bike lane absence` = sum(`No bike lane`))</code></pre>
 <pre><code>## Warning: There was 1 warning in `summarize()`.
 ## ℹ In argument: `across(where(is.numeric), median, na.rm = TRUE)`.
 ## ℹ In group 1: `year = &quot;2011&quot;`.
@@ -9005,6 +9311,7 @@ tab1 &lt;- inner_join(.tab1_med, .tab1_p25, by=&quot;year&quot;, suffix = c(&quo
             `% gentrified CTs` = case_when(year == &quot;2016&quot; ~ &quot;&quot;, 
                                            TRUE ~ as.character(round(`% gentrified`, 1))),
             `Bike lane presence (N)` = as.character(`Bike lane presence`),
+            `Bike lane absence (N)` = as.character(`Bike lane absence`),
             `Bike lane length (hm)` = paste0(round(`Bike lane length (hm)`,1), &quot; (&quot;, round(`Bike lane length (hm) p25`,1), &quot; - &quot;, round(`Bike lane length (hm) p75`,1), &quot;)&quot;),
             `% Bike lane to streets` = paste0(round(`% Bike lane to streets`,1), &quot; (&quot;, round(`% Bike lane to streets p25`,1), &quot; - &quot;, round(`% Bike lane to streets p75`,1), &quot;)&quot;),
             `Green space area (ha)` = paste0(round(`Green space area (ha)`,1), &quot; (&quot;, round(`Green space area (ha) p25`,1), &quot; - &quot;, round(`Green space area (ha) p75`,1), &quot;)&quot;),
@@ -9080,6 +9387,17 @@ Bike lane presence (N)
 </td>
 <td style="text-align:left;">
 576
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Bike lane absence (N)
+</td>
+<td style="text-align:left;">
+202
+</td>
+<td style="text-align:left;">
+113
 </td>
 </tr>
 <tr>
@@ -10291,9 +10609,9 @@ plot_grid(prow1, prow2, ncol=1)</code></pre>
 </div>
 <div id="annexes" class="section level1" number="11">
 <h1><span class="header-section-number">11</span> Annexes</h1>
-<pre><code>## R version 4.1.2 (2021-11-01)
+<pre><code>## R version 4.1.3 (2022-03-10)
 ## Platform: x86_64-apple-darwin17.0 (64-bit)
-## Running under: macOS Big Sur 10.16
+## Running under: macOS Big Sur/Monterey 10.16
 ## 
 ## Matrix products: default
 ## BLAS:   /Library/Frameworks/R.framework/Versions/4.1/Resources/lib/libRblas.0.dylib
@@ -10310,48 +10628,47 @@ plot_grid(prow1, prow2, ncol=1)</code></pre>
 ##  [1] cancensus_0.5.5  stringr_1.5.0    DHARMa_0.4.5     stargazer_5.2.3 
 ##  [5] spaMM_4.1.20     cachem_1.0.6     memoise_2.0.1    spatialreg_1.2-5
 ##  [9] spdep_1.2-5      spData_2.0.1     sp_1.5-0         lme4_1.1-31     
-## [13] Matrix_1.5-1     cowplot_1.1.1    biscale_1.0.0    openxlsx_4.2.5  
+## [13] Matrix_1.4-0     cowplot_1.1.1    biscale_1.0.0    openxlsx_4.2.5  
 ## [17] RPostgres_1.4.5  DBI_1.1.3        ggsn_0.5.0       ggmap_3.0.1     
 ## [21] ggplot2_3.4.1    stars_0.5-5      abind_1.4-5      sf_1.0-9        
 ## [25] tidyr_1.3.0      dplyr_1.1.0     
 ## 
 ## loaded via a namespace (and not attached):
-##   [1] minqa_1.2.4           colorspace_2.0-3      deldir_1.0-6         
-##   [4] ellipsis_0.3.2        class_7.3-20          rstudioapi_0.14      
-##   [7] proxy_0.4-27          farver_2.1.1          bit64_4.0.5          
-##  [10] RSpectra_0.16-1       fansi_1.0.3           lubridate_1.9.0      
-##  [13] xml2_1.3.3            codetools_0.2-18      splines_4.1.2        
-##  [16] knitr_1.41            jsonlite_1.8.0        nloptr_2.0.3         
-##  [19] png_0.1-7             readr_2.1.3           compiler_4.1.2       
-##  [22] httr_1.4.4            fastmap_1.1.0         cli_3.6.0            
-##  [25] s2_1.1.0              ROI.plugin.glpk_1.0-0 htmltools_0.5.3      
-##  [28] tools_4.1.2           coda_0.19-4           gtable_0.3.0         
-##  [31] glue_1.6.2            wk_0.6.0              gmodels_2.18.1.1     
-##  [34] Rcpp_1.0.9            slam_0.1-50           jquerylib_0.1.4      
-##  [37] raster_3.5-21         vctrs_0.5.2           svglite_2.1.0        
-##  [40] gdata_2.18.0.1        nlme_3.1-161          lwgeom_0.2-11        
-##  [43] xfun_0.36             rvest_1.0.3           timechange_0.2.0     
-##  [46] lifecycle_1.0.3       gtools_3.9.3          terra_1.5-21         
-##  [49] ROI_1.0-0             LearnBayes_2.15.1     MASS_7.3-58.1        
-##  [52] scales_1.2.1          vroom_1.6.0           hms_1.1.2            
-##  [55] parallel_4.1.2        expm_0.999-6          RColorBrewer_1.1-3   
-##  [58] yaml_2.3.5            pbapply_1.5-0         sass_0.4.2           
-##  [61] stringi_1.7.8         highr_0.9             maptools_1.1-4       
-##  [64] e1071_1.7-11          boot_1.3-28           zip_2.2.0            
-##  [67] systemfonts_1.0.4     RgoogleMaps_1.4.5.3   rlang_1.0.6          
-##  [70] pkgconfig_2.0.3       bitops_1.0-7          evaluate_0.16        
-##  [73] lattice_0.20-45       purrr_1.0.1           labeling_0.4.2       
-##  [76] bit_4.0.4             tidyselect_1.2.0      geojsonsf_2.0.3      
-##  [79] plyr_1.8.7            magrittr_2.0.3        R6_2.5.1             
-##  [82] generics_0.1.3        mgcv_1.8-40           pillar_1.8.1         
-##  [85] foreign_0.8-82        withr_2.5.0           units_0.8-0          
-##  [88] tibble_3.1.8          crayon_1.5.1          Rglpk_0.6-4          
-##  [91] KernSmooth_2.23-20    utf8_1.2.2            tzdb_0.3.0           
-##  [94] rmarkdown_2.20        jpeg_0.1-9            blob_1.2.3           
-##  [97] forcats_1.0.0         webshot_0.5.3         digest_0.6.29        
-## [100] classInt_0.4-7        numDeriv_2016.8-1.1   munsell_0.5.0        
-## [103] viridisLite_0.4.1     kableExtra_1.3.4      registry_0.5-1       
-## [106] bslib_0.4.0</code></pre>
+##   [1] minqa_1.2.4         colorspace_2.0-3    deldir_1.0-6       
+##   [4] ellipsis_0.3.2      class_7.3-20        rstudioapi_0.14    
+##   [7] proxy_0.4-27        farver_2.1.1        bit64_4.0.5        
+##  [10] RSpectra_0.16-1     fansi_1.0.3         lubridate_1.9.0    
+##  [13] xml2_1.3.3          codetools_0.2-18    splines_4.1.3      
+##  [16] knitr_1.41          jsonlite_1.8.0      nloptr_2.0.3       
+##  [19] png_0.1-7           readr_2.1.3         compiler_4.1.3     
+##  [22] httr_1.4.4          fastmap_1.1.0       cli_3.6.0          
+##  [25] s2_1.1.0            htmltools_0.5.3     tools_4.1.3        
+##  [28] coda_0.19-4         gtable_0.3.0        glue_1.6.2         
+##  [31] wk_0.6.0            gmodels_2.18.1.1    Rcpp_1.0.9         
+##  [34] slam_0.1-50         jquerylib_0.1.4     raster_3.5-21      
+##  [37] vctrs_0.5.2         svglite_2.1.0       gdata_2.18.0.1     
+##  [40] nlme_3.1-155        lwgeom_0.2-11       xfun_0.36          
+##  [43] rvest_1.0.3         timechange_0.2.0    lifecycle_1.0.3    
+##  [46] gtools_3.9.3        terra_1.5-21        ROI_1.0-0          
+##  [49] LearnBayes_2.15.1   MASS_7.3-55         scales_1.2.1       
+##  [52] vroom_1.6.0         hms_1.1.2           parallel_4.1.3     
+##  [55] expm_0.999-6        RColorBrewer_1.1-3  yaml_2.3.5         
+##  [58] pbapply_1.5-0       sass_0.4.2          stringi_1.7.8      
+##  [61] highr_0.9           maptools_1.1-4      e1071_1.7-11       
+##  [64] boot_1.3-28         zip_2.2.0           systemfonts_1.0.4  
+##  [67] RgoogleMaps_1.4.5.3 rlang_1.0.6         pkgconfig_2.0.3    
+##  [70] bitops_1.0-7        evaluate_0.16       lattice_0.20-45    
+##  [73] purrr_1.0.1         labeling_0.4.2      bit_4.0.4          
+##  [76] tidyselect_1.2.0    geojsonsf_2.0.3     plyr_1.8.7         
+##  [79] magrittr_2.0.3      R6_2.5.1            generics_0.1.3     
+##  [82] pillar_1.8.1        foreign_0.8-82      withr_2.5.0        
+##  [85] units_0.8-0         tibble_3.1.8        crayon_1.5.1       
+##  [88] KernSmooth_2.23-20  utf8_1.2.2          tzdb_0.3.0         
+##  [91] rmarkdown_2.20      jpeg_0.1-9          blob_1.2.3         
+##  [94] forcats_1.0.0       webshot_0.5.3       digest_0.6.29      
+##  [97] classInt_0.4-7      numDeriv_2016.8-1.1 munsell_0.5.0      
+## [100] viridisLite_0.4.1   kableExtra_1.3.4    registry_0.5-1     
+## [103] bslib_0.4.0</code></pre>
 </div>
 
 
