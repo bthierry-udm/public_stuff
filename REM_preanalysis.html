@@ -14,7 +14,7 @@
 
 <title>REM Ethica EMA</title>
 
-<script src="REM_preanalysis_files/header-attrs-2.20/header-attrs.js"></script>
+<script src="REM_preanalysis_files/header-attrs-2.21/header-attrs.js"></script>
 <script src="REM_preanalysis_files/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="REM_preanalysis_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
@@ -39,6 +39,8 @@
 <script src="REM_preanalysis_files/highlightjs-9.12.0/highlight.js"></script>
 <link href="REM_preanalysis_files/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
 <script src="REM_preanalysis_files/pagedtable-1.1/js/pagedtable.js"></script>
+<script src="REM_preanalysis_files/kePrint-0.0.1/kePrint.js"></script>
+<link href="REM_preanalysis_files/lightable-0.0.1/lightable.css" rel="stylesheet" />
 
 <style type="text/css">
   code{white-space: pre-wrap;}
@@ -253,13 +255,14 @@ div.tocify {
 
 <h1 class="title toc-ignore">REM Ethica EMA</h1>
 <h4 class="author">B. Thierry, Spherelab</h4>
-<h4 class="date">10 February, 2023</h4>
+<h4 class="date">30 August, 2023</h4>
 
 </div>
 
 
 <div id="load-ema-data" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Load EMA data</h1>
+<p><em>NB</em> Each wave is loaded in the database thanks to dedicated scripts (see in each wave data folder for details)</p>
 <div id="wave-1" class="section level2" number="1.1">
 <h2><span class="header-section-number">1.1</span> Wave 1</h2>
 <pre class="sql"><code>SELECT tram.uniqueid AS tram_id,
@@ -336,7 +339,8 @@ head(REM1.ema)</code></pre>
 </div>
 <div id="wave-2" class="section level2" number="1.2">
 <h2><span class="header-section-number">1.2</span> Wave 2</h2>
-<pre class="sql"><code>SELECT tr.uniqueid AS tram_id,
+<pre class="sql"><code>SELECT vpl.&quot;W1uniqueID&quot; AS tram_id, 
+  tr.uniqueid AS tram_id_w2,
     ema.&quot;Name&quot;::int AS ethica_id,
     &quot;Device ID&quot; AS device_id,
     2 AS wave,
@@ -384,14 +388,14 @@ head(REM1.ema)</code></pre>
   &quot;[1_MAQ_5] There are too many messages&quot; AS study_fdbk_too_many_msg,
   &quot;[1_MAQ_6] The questions are interesting&quot; AS study_fdbk_interest,
   &quot;[1_MAQ_7] I&#39;m looking forward to seeing the results!&quot; AS study_fdbk_results
-FROM rem.tram_registration_w2 tr
-JOIN rem.ethica_registration_w2 er ON upper(trim(er.email)) = upper(trim(tr.email))
-JOIN rem.ema_w2 ema ON ema.&quot;Name&quot; = er.ethica_id</code></pre>
+FROM rem2.tram_registration_w2 tr
+JOIN rem2.ethica_registration_w2 er ON upper(trim(er.email)) = upper(trim(tr.email))
+JOIN rem2.ema ema ON ema.&quot;Name&quot; = er.ethica_id
+LEFT JOIN rem2.valid_panel_lut vpl ON tr.uniqueid = vpl.&quot;W2uniqueID&quot;</code></pre>
 <pre class="r"><code># Wave 2
 REM2.ema &lt;- .rem_ema2 %&gt;%
-  mutate(tram_id_w2 = tram_id,
-         tram_id = case_when(str_detect(tram_id, &quot;_W1_&quot;) ~ paste0(&quot;MCG&quot;, str_extract(tram_id, &quot;[0-9]*$&quot;)),
-                             TRUE ~ tram_id_w2),
+  mutate(#tram_id = case_when(str_detect(tram_id_w2, &quot;_W1_&quot;) ~ paste0(&quot;MCG&quot;, str_extract(tram_id_w2, &quot;[0-9]*$&quot;)),
+        #                     TRUE ~ tram_id_w2),
          duration_minutes = case_when(duration_minutes == &quot;Expired&quot; ~ Inf,
                                 duration_minutes == &quot;Canceled&quot; ~ NA_real_,
                                 TRUE ~ as.double(duration_minutes)/60), # duration_minutes is actually expressed in seconds !!
@@ -408,14 +412,94 @@ REM2.survey &lt;- read_csv(&quot;wave2/data/w2.FINAL_COMPLETE_9May22.csv&quot;, 
 head(REM2.ema)</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["tram_id"],"name":[1],"type":["chr"],"align":["left"]},{"label":["ethica_id"],"name":[2],"type":["int"],"align":["right"]},{"label":["device_id"],"name":[3],"type":["chr"],"align":["left"]},{"label":["wave"],"name":[4],"type":["int"],"align":["right"]},{"label":["scheduled_time"],"name":[5],"type":["dttm"],"align":["right"]},{"label":["issued_time"],"name":[6],"type":["dttm"],"align":["right"]},{"label":["response_time"],"name":[7],"type":["dttm"],"align":["right"]},{"label":["duration_minutes"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_1"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_2"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_3"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_4"],"name":[12],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_5"],"name":[13],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_6"],"name":[14],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_7"],"name":[15],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_8"],"name":[16],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_9"],"name":[17],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_10"],"name":[18],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_11"],"name":[19],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_12"],"name":[20],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_13"],"name":[21],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_14"],"name":[22],"type":["dbl"],"align":["right"]},{"label":["mood_a"],"name":[23],"type":["dbl"],"align":["right"]},{"label":["mood_b"],"name":[24],"type":["dbl"],"align":["right"]},{"label":["mood_c"],"name":[25],"type":["dbl"],"align":["right"]},{"label":["mood_d"],"name":[26],"type":["dbl"],"align":["right"]},{"label":["mood_e"],"name":[27],"type":["dbl"],"align":["right"]},{"label":["mood_f"],"name":[28],"type":["dbl"],"align":["right"]},{"label":["mood_who"],"name":[29],"type":["dbl"],"align":["right"]},{"label":["transp_mode"],"name":[30],"type":["dbl"],"align":["right"]},{"label":["motiv"],"name":[31],"type":["chr"],"align":["left"]},{"label":["ema_fdbk_more"],"name":[32],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_easy"],"name":[33],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_too_many"],"name":[34],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_too_freq"],"name":[35],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_freq_ok"],"name":[36],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_like"],"name":[37],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_not_know"],"name":[38],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_too_pers"],"name":[39],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_more_quest"],"name":[40],"type":["lgl"],"align":["right"]},{"label":["study_fdbk_like"],"name":[41],"type":["lgl"],"align":["right"]},{"label":["study_fdbk_stop"],"name":[42],"type":["lgl"],"align":["right"]},{"label":["study_fdbk_not_like"],"name":[43],"type":["lgl"],"align":["right"]},{"label":["study_fdbk_too_many_qst"],"name":[44],"type":["lgl"],"align":["right"]},{"label":["study_fdbk_too_many_msg"],"name":[45],"type":["lgl"],"align":["right"]},{"label":["study_fdbk_interest"],"name":[46],"type":["lgl"],"align":["right"]},{"label":["study_fdbk_results"],"name":[47],"type":["lgl"],"align":["right"]},{"label":["tram_id_w2"],"name":[48],"type":["chr"],"align":["left"]},{"label":["lat"],"name":[49],"type":["dbl"],"align":["right"]},{"label":["lon"],"name":[50],"type":["dbl"],"align":["right"]}],"data":[{"1":"MCG1000","2":"47186","3":"e3e2a5385ad0fe55","4":"2","5":"2022-03-18 13:53:32","6":"2022-03-18 13:54:32","7":"2022-03-18 13:54:42","8":"1.173517","9":"NA","10":"3","11":"NA","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"MCG2_W1_1000","49":"45.47595","50":"-73.85865","_rn_":"1"},{"1":"MCG1000","2":"47186","3":"4D6E9704E9804EADBB77444AE100FE7D","4":"2","5":"2022-03-07 18:51:02","6":"2022-03-07 18:51:02","7":"2022-03-07 19:25:22","8":"34.344833","9":"NA","10":"2","11":"NA","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"MCG2_W1_1000","49":"45.47591","50":"-73.85861","_rn_":"2"},{"1":"MCG1000","2":"47186","3":"e3e2a5385ad0fe55","4":"2","5":"2022-03-23 19:32:01","6":"2022-03-23 19:33:01","7":"2022-03-23 21:33:01","8":"Inf","9":"NA","10":"NA","11":"NA","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"MCG2_W1_1000","49":"NA","50":"NA","_rn_":"3"},{"1":"MCG1000","2":"47186","3":"e3e2a5385ad0fe55","4":"2","5":"2022-03-21 19:21:42","6":"2022-03-21 19:22:42","7":"2022-03-21 19:44:36","8":"22.914400","9":"NA","10":"NA","11":"NA","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"MCG2_W1_1000","49":"NA","50":"NA","_rn_":"4"},{"1":"MCG1000","2":"47186","3":"4D6E9704E9804EADBB77444AE100FE7D","4":"2","5":"2022-03-06 18:53:04","6":"2022-03-06 18:53:04","7":"2022-03-06 19:53:58","8":"60.910550","9":"NA","10":"NA","11":"NA","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"MCG2_W1_1000","49":"NA","50":"NA","_rn_":"5"},{"1":"MCG1000","2":"47186","3":"e3e2a5385ad0fe55","4":"2","5":"2022-03-22 19:14:14","6":"2022-03-22 19:15:15","7":"2022-03-22 21:00:08","8":"105.901833","9":"NA","10":"NA","11":"NA","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"3","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"MCG2_W1_1000","49":"45.47592","50":"-73.85857","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["tram_id"],"name":[1],"type":["chr"],"align":["left"]},{"label":["tram_id_w2"],"name":[2],"type":["chr"],"align":["left"]},{"label":["ethica_id"],"name":[3],"type":["int"],"align":["right"]},{"label":["device_id"],"name":[4],"type":["chr"],"align":["left"]},{"label":["wave"],"name":[5],"type":["int"],"align":["right"]},{"label":["scheduled_time"],"name":[6],"type":["dttm"],"align":["right"]},{"label":["issued_time"],"name":[7],"type":["dttm"],"align":["right"]},{"label":["response_time"],"name":[8],"type":["dttm"],"align":["right"]},{"label":["duration_minutes"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_1"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_2"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_3"],"name":[12],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_4"],"name":[13],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_5"],"name":[14],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_6"],"name":[15],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_7"],"name":[16],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_8"],"name":[17],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_9"],"name":[18],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_10"],"name":[19],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_11"],"name":[20],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_12"],"name":[21],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_13"],"name":[22],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_14"],"name":[23],"type":["dbl"],"align":["right"]},{"label":["mood_a"],"name":[24],"type":["dbl"],"align":["right"]},{"label":["mood_b"],"name":[25],"type":["dbl"],"align":["right"]},{"label":["mood_c"],"name":[26],"type":["dbl"],"align":["right"]},{"label":["mood_d"],"name":[27],"type":["dbl"],"align":["right"]},{"label":["mood_e"],"name":[28],"type":["dbl"],"align":["right"]},{"label":["mood_f"],"name":[29],"type":["dbl"],"align":["right"]},{"label":["mood_who"],"name":[30],"type":["dbl"],"align":["right"]},{"label":["transp_mode"],"name":[31],"type":["dbl"],"align":["right"]},{"label":["motiv"],"name":[32],"type":["chr"],"align":["left"]},{"label":["ema_fdbk_more"],"name":[33],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_easy"],"name":[34],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_too_many"],"name":[35],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_too_freq"],"name":[36],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_freq_ok"],"name":[37],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_like"],"name":[38],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_not_know"],"name":[39],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_too_pers"],"name":[40],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_more_quest"],"name":[41],"type":["lgl"],"align":["right"]},{"label":["study_fdbk_like"],"name":[42],"type":["lgl"],"align":["right"]},{"label":["study_fdbk_stop"],"name":[43],"type":["lgl"],"align":["right"]},{"label":["study_fdbk_not_like"],"name":[44],"type":["lgl"],"align":["right"]},{"label":["study_fdbk_too_many_qst"],"name":[45],"type":["lgl"],"align":["right"]},{"label":["study_fdbk_too_many_msg"],"name":[46],"type":["lgl"],"align":["right"]},{"label":["study_fdbk_interest"],"name":[47],"type":["lgl"],"align":["right"]},{"label":["study_fdbk_results"],"name":[48],"type":["lgl"],"align":["right"]},{"label":["lat"],"name":[49],"type":["dbl"],"align":["right"]},{"label":["lon"],"name":[50],"type":["dbl"],"align":["right"]}],"data":[{"1":"MCG3690","2":"MCG2_W1_461","3":"47073","4":"23a1807e9bf92ea6","5":"2","6":"2022-04-05 12:27:45","7":"2022-04-05 12:28:45","8":"2022-04-05 12:41:19","9":"13.581000","10":"NA","11":"3","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"45.48370","50":"-73.56268","_rn_":"1"},{"1":"MCG3690","2":"MCG2_W1_461","3":"47073","4":"23a1807e9bf92ea6","5":"2","6":"2022-03-25 18:28:20","7":"2022-03-25 18:29:20","8":"2022-03-25 18:38:38","9":"10.303383","10":"NA","11":"3","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"45.56117","50":"-73.58274","_rn_":"2"},{"1":"MCG3690","2":"MCG2_W1_461","3":"47073","4":"23a1807e9bf92ea6","5":"2","6":"2022-04-10 18:34:06","7":"2022-04-10 18:35:06","8":"2022-04-10 18:41:10","9":"7.069750","10":"NA","11":"NA","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"NA","50":"NA","_rn_":"3"},{"1":"MCG3690","2":"MCG2_W1_461","3":"47073","4":"23a1807e9bf92ea6","5":"2","6":"2022-04-08 18:39:35","7":"2022-04-08 18:40:35","8":"2022-04-08 18:40:53","9":"1.304233","10":"NA","11":"NA","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"NA","50":"NA","_rn_":"4"},{"1":"MCG3690","2":"MCG2_W1_461","3":"47073","4":"23a1807e9bf92ea6","5":"2","6":"2022-03-24 18:35:30","7":"2022-03-24 18:36:30","8":"2022-03-24 18:42:05","9":"6.590367","10":"NA","11":"NA","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"NA","50":"NA","_rn_":"5"},{"1":"MCG3690","2":"MCG2_W1_461","3":"47073","4":"23a1807e9bf92ea6","5":"2","6":"2022-04-09 18:59:50","7":"2022-04-09 19:00:50","8":"2022-04-09 19:13:32","9":"13.714900","10":"NA","11":"NA","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"1","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"45.56113","50":"-73.58277","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
-<div id="combine-both-waves" class="section level2" number="1.3">
-<h2><span class="header-section-number">1.3</span> Combine both waves</h2>
+<div id="wave-3" class="section level2" number="1.3">
+<h2><span class="header-section-number">1.3</span> Wave 3</h2>
+<pre class="sql"><code>SELECT tr.uniqueid_w1 AS tram_id,
+  tr.uniqueid_w2 AS tram_id_w2,
+  tr.uniqueid_w3 AS tram_id_w3,
+    ema.&quot;Name&quot;::int AS ethica_id,
+    &quot;Device ID&quot; AS device_id,
+    3 AS wave,
+    (&quot;Scheduled Time&quot;::timestamp with time zone) at time zone &#39;America/Montreal&#39; AS scheduled_time,
+    (&quot;Issued Time&quot;::timestamp with time zone) at time zone &#39;America/Montreal&#39; AS issued_time,
+    (&quot;Response Time&quot;::timestamp with time zone) at time zone &#39;America/Montreal&#39; AS response_time,
+    &quot;Duration (seconds) from scheduled to completion time&quot; AS duration_minutes,
+    &quot;Location&quot;,
+    mhc_sf_1,
+    mhc_sf_2,
+    mhc_sf_3,
+    mhc_sf_4,
+    mhc_sf_5,
+    mhc_sf_6,
+    mhc_sf_7,
+    mhc_sf_8,
+    mhc_sf_9,
+    mhc_sf_10,
+    mhc_sf_11,
+    mhc_sf_12,
+    mhc_sf_13,
+    mhc_sf_14,
+    NULLIF(&quot;[1_SAQ] At this moment I feel:&quot;, -7) AS mood_a,
+    NULLIF(&quot;[2_SAQ] At this moment I feel:&quot;, -7) AS mood_b,
+    NULLIF(&quot;[3_SAQ] At this moment I feel:&quot;, -7) AS mood_c,
+    NULLIF(&quot;[4_SAQ] At this moment I feel:&quot;, -7) AS mood_d,
+    NULLIF(&quot;[5_SAQ] At this moment I feel:&quot;, -7) AS mood_e,
+    NULLIF(&quot;[6_SAQ] At this moment I feel:&quot;, -7) AS mood_f,
+    &quot;[7_SAQ] At this moment I am interacting with:&quot; AS mood_who,
+    NULLIF(&quot;[1_SAQ] What was the mode of transportation for your first&quot;, -7) AS transp_mode,
+    &quot;[1_FFT] Just a reminder that since tomorrow is the final d&quot; AS motiv,
+    &quot;[1_MAQ_1] I would have liked to answer these questions more&quot; AS ema_fdbk_more,
+  &quot;[1_MAQ_2] The questions were easy&quot; AS ema_fdbk_easy,
+  &quot;[1_MAQ_3] There were too many questions at a time&quot; AS ema_fdbk_too_many,
+  &quot;[1_MAQ_4] The questions were too frequent&quot; AS ema_fdbk_too_freq,
+  &quot;[1_MAQ_5] The frequency of the questions was good&quot; AS ema_fdbk_freq_ok,
+  &quot;[1_MAQ_6] I liked these questions&quot; AS ema_fdbk_like,
+  &quot;[1_MAQ_7] I didn&#39;t know how to answer&quot; AS ema_fdbk_not_know,
+  &quot;[1_MAQ_8] The questions were too personal&quot; AS ema_fdbk_too_pers,
+  &quot;[1_MAQ_9] I woud have liked to answer more questions&quot; AS ema_fdbk_more_quest,
+    &quot;[1_MAQ_1] I&#39;m liking these questions&quot; AS study_fdbk_like,
+  &quot;[1_MAQ_2] I&#39;m looking forward to the end of the study!&quot; AS study_fdbk_stop,
+  &quot;[1_MAQ_3] I don&#39;t like answering these questions&quot; AS study_fdbk_not_like,
+  &quot;[1_MAQ_4] There are too many questions&quot; AS study_fdbk_too_many_qst,
+  &quot;[1_MAQ_5] There are too many messages&quot; AS study_fdbk_too_many_msg,
+  &quot;[1_MAQ_6] The questions are interesting&quot; AS study_fdbk_interest,
+  &quot;[1_MAQ_7] I&#39;m looking forward to seeing the results!&quot; AS study_fdbk_results
+FROM rem3.tram_registration_w3 tr
+JOIN rem3.ethica_registration_w3 er ON upper(trim(er.email)) = upper(trim(tr.email_w3))
+JOIN rem3.ema ema ON ema.&quot;Name&quot; = er.ethica_id</code></pre>
+<pre class="r"><code># Wave 3
+REM3.ema &lt;- .rem_ema3 %&gt;%
+  mutate(duration_minutes = case_when(duration_minutes == &quot;Expired&quot; ~ Inf,
+                                duration_minutes == &quot;Canceled&quot; ~ NA_real_,
+                                TRUE ~ as.double(duration_minutes)/60), # duration_minutes is actually expressed in seconds !!
+         lat = as.double(word(Location, start=1)),
+         lon = as.double(word(Location, start=2))) %&gt;%
+  select(!Location)
+
+REM3.survey &lt;- read_excel(&quot;wave3/data/w3.full_cleaned_29Jun23.xlsx&quot;) %&gt;%
+  select(!`...1`) %&gt;%
+  mutate(yrborn = as.numeric(yrborn),
+         approx_age = year(submitdate) - yrborn) %&gt;%
+  rename(tram_id_w3 = uniqueID) %&gt;%
+  semi_join(REM3.ema, by = &#39;tram_id_w3&#39;)</code></pre>
+<pre><code>## New names:
+## • `` -&gt; `...1`</code></pre>
+<pre class="r"><code># Display excerpt
+head(REM3.ema)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["tram_id"],"name":[1],"type":["chr"],"align":["left"]},{"label":["tram_id_w2"],"name":[2],"type":["chr"],"align":["left"]},{"label":["tram_id_w3"],"name":[3],"type":["chr"],"align":["left"]},{"label":["ethica_id"],"name":[4],"type":["int"],"align":["right"]},{"label":["device_id"],"name":[5],"type":["chr"],"align":["left"]},{"label":["wave"],"name":[6],"type":["int"],"align":["right"]},{"label":["scheduled_time"],"name":[7],"type":["dttm"],"align":["right"]},{"label":["issued_time"],"name":[8],"type":["dttm"],"align":["right"]},{"label":["response_time"],"name":[9],"type":["dttm"],"align":["right"]},{"label":["duration_minutes"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_1"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_2"],"name":[12],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_3"],"name":[13],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_4"],"name":[14],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_5"],"name":[15],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_6"],"name":[16],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_7"],"name":[17],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_8"],"name":[18],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_9"],"name":[19],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_10"],"name":[20],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_11"],"name":[21],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_12"],"name":[22],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_13"],"name":[23],"type":["dbl"],"align":["right"]},{"label":["mhc_sf_14"],"name":[24],"type":["dbl"],"align":["right"]},{"label":["mood_a"],"name":[25],"type":["dbl"],"align":["right"]},{"label":["mood_b"],"name":[26],"type":["dbl"],"align":["right"]},{"label":["mood_c"],"name":[27],"type":["dbl"],"align":["right"]},{"label":["mood_d"],"name":[28],"type":["dbl"],"align":["right"]},{"label":["mood_e"],"name":[29],"type":["dbl"],"align":["right"]},{"label":["mood_f"],"name":[30],"type":["dbl"],"align":["right"]},{"label":["mood_who"],"name":[31],"type":["dbl"],"align":["right"]},{"label":["transp_mode"],"name":[32],"type":["dbl"],"align":["right"]},{"label":["motiv"],"name":[33],"type":["chr"],"align":["left"]},{"label":["ema_fdbk_more"],"name":[34],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_easy"],"name":[35],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_too_many"],"name":[36],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_too_freq"],"name":[37],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_freq_ok"],"name":[38],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_like"],"name":[39],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_not_know"],"name":[40],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_too_pers"],"name":[41],"type":["lgl"],"align":["right"]},{"label":["ema_fdbk_more_quest"],"name":[42],"type":["lgl"],"align":["right"]},{"label":["study_fdbk_like"],"name":[43],"type":["lgl"],"align":["right"]},{"label":["study_fdbk_stop"],"name":[44],"type":["lgl"],"align":["right"]},{"label":["study_fdbk_not_like"],"name":[45],"type":["lgl"],"align":["right"]},{"label":["study_fdbk_too_many_qst"],"name":[46],"type":["lgl"],"align":["right"]},{"label":["study_fdbk_too_many_msg"],"name":[47],"type":["lgl"],"align":["right"]},{"label":["study_fdbk_interest"],"name":[48],"type":["lgl"],"align":["right"]},{"label":["study_fdbk_results"],"name":[49],"type":["lgl"],"align":["right"]},{"label":["lat"],"name":[50],"type":["dbl"],"align":["right"]},{"label":["lon"],"name":[51],"type":["dbl"],"align":["right"]}],"data":[{"1":"MCG1526","2":"MCG2_W1_307","3":"MCG3_W12_1536","4":"20963","5":"E4776441247147909920656DFDA666C7","6":"3","7":"2023-03-17 12:14:38","8":"2023-03-17 12:14:38","9":"2023-03-17 13:42:06","10":"87.467283","11":"4","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"NA","50":"45.53662","51":"-73.57233","_rn_":"1"},{"1":"MCG1526","2":"MCG2_W1_307","3":"MCG3_W12_1536","4":"20963","5":"E4776441247147909920656DFDA666C7","6":"3","7":"2023-03-27 18:23:06","8":"2023-03-27 18:23:06","9":"2023-03-27 20:23:06","10":"Inf","11":"NA","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"NA","50":"NA","51":"NA","_rn_":"2"},{"1":"NA","2":"NA","3":"MCG3_F_1185","4":"69123","5":"56db47bf6055d992","6":"3","7":"2023-03-18 12:05:58","8":"2023-03-18 12:06:58","9":"2023-03-18 14:06:58","10":"Inf","11":"NA","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"NA","50":"NA","51":"NA","_rn_":"3"},{"1":"NA","2":"NA","3":"MCG3_F_1185","4":"69123","5":"56db47bf6055d992","6":"3","7":"2023-03-28 18:35:30","8":"2023-03-28 18:36:30","9":"2023-03-28 20:36:30","10":"Inf","11":"NA","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"NA","50":"NA","51":"NA","_rn_":"4"},{"1":"NA","2":"MCG2_F_141","3":"MCG3_W12_562","4":"46626","5":"B2EBA2FD09664BAE99699FEC679E9797","6":"3","7":"2023-03-23 12:01:37","8":"2023-03-23 12:01:37","9":"2023-03-23 12:02:51","10":"1.249017","11":"5","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"NA","50":"45.52654","51":"-73.58031","_rn_":"5"},{"1":"NA","2":"MCG2_F_141","3":"MCG3_W12_562","4":"46626","5":"B2EBA2FD09664BAE99699FEC679E9797","6":"3","7":"2023-04-02 18:02:51","8":"2023-04-02 18:02:51","9":"2023-04-02 18:04:06","10":"1.256100","11":"5","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"NA","50":"45.52662","51":"-73.58033","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="combine-the-three-waves" class="section level2" number="1.4">
+<h2><span class="header-section-number">1.4</span> Combine the three waves</h2>
 <pre class="r"><code># Merge bath datasets and recategorize
-REM.ema &lt;- bind_rows(REM1.ema, REM2.ema) %&gt;%
+REM.ema &lt;- bind_rows(REM1.ema, REM2.ema, REM3.ema) %&gt;%
   mutate(mhc_sf_1 = factor(mhc_sf_1, 1:6, c(&quot;Never&quot;,&quot;Rarely&quot;,&quot;Sometimes&quot;,&quot;Often&quot;,&quot;Most of the time&quot;,&quot;All the time&quot;)),
          mhc_sf_2 = factor(mhc_sf_2, 1:6, c(&quot;Never&quot;,&quot;Rarely&quot;,&quot;Sometimes&quot;,&quot;Often&quot;,&quot;Most of the time&quot;,&quot;All the time&quot;)),
          mhc_sf_3 = factor(mhc_sf_3, 1:6, c(&quot;Never&quot;,&quot;Rarely&quot;,&quot;Sometimes&quot;,&quot;Often&quot;,&quot;Most of the time&quot;,&quot;All the time&quot;)),
@@ -443,7 +527,7 @@ REM.ema &lt;- st_as_sf(REM.ema, coords = c(&quot;lon&quot;, &quot;lat&quot;), cr
 
 # Display some basic info about REM.ema
 str(REM.ema)</code></pre>
-<pre><code>## Classes &#39;sf&#39; and &#39;data.frame&#39;:   22043 obs. of  54 variables:
+<pre><code>## Classes &#39;sf&#39; and &#39;data.frame&#39;:   30630 obs. of  55 variables:
 ##  $ tram_id                : chr  &quot;MCG2521&quot; &quot;MCG2634&quot; &quot;MCG2319&quot; &quot;MCG392&quot; ...
 ##  $ ethica_id              : int  20583 20484 20537 20534 20569 21376 20482 20570 21376 20848 ...
 ##  $ device_id              : chr  &quot;e2ee356ce719d810&quot; &quot;e6549e7ba42d1550&quot; &quot;d188a9b9f3cf78ce&quot; &quot;7f9f5a6b435bfdef&quot; ...
@@ -497,10 +581,41 @@ str(REM.ema)</code></pre>
 ##  $ study_fdbk_interest    : int  NA NA NA NA NA NA NA NA NA NA ...
 ##  $ study_fdbk_results     : int  NA NA NA NA NA NA NA NA NA NA ...
 ##  $ tram_id_w2             : chr  NA NA NA NA ...
-##  $ geometry               :sfc_POINT of length 22043; first list element:  &#39;XY&#39; num  NA NA
+##  $ tram_id_w3             : chr  NA NA NA NA ...
+##  $ geometry               :sfc_POINT of length 30630; first list element:  &#39;XY&#39; num  NA NA
 ##  - attr(*, &quot;sf_column&quot;)= chr &quot;geometry&quot;
 ##  - attr(*, &quot;agr&quot;)= Factor w/ 3 levels &quot;constant&quot;,&quot;aggregate&quot;,..: NA NA NA NA NA NA NA NA NA NA ...
-##   ..- attr(*, &quot;names&quot;)= chr [1:53] &quot;tram_id&quot; &quot;ethica_id&quot; &quot;device_id&quot; &quot;wave&quot; ...</code></pre>
+##   ..- attr(*, &quot;names&quot;)= chr [1:54] &quot;tram_id&quot; &quot;ethica_id&quot; &quot;device_id&quot; &quot;wave&quot; ...</code></pre>
+<div id="tram-id-look-up-table" class="section level3" number="1.4.1">
+<h3><span class="header-section-number">1.4.1</span> TRAM ID Look-up-table</h3>
+<p>Participants got a different ID for each wave, need to build the panel LUT</p>
+<pre class="r"><code># Reading the w1/w2 LUT
+.tram_lut_w1.2 &lt;- REM2.ema %&gt;%
+  select(starts_with(&quot;tram_id&quot;)) %&gt;%
+  unique()
+
+# and the w3 participants
+.tram_lut_w1.2.3 &lt;- REM3.ema %&gt;%
+  select(starts_with(&quot;tram_id&quot;)) %&gt;%
+  unique()
+
+# Creating the complete LUT w1/2/3 with no redundancy
+tram_lut_w1.2.3 &lt;- .tram_lut_w1.2 %&gt;%
+  left_join(select(.tram_lut_w1.2.3, !tram_id_w2), by=&quot;tram_id&quot;, na_matches = &quot;never&quot;) %&gt;%
+  left_join(select(.tram_lut_w1.2.3, !tram_id), by=&quot;tram_id_w2&quot;, na_matches = &quot;never&quot;) %&gt;%
+  mutate(tram_id_w3 = coalesce(tram_id_w3.x, tram_id_w3.y)) %&gt;%
+  select(!c(tram_id_w3.x, tram_id_w3.y))</code></pre>
+<pre class="r"><code># Populating the w1/2/3 IDs back into the EMA
+REM.ema &lt;- REM.ema %&gt;%
+  left_join(tram_lut_w1.2.3, by=&quot;tram_id&quot;, suffix = c(&quot;&quot;, &quot;.lut1&quot;), na_matches = &quot;never&quot;) %&gt;%
+  left_join(tram_lut_w1.2.3, by=&quot;tram_id_w2&quot;, suffix = c(&quot;&quot;, &quot;.lut2&quot;), na_matches = &quot;never&quot;) %&gt;%
+  left_join(tram_lut_w1.2.3, by=&quot;tram_id_w3&quot;, suffix = c(&quot;&quot;, &quot;.lut3&quot;), na_matches = &quot;never&quot;) %&gt;%
+  relocate(starts_with(&quot;tram_id&quot;)) %&gt;%
+  mutate(tram_id = coalesce(tram_id, tram_id.lut2, tram_id.lut3),
+         tram_id_w2 = coalesce(tram_id_w2.lut1, tram_id_w2, tram_id_w2.lut3),
+         tram_id_w3 = coalesce(tram_id_w3.lut1, tram_id_w3.lut2, tram_id_w3)) %&gt;%
+  select(!c(tram_id.lut2, tram_id.lut3, tram_id_w2.lut1, tram_id_w2.lut3, tram_id_w3.lut1, tram_id_w3.lut2))</code></pre>
+</div>
 </div>
 </div>
 <div id="participant-profile" class="section level1" number="2">
@@ -565,9 +680,33 @@ str(REM.ema)</code></pre>
   select(!starts_with(&quot;ETHNICITY.&quot;)) %&gt;%
   select(!starts_with(&quot;OCCUPATION.&quot;))
 
-pid.profile &lt;- bind_rows(.pid1.profile, .pid2.profile) %&gt;%
-  mutate(tram_id = coalesce(tram_id, tram_id_w2),
-         INCOME = factor(INCOME, levels = c(&quot;Less than $30,000&quot;, 
+.pid3.profile &lt;- REM3.survey %&gt;%
+  select(tram_id_w3, wave, approx_age, GENDER, MARITAL, starts_with(&quot;WKTRPEMP&quot;), starts_with(&quot;ETHNICITY&quot;), INCOME, EDUCATION, starts_with(&quot;OCCUPATION&quot;)) %&gt;%
+  select(!ends_with(&quot;Time&quot;)) %&gt;%
+  mutate(working.status = case_when(WKTRPEMP.1. == &quot;Yes&quot; ~ &quot;Retired and not working&quot;,
+                                    WKTRPEMP.2. == &quot;Yes&quot; ~ &quot;Employed full-time&quot;,
+                                    WKTRPEMP.3. == &quot;Yes&quot; ~ &quot;Employed part-time&quot;,
+                                    WKTRPEMP.4. == &quot;Yes&quot; ~ &quot;Not employed and looking for work&quot;,
+                                    WKTRPEMP.5. == &quot;Yes&quot; ~ &quot;Not employed and not looking for work&quot;,
+                                    WKTRPEMP.6. == &quot;Yes&quot; ~ &quot;Homemaker&quot;,
+                                    WKTRPEMP.7. == &quot;Yes&quot; ~ &quot;Student&quot;,
+                                    !is.na(WKTRPEMP.other.) ~ &quot;Other&quot;),
+         Ethnic.Aboriginal = ETHNICITY.1. == &quot;Yes&quot;,
+         Ethnic.Asian = ETHNICITY.2. == &quot;Yes&quot;,
+         Ethnic.Black = ETHNICITY.3. == &quot;Yes&quot;,
+         Ethnic.Caucasian = ETHNICITY.4. == &quot;Yes&quot;,
+         Ethnic.Latin.American = ETHNICITY.5. == &quot;Yes&quot;,
+         Ethnic.Middle.Eastern = ETHNICITY.6. == &quot;Yes&quot;,
+         Ethnic.Prefer.not.to.answer = ETHNICITY.99. == &quot;Yes&quot;,
+         Ethnic.I.do.not.know = ETHNICITY.999. == &quot;Yes&quot;,
+         Ethnic.Other = !is.na(ETHNICITY.other.)) %&gt;%
+  select(!starts_with(&quot;WKTRPEMP&quot;)) %&gt;%
+  select(!starts_with(&quot;ETHNICITY.&quot;)) %&gt;%
+  select(!starts_with(&quot;OCCUPATION.&quot;))
+
+pid.profile &lt;- bind_rows(.pid1.profile, .pid2.profile, .pid3.profile) %&gt;%
+  relocate(starts_with(&quot;tram_id&quot;)) %&gt;%
+  mutate(INCOME = factor(INCOME, levels = c(&quot;Less than $30,000&quot;, 
                                             &quot;$30 000 to $59 999&quot;, 
                                             &quot;$60 000 to $89 999&quot;, 
                                             &quot;$90 000 to $119 999&quot;, 
@@ -586,21 +725,24 @@ pid.profile &lt;- bind_rows(.pid1.profile, .pid2.profile) %&gt;%
   geom_histogram(aes(x=approx_age)) +
   facet_wrap(vars(wave), scales = &quot;free&quot;, labeller = label_both)</code></pre>
 <pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
-<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-7-1.png" /><!-- --></p>
+<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-11-1.png" /><!-- --></p>
 </div>
 <div id="gender" class="section level2" number="2.2">
 <h2><span class="header-section-number">2.2</span> Gender</h2>
 <pre class="r"><code>ggplot(pid.profile) +
   geom_bar(aes(y = GENDER)) +
   facet_wrap(vars(wave), scales = &quot;free_x&quot;, labeller = label_both)</code></pre>
-<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-8-1.png" /><!-- --> ## Income</p>
+<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-12-1.png" /><!-- --></p>
+</div>
+<div id="income" class="section level2" number="2.3">
+<h2><span class="header-section-number">2.3</span> Income</h2>
 <pre class="r"><code>ggplot(pid.profile) +
   geom_bar(aes(y = INCOME)) +
   facet_wrap(vars(wave), scales = &quot;free_x&quot;, labeller = label_both)</code></pre>
-<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-9-1.png" /><!-- --></p>
+<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-13-1.png" /><!-- --></p>
 </div>
-<div id="ethnic-group" class="section level2" number="2.3">
-<h2><span class="header-section-number">2.3</span> Ethnic group</h2>
+<div id="ethnic-group" class="section level2" number="2.4">
+<h2><span class="header-section-number">2.4</span> Ethnic group</h2>
 <pre class="r"><code>.df &lt;- pid.profile %&gt;%
   select(tram_id, wave, starts_with(&quot;Ethnic&quot;)) %&gt;%
   pivot_longer(starts_with(&quot;Ethnic&quot;), names_to = &quot;Ethnic group&quot;, names_prefix = &quot;Ethnic.&quot;) %&gt;%
@@ -609,29 +751,33 @@ pid.profile &lt;- bind_rows(.pid1.profile, .pid2.profile) %&gt;%
 ggplot(.df) +
   geom_bar(aes(y = `Ethnic group`)) +
   facet_wrap(vars(wave), scales = &quot;free_x&quot;, labeller = label_both)</code></pre>
-<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-10-1.png" /><!-- --></p>
+<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-14-1.png" /><!-- --></p>
 </div>
-<div id="education" class="section level2" number="2.4">
-<h2><span class="header-section-number">2.4</span> Education</h2>
+<div id="education" class="section level2" number="2.5">
+<h2><span class="header-section-number">2.5</span> Education</h2>
 <pre class="r"><code>ggplot(pid.profile) +
   geom_bar(aes(y = EDUCATION)) +
   facet_wrap(vars(wave), scales = &quot;free_x&quot;, labeller = label_both)</code></pre>
-<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-11-1.png" /><!-- --></p>
+<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-15-1.png" /><!-- --></p>
 </div>
 </div>
 <div id="preliminary-report-on-ema-responses" class="section level1" number="3">
 <h1><span class="header-section-number">3</span> Preliminary report on EMA responses</h1>
-<div id="participants-in-both-waves" class="section level2" number="3.1">
-<h2><span class="header-section-number">3.1</span> Participants in both waves</h2>
+<div id="participants-in-all-waves" class="section level2" number="3.1">
+<h2><span class="header-section-number">3.1</span> Participants in all waves</h2>
 <pre class="r"><code>REM.ema %&gt;% 
   data.frame() %&gt;%
-  count(tram_id, wave) %&gt;%
-  group_by(tram_id) %&gt;%
+  count(tram_id, tram_id_w2, tram_id_w3, wave) %&gt;%
+  group_by(tram_id, tram_id_w2, tram_id_w3) %&gt;%
   summarise(waves = paste(wave, collapse = &#39;,&#39;)) %&gt;%
+  ungroup() %&gt;%
+  select(waves) %&gt;%
   count(waves)</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;tram_id&#39;, &#39;tram_id_w2&#39;. You can override
+## using the `.groups` argument.</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["waves"],"name":[1],"type":["chr"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"1","2":"275"},{"1":"1,2","2":"12"},{"1":"2","2":"217"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["waves"],"name":[1],"type":["chr"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"1","2":"245"},{"1":"1,2","2":"26"},{"1":"1,2,3","2":"16"},{"1":"2","2":"144"},{"1":"2,3","2":"43"},{"1":"3","2":"105"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 <p>Not much overlap between both waves…</p>
@@ -647,7 +793,7 @@ ggplot(.df) +
   mutate(ratio = round(100. * n_missed / n_total, 1))</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["wave"],"name":[1],"type":["int"],"align":["right"]},{"label":["n_total"],"name":[2],"type":["int"],"align":["right"]},{"label":["n_missed"],"name":[3],"type":["int"],"align":["right"]},{"label":["ratio"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"1","2":"9957","3":"4244","4":"42.6"},{"1":"2","2":"12086","3":"4905","4":"40.6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["wave"],"name":[1],"type":["int"],"align":["right"]},{"label":["n_total"],"name":[2],"type":["int"],"align":["right"]},{"label":["n_missed"],"name":[3],"type":["int"],"align":["right"]},{"label":["ratio"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"1","2":"9957","3":"4244","4":"42.6"},{"1":"2","2":"12086","3":"4905","4":"40.6"},{"1":"3","2":"8587","3":"3173","4":"37.0"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 <p>Looking at EMA surveys without Lat/Long coordinates</p>
@@ -659,7 +805,7 @@ ggplot(.df) +
   mutate(ratio = round(100. * n_no_coords / n_total, 1))</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["wave"],"name":[1],"type":["int"],"align":["right"]},{"label":["n_total"],"name":[2],"type":["int"],"align":["right"]},{"label":["n_no_coords"],"name":[3],"type":["int"],"align":["right"]},{"label":["ratio"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"1","2":"9957","3":"4543","4":"45.6"},{"1":"2","2":"12086","3":"6079","4":"50.3"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["wave"],"name":[1],"type":["int"],"align":["right"]},{"label":["n_total"],"name":[2],"type":["int"],"align":["right"]},{"label":["n_no_coords"],"name":[3],"type":["int"],"align":["right"]},{"label":["ratio"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"1","2":"9957","3":"4543","4":"45.6"},{"1":"2","2":"12086","3":"6079","4":"50.3"},{"1":"3","2":"8587","3":"3934","4":"45.8"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
@@ -673,8 +819,9 @@ ggplot(.df, aes(x = as_date(response_time))) +
   geom_histogram(binwidth = 1) +
   scale_x_date(date_labels = &quot;%d %b %y&quot;) + 
   xlab(&quot;Date&quot;) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   facet_wrap(vars(wave), scales = &quot;free&quot;, labeller = label_both)</code></pre>
-<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-15-1.png" /><!-- --></p>
+<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-19-1.png" /><!-- --></p>
 </div>
 <div id="spatial-distribution-of-responses" class="section level2" number="3.4">
 <h2><span class="header-section-number">3.4</span> Spatial distribution of responses</h2>
@@ -696,8 +843,8 @@ bgd &lt;-get_stamenmap(bb, maptype = &quot;toner-lite&quot;, zoom = 4)</code></p
 <pre class="r"><code># Map response
 ggmap(bgd) + 
   geom_point(data=data.frame(REM.ema), aes(x=lon, y=lat), color=&quot;red&quot;, alpha=.2) + 
-  facet_wrap(vars(wave), nrow = 2, labeller = label_both)</code></pre>
-<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-16-1.png" /><!-- --></p>
+  facet_wrap(vars(wave), ncol = 1, labeller = label_both)</code></pre>
+<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-20-1.png" /><!-- --></p>
 </div>
 <div id="montreal-region" class="section level3" number="3.4.2">
 <h3><span class="header-section-number">3.4.2</span> Montreal region</h3>
@@ -717,11 +864,97 @@ ggmap(bgd) +
   geom_hex(data=data.frame(REM.ema), aes(x = lon, y = lat), bins = 20, alpha = .7) +
   coord_sf(crs = 32188, xlim = bb[c(&quot;right&quot;, &quot;left&quot;)], ylim = bb[c(&quot;bottom&quot;, &quot;top&quot;)], default_crs = 4326) +
   scale_fill_continuous(type = &quot;viridis&quot;) +
-  facet_wrap(vars(wave), ncol = 2, labeller = label_both) +
-  theme(legend.position = &quot;bottom&quot;)</code></pre>
+  facet_wrap(vars(wave), ncol = 1, labeller = label_both)</code></pre>
 <pre><code>## Coordinate system already present. Adding new coordinate system, which will
 ## replace the existing one.</code></pre>
-<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-17-1.png" /><!-- --></p>
+<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-21-1.png" /><!-- --></p>
+</div>
+<div id="within-audited-area" class="section level3" number="3.4.3">
+<h3><span class="header-section-number">3.4.3</span> Within audited area</h3>
+<p>TRAM team did an extensive street audit within a area situated in various neighborhoods of Montréal, as shown in the map below.</p>
+<pre class="r"><code># Flag EMAs within TRAM audit zone
+tram_aoi &lt;- st_read(.con, query = &#39;SELECT * FROM tram_street_buffer&#39;)
+
+.itr_mtx &lt;- REM.ema %&gt;%
+  st_intersects(tram_aoi, sparse = F) 
+  
+REM.ema$tram_audit &lt;- .itr_mtx[,1]
+
+# Compute a few stats
+REM.ema %&gt;% 
+  data.frame() %&gt;%
+  count(wave, tram_audit) %&gt;%
+  pivot_wider(names_from = wave, values_from = n) %&gt;%
+  knitr::kable(col.names = c(&quot;Within TRAM audited zone&quot;, &quot;Wave 1&quot;, &quot;Wave 2&quot;, &quot;Wave 3&quot;)) %&gt;%
+  kableExtra::kable_styling()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Within TRAM audited zone
+</th>
+<th style="text-align:right;">
+Wave 1
+</th>
+<th style="text-align:right;">
+Wave 2
+</th>
+<th style="text-align:right;">
+Wave 3
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:right;">
+9069
+</td>
+<td style="text-align:right;">
+11406
+</td>
+<td style="text-align:right;">
+8051
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:right;">
+888
+</td>
+<td style="text-align:right;">
+680
+</td>
+<td style="text-align:right;">
+536
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># Export EMA within area
+REM.ema %&gt;%
+  data.frame() %&gt;%
+  filter(tram_audit) %&gt;%
+  select(!c(geometry, tram_audit)) %&gt;%
+  write_csv(&#39;data/EMA_within_audit.csv&#39;, na = &#39;&#39;)
+
+# Map EMA
+bb &lt;- st_bbox(tram_aoi)
+names(bb) &lt;- c(&quot;left&quot;, &quot;bottom&quot;, &quot;right&quot;, &quot;top&quot;)
+
+# Get stamen background layer
+bgd &lt;-get_stamenmap(bb, maptype = &quot;toner-lite&quot;, zoom = 11)</code></pre>
+<pre><code>## ℹ Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL.</code></pre>
+<pre class="r"><code># Map response
+ggmap(bgd) + 
+  geom_point(data=data.frame(REM.ema), aes(x=lon, y=lat, color=tram_audit), alpha=.2) + 
+  scale_color_discrete(type = c(&quot;red&quot;, &quot;green&quot;), name = &quot;Within TRAM audited zone&quot;) + 
+  facet_wrap(vars(wave), ncol = 1, labeller = label_both)</code></pre>
+<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-22-1.png" /><!-- --></p>
 </div>
 </div>
 <div id="mhc-sf" class="section level2" number="3.5">
@@ -744,9 +977,9 @@ ggmap(bgd) +
 <pre class="r"><code># Display N of items
 ggplot(.df) +
   geom_histogram(aes(x = n_items), binwidth = 1) +
-  facet_wrap(vars(wave), scales = &quot;free&quot;, ncol = 2, labeller = label_both) +
+  facet_wrap(vars(wave), scales = &quot;free&quot;, ncol = 3, labeller = label_both) +
   xlab(&quot;N collected MHC SF items (max = 14)&quot;)</code></pre>
-<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-18-1.png" /><!-- --></p>
+<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-23-1.png" /><!-- --></p>
 <p>Clearly, wave 2 data is more complete, with 73 participants with MHC SF 14 complete (only 16 in wave1)</p>
 <pre class="r"><code># Display which items appear
 .df &lt;- REM.ema %&gt;%
@@ -765,17 +998,17 @@ ggplot(.df) +
 <pre class="r"><code># Display N of items
 ggplot(.df) +
   geom_bar(aes(y = factor(mhc_sf_item_num), x=n_items), stat = &quot;identity&quot;) +
-  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol = 2, labeller = label_both) +
+  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol = 3, labeller = label_both) +
   xlab(&quot;N collected MHC SF items&quot;) +
   ylab(&quot;# MHC-SF&quot;)</code></pre>
-<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-19-1.png" /><!-- --></p>
+<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-24-1.png" /><!-- --></p>
 </div>
 <div id="ema" class="section level2" number="3.6">
 <h2><span class="header-section-number">3.6</span> EMA</h2>
 <pre class="r"><code># A bit of cleanup for improving the graph
 .df &lt;- REM.ema %&gt;%
   data.frame() %&gt;%
-  filter(((wave == 1) &amp; (response_time &lt; as.Date(&quot;2019-12-30&quot;))) | ((wave == 2)  &amp; (response_time &lt; as.Date(&quot;2022-05-15&quot;)))) </code></pre>
+  filter(((wave == 1) &amp; (response_time &lt; as.Date(&quot;2019-12-30&quot;))) | ((wave == 2)  &amp; (response_time &lt; as.Date(&quot;2022-05-15&quot;)) | ((wave == 3)  &amp; (response_time &lt; as.Date(&quot;2023-05-15&quot;))))) </code></pre>
 <div id="unwell-well" class="section level3" number="3.6.1">
 <h3><span class="header-section-number">3.6.1</span> Unwell / Well</h3>
 <pre class="r"><code># Mood a
@@ -786,9 +1019,10 @@ ggplot(data=.df, aes(x = as_date(response_time), y = as.numeric(mood_a))) +
   scale_y_continuous(breaks = 1:6, labels = c(&quot;Unwell&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;Well&quot;), limits = c(1, 6)) +
   xlab(&quot;Date&quot;) +
   ylab(&quot;Mood | Unwell / Well&quot;) +
-  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=2, labeller = label_both)</code></pre>
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=3, labeller = label_both)</code></pre>
 <pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
-<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-21-1.png" /><!-- --></p>
+<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-26-1.png" /><!-- --></p>
 </div>
 <div id="content-discontent" class="section level3" number="3.6.2">
 <h3><span class="header-section-number">3.6.2</span> Content / Discontent</h3>
@@ -800,9 +1034,10 @@ ggplot(data=.df, aes(x = as_date(response_time), y = as.numeric(mood_b))) +
   scale_y_continuous(breaks = 1:6, labels = c(&quot;Content&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;Discontent&quot;), limits = c(1, 6)) +
   xlab(&quot;Date&quot;) +
   ylab(&quot;Mood | Content / Discontent&quot;)  +
-  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=2, labeller = label_both)</code></pre>
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=3, labeller = label_both)</code></pre>
 <pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
-<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-22-1.png" /><!-- --></p>
+<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-27-1.png" /><!-- --></p>
 </div>
 <div id="agitated-calm" class="section level3" number="3.6.3">
 <h3><span class="header-section-number">3.6.3</span> Agitated / Calm</h3>
@@ -814,9 +1049,10 @@ ggplot(data=.df, aes(x = as_date(response_time), y = as.numeric(mood_c))) +
   scale_y_continuous(breaks = 1:6, labels = c(&quot;Agitated&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;Calm&quot;), limits = c(1, 6)) +
   xlab(&quot;Date&quot;) +
   ylab(&quot;Mood | Agitated / Calm&quot;)  +
-  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=2, labeller = label_both)</code></pre>
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=3, labeller = label_both)</code></pre>
 <pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
-<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-23-1.png" /><!-- --></p>
+<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-28-1.png" /><!-- --></p>
 </div>
 <div id="relaxed-tense" class="section level3" number="3.6.4">
 <h3><span class="header-section-number">3.6.4</span> Relaxed / Tense</h3>
@@ -828,9 +1064,10 @@ ggplot(data=.df, aes(x = as_date(response_time), y = as.numeric(mood_d))) +
   scale_y_continuous(breaks = 1:6, labels = c(&quot;Relaxed&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;Tense&quot;), limits = c(1, 6)) +
   xlab(&quot;Date&quot;) +
   ylab(&quot;Mood | Relaxed / Tense&quot;)  +
-  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=2, labeller = label_both)</code></pre>
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=3, labeller = label_both)</code></pre>
 <pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
-<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-24-1.png" /><!-- --></p>
+<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-29-1.png" /><!-- --></p>
 </div>
 <div id="tired-awake" class="section level3" number="3.6.5">
 <h3><span class="header-section-number">3.6.5</span> Tired / Awake</h3>
@@ -842,9 +1079,10 @@ ggplot(data=.df, aes(x = as_date(response_time), y = as.numeric(mood_e))) +
   scale_y_continuous(breaks = 1:6, labels = c(&quot;Tired&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;Awake&quot;), limits = c(1, 6)) +
   xlab(&quot;Date&quot;) +
   ylab(&quot;Mood | Tired / Awake&quot;)  +
-  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=2, labeller = label_both)</code></pre>
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=3, labeller = label_both)</code></pre>
 <pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
-<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-25-1.png" /><!-- --></p>
+<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-30-1.png" /><!-- --></p>
 </div>
 <div id="full-of-energy-without-energy" class="section level3" number="3.6.6">
 <h3><span class="header-section-number">3.6.6</span> Full of energy / Without energy</h3>
@@ -856,9 +1094,10 @@ ggplot(data=.df, aes(x = as_date(response_time), y = as.numeric(mood_f))) +
   scale_y_continuous(breaks = 1:6, labels = c(&quot;Full of energy&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;Without energy&quot;), limits = c(1, 6)) +
   xlab(&quot;Date&quot;) +
   ylab(&quot;Mood | Full of energy / Without energy&quot;)  +
-  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=2, labeller = label_both)</code></pre>
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=3, labeller = label_both)</code></pre>
 <pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
-<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-26-1.png" /><!-- --></p>
+<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-31-1.png" /><!-- --></p>
 </div>
 </div>
 <div id="ema-according-to-time-of-day" class="section level2" number="3.7">
@@ -880,8 +1119,8 @@ ggplot(data=.df, aes(x = response_time_part, y = as.numeric(mood_a))) +
   scale_y_continuous(breaks = 1:6, labels = c(&quot;Unwell&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;Well&quot;), limits = c(1, 6)) +
   xlab(&quot;Date&quot;) +
   ylab(&quot;Mood | Unwell / Well&quot;) +
-  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=2, labeller = label_both)</code></pre>
-<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-28-1.png" /><!-- --></p>
+  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=3, labeller = label_both)</code></pre>
+<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-33-1.png" /><!-- --></p>
 </div>
 <div id="content-discontent-1" class="section level3" number="3.7.2">
 <h3><span class="header-section-number">3.7.2</span> Content / Discontent</h3>
@@ -893,8 +1132,8 @@ ggplot(data=.df, aes(x = response_time_part, y = as.numeric(mood_b))) +
   scale_y_continuous(breaks = 1:6, labels = c(&quot;Content&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;Discontent&quot;), limits = c(1, 6)) +
   xlab(&quot;Date&quot;) +
   ylab(&quot;Mood | Content / Discontent&quot;) +
-  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=2, labeller = label_both)</code></pre>
-<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-29-1.png" /><!-- --></p>
+  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=3, labeller = label_both)</code></pre>
+<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-34-1.png" /><!-- --></p>
 </div>
 <div id="agitated-calm-1" class="section level3" number="3.7.3">
 <h3><span class="header-section-number">3.7.3</span> Agitated / Calm</h3>
@@ -906,8 +1145,8 @@ ggplot(data=.df, aes(x = response_time_part, y = as.numeric(mood_c))) +
   scale_y_continuous(breaks = 1:6, labels = c(&quot;Agitated&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;Calm&quot;), limits = c(1, 6)) +
   xlab(&quot;Date&quot;) +
   ylab(&quot;Mood | Agitated / Calm&quot;) +
-  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=2, labeller = label_both)</code></pre>
-<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-30-1.png" /><!-- --></p>
+  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=3, labeller = label_both)</code></pre>
+<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-35-1.png" /><!-- --></p>
 </div>
 <div id="relaxed-tense-1" class="section level3" number="3.7.4">
 <h3><span class="header-section-number">3.7.4</span> Relaxed / Tense</h3>
@@ -919,8 +1158,8 @@ ggplot(data=.df, aes(x = response_time_part, y = as.numeric(mood_d))) +
   scale_y_continuous(breaks = 1:6, labels = c(&quot;Relaxed&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;Tense&quot;), limits = c(1, 6)) +
   xlab(&quot;Date&quot;) +
   ylab(&quot;Mood | Unwell / Well&quot;) +
-  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=2, labeller = label_both)</code></pre>
-<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-31-1.png" /><!-- --></p>
+  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=3, labeller = label_both)</code></pre>
+<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-36-1.png" /><!-- --></p>
 </div>
 <div id="tired-awake-1" class="section level3" number="3.7.5">
 <h3><span class="header-section-number">3.7.5</span> Tired / Awake</h3>
@@ -932,8 +1171,8 @@ ggplot(data=.df, aes(x = response_time_part, y = as.numeric(mood_e))) +
   scale_y_continuous(breaks = 1:6, labels = c(&quot;Tired&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;Awake&quot;), limits = c(1, 6)) +
   xlab(&quot;Date&quot;) +
   ylab(&quot;Mood | Tired / Awake&quot;) +
-  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=2, labeller = label_both)</code></pre>
-<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-32-1.png" /><!-- --></p>
+  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=3, labeller = label_both)</code></pre>
+<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-37-1.png" /><!-- --></p>
 </div>
 <div id="full-of-energy-without-energy-1" class="section level3" number="3.7.6">
 <h3><span class="header-section-number">3.7.6</span> Full of energy / Without energy</h3>
@@ -945,8 +1184,8 @@ ggplot(data=.df, aes(x = response_time_part, y = as.numeric(mood_f))) +
   scale_y_continuous(breaks = 1:6, labels = c(&quot;Full of energy&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;Without energy&quot;), limits = c(1, 6)) +
   xlab(&quot;Date&quot;) +
   ylab(&quot;Mood | Full of energy / Without energy&quot;) +
-  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=2, labeller = label_both)</code></pre>
-<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-33-1.png" /><!-- --></p>
+  facet_wrap(vars(wave), scales = &quot;free_x&quot;, ncol=3, labeller = label_both)</code></pre>
+<p><img src="REM_preanalysis_files/figure-html/unnamed-chunk-38-1.png" /><!-- --></p>
 </div>
 </div>
 </div>
