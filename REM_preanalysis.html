@@ -272,6 +272,7 @@ div.tocify {
     scheduled_time AT TIME ZONE &#39;America/Montreal&#39; AS scheduled_time,
     issued_time AT TIME ZONE &#39;America/Montreal&#39; AS issued_time,
     response_time AT TIME ZONE &#39;America/Montreal&#39; AS response_time,
+    round(extract(epoch from response_time - issued_time)) = 7200 AS is_expired, 
     duration_minutes,
     lat,
     lon,
@@ -299,7 +300,6 @@ div.tocify {
     mood_who,
     NULLIF(transp_mode, -7) AS transp_mode,
     NULLIF(motiv, &#39;-7&#39;) AS motiv,
-    feedback_ema,
     feedback_ema_1 AS ema_fdbk_more,
   feedback_ema_2 AS ema_fdbk_easy,
   feedback_ema_3 AS ema_fdbk_too_many,
@@ -321,9 +321,9 @@ FROM rem.tram_lut_w1 tram
 JOIN rem.ema ON ema.user_id = tram.&quot;Name&quot;</code></pre>
 <pre class="r"><code># Wave 1
 REM1.ema &lt;- .rem_ema1 %&gt;%
-  mutate(duration_minutes = case_when(duration_minutes == &quot;Expired&quot; ~ Inf,
-                                duration_minutes == &quot;Canceled&quot; ~ NA_real_,
-                                TRUE ~ as.double(duration_minutes)/60)) # duration_minutes is actually expressed in seconds !!
+  mutate(duration_minutes = case_when(is_expired ~ Inf,
+                                TRUE ~ as.double(duration_minutes)/60)) %&gt;% # duration_minutes is actually expressed in seconds !!
+  select(!is_expired)
 
 REM1.survey &lt;- read_csv(&quot;wave1/data/w1.FINAL_WEIGHTED_24May22 - Copy.csv&quot;, show_col_types = FALSE) %&gt;%
   rename(tram_id = uniqueID) %&gt;%
@@ -333,7 +333,7 @@ REM1.survey &lt;- read_csv(&quot;wave1/data/w1.FINAL_WEIGHTED_24May22 - Copy.csv
 head(REM1.ema)</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["tram_id"],"name":[1],"type":["chr"],"align":["left"]},{"label":["ethica_id"],"name":[2],"type":["int"],"align":["right"]},{"label":["device_id"],"name":[3],"type":["chr"],"align":["left"]},{"label":["wave"],"name":[4],"type":["int"],"align":["right"]},{"label":["scheduled_time"],"name":[5],"type":["dttm"],"align":["right"]},{"label":["issued_time"],"name":[6],"type":["dttm"],"align":["right"]},{"label":["response_time"],"name":[7],"type":["dttm"],"align":["right"]},{"label":["duration_minutes"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["lat"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["lon"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["language"],"name":[11],"type":["chr"],"align":["left"]},{"label":["mhc_sf_1"],"name":[12],"type":["int"],"align":["right"]},{"label":["mhc_sf_2"],"name":[13],"type":["int"],"align":["right"]},{"label":["mhc_sf_3"],"name":[14],"type":["int"],"align":["right"]},{"label":["mhc_sf_4"],"name":[15],"type":["int"],"align":["right"]},{"label":["mhc_sf_5"],"name":[16],"type":["int"],"align":["right"]},{"label":["mhc_sf_6"],"name":[17],"type":["int"],"align":["right"]},{"label":["mhc_sf_7"],"name":[18],"type":["int"],"align":["right"]},{"label":["mhc_sf_8"],"name":[19],"type":["int"],"align":["right"]},{"label":["mhc_sf_9"],"name":[20],"type":["int"],"align":["right"]},{"label":["mhc_sf_10"],"name":[21],"type":["int"],"align":["right"]},{"label":["mhc_sf_11"],"name":[22],"type":["int"],"align":["right"]},{"label":["mhc_sf_12"],"name":[23],"type":["int"],"align":["right"]},{"label":["mhc_sf_13"],"name":[24],"type":["int"],"align":["right"]},{"label":["mhc_sf_14"],"name":[25],"type":["int"],"align":["right"]},{"label":["mood_a"],"name":[26],"type":["int"],"align":["right"]},{"label":["mood_b"],"name":[27],"type":["int"],"align":["right"]},{"label":["mood_c"],"name":[28],"type":["int"],"align":["right"]},{"label":["mood_d"],"name":[29],"type":["int"],"align":["right"]},{"label":["mood_e"],"name":[30],"type":["int"],"align":["right"]},{"label":["mood_f"],"name":[31],"type":["int"],"align":["right"]},{"label":["mood_who"],"name":[32],"type":["int"],"align":["right"]},{"label":["transp_mode"],"name":[33],"type":["int"],"align":["right"]},{"label":["motiv"],"name":[34],"type":["chr"],"align":["left"]},{"label":["feedback_ema"],"name":[35],"type":["chr"],"align":["left"]},{"label":["ema_fdbk_more"],"name":[36],"type":["int"],"align":["right"]},{"label":["ema_fdbk_easy"],"name":[37],"type":["int"],"align":["right"]},{"label":["ema_fdbk_too_many"],"name":[38],"type":["int"],"align":["right"]},{"label":["ema_fdbk_too_freq"],"name":[39],"type":["int"],"align":["right"]},{"label":["ema_fdbk_freq_ok"],"name":[40],"type":["int"],"align":["right"]},{"label":["ema_fdbk_like"],"name":[41],"type":["int"],"align":["right"]},{"label":["ema_fdbk_not_know"],"name":[42],"type":["int"],"align":["right"]},{"label":["ema_fdbk_too_pers"],"name":[43],"type":["int"],"align":["right"]},{"label":["ema_fdbk_more_quest"],"name":[44],"type":["int"],"align":["right"]},{"label":["feedback_gen"],"name":[45],"type":["chr"],"align":["left"]},{"label":["study_fdbk_like"],"name":[46],"type":["int"],"align":["right"]},{"label":["study_fdbk_stop"],"name":[47],"type":["int"],"align":["right"]},{"label":["study_fdbk_not_like"],"name":[48],"type":["int"],"align":["right"]},{"label":["study_fdbk_too_many_qst"],"name":[49],"type":["int"],"align":["right"]},{"label":["study_fdbk_too_many_msg"],"name":[50],"type":["int"],"align":["right"]},{"label":["study_fdbk_interest"],"name":[51],"type":["int"],"align":["right"]},{"label":["study_fdbk_results"],"name":[52],"type":["int"],"align":["right"]}],"data":[{"1":"MCG2521","2":"20583","3":"e2ee356ce719d810","4":"1","5":"2019-12-06 08:59:36","6":"2019-12-06 09:00:37","7":"2019-12-06 11:00:37","8":"NA","9":"NA","10":"NA","11":"fr","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"NA","50":"NA","51":"NA","52":"NA","_rn_":"1"},{"1":"MCG2634","2":"20484","3":"e6549e7ba42d1550","4":"1","5":"2019-12-06 08:42:20","6":"2019-12-06 10:02:07","7":"2019-12-06 12:02:07","8":"NA","9":"NA","10":"NA","11":"en","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"NA","50":"NA","51":"NA","52":"NA","_rn_":"2"},{"1":"MCG2319","2":"20537","3":"d188a9b9f3cf78ce","4":"1","5":"2019-12-06 08:44:50","6":"2019-12-06 10:22:58","7":"2019-12-06 12:22:58","8":"NA","9":"NA","10":"NA","11":"fr","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"NA","50":"NA","51":"NA","52":"NA","_rn_":"3"},{"1":"MCG392","2":"20534","3":"7f9f5a6b435bfdef","4":"1","5":"2019-12-22 08:08:26","6":"2019-12-22 08:08:26","7":"2019-12-22 10:08:26","8":"NA","9":"NA","10":"NA","11":"fr","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"NA","50":"NA","51":"NA","52":"NA","_rn_":"4"},{"1":"MCG1557","2":"20569","3":"3df8ffd92068d176","4":"1","5":"2019-12-16 18:26:16","6":"2019-12-16 18:27:16","7":"2019-12-16 20:27:16","8":"NA","9":"NA","10":"NA","11":"en","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"NA","50":"NA","51":"NA","52":"NA","_rn_":"5"},{"1":"MCG554","2":"21376","3":"9a2ae3a1494f79b8","4":"1","5":"2019-12-13 18:43:58","6":"2019-12-13 18:44:58","7":"2019-12-13 20:44:58","8":"NA","9":"NA","10":"NA","11":"en","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"NA","50":"NA","51":"NA","52":"NA","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["tram_id"],"name":[1],"type":["chr"],"align":["left"]},{"label":["ethica_id"],"name":[2],"type":["int"],"align":["right"]},{"label":["device_id"],"name":[3],"type":["chr"],"align":["left"]},{"label":["wave"],"name":[4],"type":["int"],"align":["right"]},{"label":["scheduled_time"],"name":[5],"type":["dttm"],"align":["right"]},{"label":["issued_time"],"name":[6],"type":["dttm"],"align":["right"]},{"label":["response_time"],"name":[7],"type":["dttm"],"align":["right"]},{"label":["duration_minutes"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["lat"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["lon"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["language"],"name":[11],"type":["chr"],"align":["left"]},{"label":["mhc_sf_1"],"name":[12],"type":["int"],"align":["right"]},{"label":["mhc_sf_2"],"name":[13],"type":["int"],"align":["right"]},{"label":["mhc_sf_3"],"name":[14],"type":["int"],"align":["right"]},{"label":["mhc_sf_4"],"name":[15],"type":["int"],"align":["right"]},{"label":["mhc_sf_5"],"name":[16],"type":["int"],"align":["right"]},{"label":["mhc_sf_6"],"name":[17],"type":["int"],"align":["right"]},{"label":["mhc_sf_7"],"name":[18],"type":["int"],"align":["right"]},{"label":["mhc_sf_8"],"name":[19],"type":["int"],"align":["right"]},{"label":["mhc_sf_9"],"name":[20],"type":["int"],"align":["right"]},{"label":["mhc_sf_10"],"name":[21],"type":["int"],"align":["right"]},{"label":["mhc_sf_11"],"name":[22],"type":["int"],"align":["right"]},{"label":["mhc_sf_12"],"name":[23],"type":["int"],"align":["right"]},{"label":["mhc_sf_13"],"name":[24],"type":["int"],"align":["right"]},{"label":["mhc_sf_14"],"name":[25],"type":["int"],"align":["right"]},{"label":["mood_a"],"name":[26],"type":["int"],"align":["right"]},{"label":["mood_b"],"name":[27],"type":["int"],"align":["right"]},{"label":["mood_c"],"name":[28],"type":["int"],"align":["right"]},{"label":["mood_d"],"name":[29],"type":["int"],"align":["right"]},{"label":["mood_e"],"name":[30],"type":["int"],"align":["right"]},{"label":["mood_f"],"name":[31],"type":["int"],"align":["right"]},{"label":["mood_who"],"name":[32],"type":["int"],"align":["right"]},{"label":["transp_mode"],"name":[33],"type":["int"],"align":["right"]},{"label":["motiv"],"name":[34],"type":["chr"],"align":["left"]},{"label":["ema_fdbk_more"],"name":[35],"type":["int"],"align":["right"]},{"label":["ema_fdbk_easy"],"name":[36],"type":["int"],"align":["right"]},{"label":["ema_fdbk_too_many"],"name":[37],"type":["int"],"align":["right"]},{"label":["ema_fdbk_too_freq"],"name":[38],"type":["int"],"align":["right"]},{"label":["ema_fdbk_freq_ok"],"name":[39],"type":["int"],"align":["right"]},{"label":["ema_fdbk_like"],"name":[40],"type":["int"],"align":["right"]},{"label":["ema_fdbk_not_know"],"name":[41],"type":["int"],"align":["right"]},{"label":["ema_fdbk_too_pers"],"name":[42],"type":["int"],"align":["right"]},{"label":["ema_fdbk_more_quest"],"name":[43],"type":["int"],"align":["right"]},{"label":["feedback_gen"],"name":[44],"type":["chr"],"align":["left"]},{"label":["study_fdbk_like"],"name":[45],"type":["int"],"align":["right"]},{"label":["study_fdbk_stop"],"name":[46],"type":["int"],"align":["right"]},{"label":["study_fdbk_not_like"],"name":[47],"type":["int"],"align":["right"]},{"label":["study_fdbk_too_many_qst"],"name":[48],"type":["int"],"align":["right"]},{"label":["study_fdbk_too_many_msg"],"name":[49],"type":["int"],"align":["right"]},{"label":["study_fdbk_interest"],"name":[50],"type":["int"],"align":["right"]},{"label":["study_fdbk_results"],"name":[51],"type":["int"],"align":["right"]}],"data":[{"1":"MCG2521","2":"20583","3":"e2ee356ce719d810","4":"1","5":"2019-12-06 08:59:36","6":"2019-12-06 09:00:37","7":"2019-12-06 11:00:37","8":"Inf","9":"NA","10":"NA","11":"fr","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"NA","50":"NA","51":"NA","_rn_":"1"},{"1":"MCG2634","2":"20484","3":"e6549e7ba42d1550","4":"1","5":"2019-12-06 08:42:20","6":"2019-12-06 10:02:07","7":"2019-12-06 12:02:07","8":"Inf","9":"NA","10":"NA","11":"en","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"NA","50":"NA","51":"NA","_rn_":"2"},{"1":"MCG2319","2":"20537","3":"d188a9b9f3cf78ce","4":"1","5":"2019-12-06 08:44:50","6":"2019-12-06 10:22:58","7":"2019-12-06 12:22:58","8":"Inf","9":"NA","10":"NA","11":"fr","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"NA","50":"NA","51":"NA","_rn_":"3"},{"1":"MCG392","2":"20534","3":"7f9f5a6b435bfdef","4":"1","5":"2019-12-22 08:08:26","6":"2019-12-22 08:08:26","7":"2019-12-22 10:08:26","8":"Inf","9":"NA","10":"NA","11":"fr","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"NA","50":"NA","51":"NA","_rn_":"4"},{"1":"MCG1557","2":"20569","3":"3df8ffd92068d176","4":"1","5":"2019-12-16 18:26:16","6":"2019-12-16 18:27:16","7":"2019-12-16 20:27:16","8":"Inf","9":"NA","10":"NA","11":"en","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"NA","50":"NA","51":"NA","_rn_":"5"},{"1":"MCG554","2":"21376","3":"9a2ae3a1494f79b8","4":"1","5":"2019-12-13 18:43:58","6":"2019-12-13 18:44:58","7":"2019-12-13 20:44:58","8":"Inf","9":"NA","10":"NA","11":"en","12":"NA","13":"NA","14":"NA","15":"NA","16":"NA","17":"NA","18":"NA","19":"NA","20":"NA","21":"NA","22":"NA","23":"NA","24":"NA","25":"NA","26":"NA","27":"NA","28":"NA","29":"NA","30":"NA","31":"NA","32":"NA","33":"NA","34":"NA","35":"NA","36":"NA","37":"NA","38":"NA","39":"NA","40":"NA","41":"NA","42":"NA","43":"NA","44":"NA","45":"NA","46":"NA","47":"NA","48":"NA","49":"NA","50":"NA","51":"NA","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
@@ -523,19 +523,113 @@ REM.ema &lt;- bind_rows(REM1.ema, REM2.ema, REM3.ema) %&gt;%
          mood_f = factor(mood_f, 1:6, c(&quot;Full of energy&quot;, 2:5, &quot;Without energy&quot;)),
          mood_who = factor(mood_who, 1:5, c(&quot;No one, I am alone&quot;,&quot;No one, but there are people around me&quot;,&quot;Friend(s)&quot;,&quot;Family member(s) / spouse / partner&quot;,&quot;Colleague(s)&quot;)))
 
-REM.ema &lt;- st_as_sf(REM.ema, coords = c(&quot;lon&quot;, &quot;lat&quot;), crs = 4326, na.fail = F, remove = F)
+REM.ema &lt;- st_as_sf(REM.ema, coords = c(&quot;lon&quot;, &quot;lat&quot;), crs = 4326, na.fail = F, remove = F)</code></pre>
+<div id="tram-id-look-up-table" class="section level3" number="1.4.1">
+<h3><span class="header-section-number">1.4.1</span> TRAM ID Look-up-table</h3>
+<p>Participants got a different ID for each wave, need to build the panel LUT</p>
+<pre class="r"><code># Reading the w1/w2 LUT
+.tram_lut_w1.2 &lt;- REM2.ema %&gt;%
+  select(starts_with(&quot;tram_id&quot;)) %&gt;%
+  unique()
+
+# and the w3 participants
+.tram_lut_w1.2.3 &lt;- REM3.ema %&gt;%
+  select(starts_with(&quot;tram_id&quot;)) %&gt;%
+  unique()
+
+# Creating the complete LUT w1/2/3 with no redundancy
+tram_lut_w1.2.3 &lt;- .tram_lut_w1.2 %&gt;%
+  left_join(select(.tram_lut_w1.2.3, !tram_id_w2), by=&quot;tram_id&quot;, na_matches = &quot;never&quot;) %&gt;%
+  left_join(select(.tram_lut_w1.2.3, !tram_id), by=&quot;tram_id_w2&quot;, na_matches = &quot;never&quot;) %&gt;%
+  mutate(tram_id_w3 = coalesce(tram_id_w3.x, tram_id_w3.y)) %&gt;%
+  select(!c(tram_id_w3.x, tram_id_w3.y))
+
+# Populating the w1/2/3 IDs back into the EMA
+REM.ema &lt;- REM.ema %&gt;%
+  left_join(tram_lut_w1.2.3, by=&quot;tram_id&quot;, suffix = c(&quot;&quot;, &quot;.lut1&quot;), na_matches = &quot;never&quot;) %&gt;%
+  left_join(tram_lut_w1.2.3, by=&quot;tram_id_w2&quot;, suffix = c(&quot;&quot;, &quot;.lut2&quot;), na_matches = &quot;never&quot;) %&gt;%
+  left_join(tram_lut_w1.2.3, by=&quot;tram_id_w3&quot;, suffix = c(&quot;&quot;, &quot;.lut3&quot;), na_matches = &quot;never&quot;) %&gt;%
+  relocate(starts_with(&quot;tram_id&quot;)) %&gt;%
+  mutate(tram_id = coalesce(tram_id, tram_id.lut2, tram_id.lut3),
+         tram_id_w2 = coalesce(tram_id_w2.lut1, tram_id_w2, tram_id_w2.lut3),
+         tram_id_w3 = coalesce(tram_id_w3.lut1, tram_id_w3.lut2, tram_id_w3)) %&gt;%
+  select(!c(tram_id.lut2, tram_id.lut3, tram_id_w2.lut1, tram_id_w2.lut3, tram_id_w3.lut1, tram_id_w3.lut2))</code></pre>
+</div>
+<div id="data-dictionary" class="section level3" number="1.4.2">
+<h3><span class="header-section-number">1.4.2</span> Data dictionary</h3>
+<ul>
+<li><code>tram_id</code>: TRAM participant ID at wave 1</li>
+<li><code>tram_id_w2</code>: TRAM participant ID at wave 2</li>
+<li><code>tram_id_w3</code>: TRAM participant ID at wave 3</li>
+<li><code>ethica_id</code>: Ethica User ID of participant</li>
+<li><code>device_id</code>: Ethica device ID</li>
+<li><code>wave</code>: Data collection wave (1, 2, 3)</li>
+<li><code>scheduled_time</code>: Scheduled time of prompt</li>
+<li><code>issued_time</code>: Actual time of prompt</li>
+<li><code>response_time</code>: Response time of participant to prompt (<code>Inf</code> when expired)</li>
+<li><code>duration_minutes</code>: Duration (minutes) from scheduled to completion time; <em>missing</em> if</li>
+<li><code>lat</code>: Latitude of participant when prompt is answered</li>
+<li><code>lon</code>: Longitude of participant when prompt is answered</li>
+<li><code>language</code>: language selected by participant to answer the questionnaire (<code>fr</code> / <code>en</code>)</li>
+<li><code>mhc_sf_1</code>: “During the past two weeks, have you felt happy?”</li>
+<li><code>mhc_sf_2</code>: “During the past two weeks, have you felt that you had something important to contribute to society?”</li>
+<li><code>mhc_sf_3</code>: “During the past two weeks, have you felt that you liked most parts of your personality?”</li>
+<li><code>mhc_sf_4</code>: “During the past two weeks, have you felt interested in life?”</li>
+<li><code>mhc_sf_5</code>: “During the past two weeks, have you felt that you belonged to a community (like a social group, or your neighbourhood)?”</li>
+<li><code>mhc_sf_6</code>: “During the past two weeks, have you felt good at managing the responsibilities of your daily life?”</li>
+<li><code>mhc_sf_7</code>: “During the past two weeks, have you felt satisfied with your life?”</li>
+<li><code>mhc_sf_8</code>: “During the past two weeks, have you felt that our society is becoming a better place for all people?”</li>
+<li><code>mhc_sf_9</code>: “During the past two weeks, have you felt that you had warm and trusting relationships with others?”</li>
+<li><code>mhc_sf_10</code>: “During the past two weeks, have you felt that people are basically good?”</li>
+<li><code>mhc_sf_11</code>: “During the past two weeks, have you felt that you had experiences that challenged you to grow and become a better person?”</li>
+<li><code>mhc_sf_12</code>: “During the past two weeks, have you felt that the way our society works makes sense to you?”</li>
+<li><code>mhc_sf_13</code>: “During the past two weeks, have you felt confident to think or express your own ideas and opinions?”</li>
+<li><code>mhc_sf_14</code>: “During the past two weeks, have you felt that your life has a sense of direction or meaning to it?”</li>
+<li><code>mood_a</code>: “At this moment, I feel: [1 Unwell / 6 Well]”</li>
+<li><code>mood_b</code>: “At this moment, I feel: [1 Content / 6 Discontent]”</li>
+<li><code>mood_c</code>: “At this moment, I feel: [1 Agitated / 6 Calm]”</li>
+<li><code>mood_d</code>: “At this moment, I feel: [1 Relaxed / 6 Tense]”</li>
+<li><code>mood_e</code>: “At this moment, I feel: [1 Tired / 6 Awake]”</li>
+<li><code>mood_f</code>: “At this moment, I feel: [1 Full of energy / 6 Without energy]”</li>
+<li><code>mood_who</code>: “At this moment, I am interacting with: [No one, I am alone | No one, but there are people around me | Friend(s) | Family member(s) / spouse / partner | Colleague(s)]</li>
+<li><code>transp_mode</code>: “What was the mode of transportation for your first trip from home today?”</li>
+<li><code>motiv</code>: “What inspired you to join our study?”</li>
+<li><code>ema_fdbk_more</code>: “For the last 7 days, we asked you how you were doing. What did you think of the questions? [I would have liked to answer these questions more often]”</li>
+<li><code>ema_fdbk_easy</code>: “For the last 7 days, we asked you how you were doing. What did you think of the questions? [The questions were easy]”</li>
+<li><code>ema_fdbk_too_many</code>: “For the last 7 days, we asked you how you were doing. What did you think of the questions? [There were too many questions at a time]”</li>
+<li><code>ema_fdbk_too_freq</code>: “For the last 7 days, we asked you how you were doing. What did you think of the questions? [The questions were too frequent]”</li>
+<li><code>ema_fdbk_freq_ok</code>: “For the last 7 days, we asked you how you were doing. What did you think of the questions? [The frequency of the questions was good]”</li>
+<li><code>ema_fdbk_like</code>: “For the last 7 days, we asked you how you were doing. What did you think of the questions? [I liked these questions]”</li>
+<li><code>ema_fdbk_not_know</code>: “For the last 7 days, we asked you how you were doing. What did you think of the questions? [I didn’t know how to answer]”</li>
+<li><code>ema_fdbk_too_pers</code>: “For the last 7 days, we asked you how you were doing. What did you think of the questions? [The questions were too personal]”</li>
+<li><code>ema_fdbk_more_quest</code>: “For the last 7 days, we asked you how you were doing. What did you think of the questions? [I woud have liked to answer more questions]”</li>
+<li><code>feedback_gen</code>: “Before we wrap up…What inspired you to join our study?”</li>
+<li><code>study_fdbk_like</code>: “How are you finding this experience? [I’m liking these questions]”</li>
+<li><code>study_fdbk_stop</code>: “How are you finding this experience? [I’m looking forward to the end of the study!]”</li>
+<li><code>study_fdbk_not_like</code>: “How are you finding this experience? [I don’t like answering these questions]”</li>
+<li><code>study_fdbk_too_many_qst</code>: “How are you finding this experience? [There are too many questions]”</li>
+<li><code>study_fdbk_too_many_msg</code>: “How are you finding this experience? [There are too many messages]”</li>
+<li><code>study_fdbk_interest</code>: “How are you finding this experience? [The questions are interesting]”</li>
+<li><code>study_fdbk_results</code>: “How are you finding this experience? [I’m looking forward to seeing the results!]”</li>
+</ul>
+<pre class="r"><code># Save data to file
+REM.ema %&gt;% as.data.frame() %&gt;%
+  select(!geometry) %&gt;%
+  write_csv(&quot;data/REM_EMA_w1-w2-w3.csv&quot;, na = &quot;&quot;)
 
 # Display some basic info about REM.ema
 str(REM.ema)</code></pre>
-<pre><code>## Classes &#39;sf&#39; and &#39;data.frame&#39;:   30630 obs. of  55 variables:
+<pre><code>## Classes &#39;sf&#39; and &#39;data.frame&#39;:   30630 obs. of  54 variables:
 ##  $ tram_id                : chr  &quot;MCG2521&quot; &quot;MCG2634&quot; &quot;MCG2319&quot; &quot;MCG392&quot; ...
+##  $ tram_id_w2             : chr  NA NA NA NA ...
+##  $ tram_id_w3             : chr  NA NA NA NA ...
 ##  $ ethica_id              : int  20583 20484 20537 20534 20569 21376 20482 20570 21376 20848 ...
 ##  $ device_id              : chr  &quot;e2ee356ce719d810&quot; &quot;e6549e7ba42d1550&quot; &quot;d188a9b9f3cf78ce&quot; &quot;7f9f5a6b435bfdef&quot; ...
 ##  $ wave                   : int  1 1 1 1 1 1 1 1 1 1 ...
 ##  $ scheduled_time         : POSIXct, format: &quot;2019-12-06 08:59:36&quot; &quot;2019-12-06 08:42:20&quot; ...
 ##  $ issued_time            : POSIXct, format: &quot;2019-12-06 09:00:37&quot; &quot;2019-12-06 10:02:07&quot; ...
 ##  $ response_time          : POSIXct, format: &quot;2019-12-06 11:00:37&quot; &quot;2019-12-06 12:02:07&quot; ...
-##  $ duration_minutes       : num  NA NA NA NA NA ...
+##  $ duration_minutes       : num  Inf Inf Inf Inf Inf ...
 ##  $ lat                    : num  NA NA NA NA NA NA NA NA NA NA ...
 ##  $ lon                    : num  NA NA NA NA NA NA NA NA NA NA ...
 ##  $ language               : chr  &quot;fr&quot; &quot;en&quot; &quot;fr&quot; &quot;fr&quot; ...
@@ -562,7 +656,6 @@ str(REM.ema)</code></pre>
 ##  $ mood_who               : Factor w/ 5 levels &quot;No one, I am alone&quot;,..: NA NA NA NA NA NA NA NA NA NA ...
 ##  $ transp_mode            : Factor w/ 6 levels &quot;Walk&quot;,&quot;Car / Truck&quot;,..: NA NA NA NA NA NA NA NA NA NA ...
 ##  $ motiv                  : chr  NA NA NA NA ...
-##  $ feedback_ema           : chr  NA NA NA NA ...
 ##  $ ema_fdbk_more          : int  NA NA NA NA NA NA NA NA NA NA ...
 ##  $ ema_fdbk_easy          : int  NA NA NA NA NA NA NA NA NA NA ...
 ##  $ ema_fdbk_too_many      : int  NA NA NA NA NA NA NA NA NA NA ...
@@ -580,41 +673,10 @@ str(REM.ema)</code></pre>
 ##  $ study_fdbk_too_many_msg: int  NA NA NA NA NA NA NA NA NA NA ...
 ##  $ study_fdbk_interest    : int  NA NA NA NA NA NA NA NA NA NA ...
 ##  $ study_fdbk_results     : int  NA NA NA NA NA NA NA NA NA NA ...
-##  $ tram_id_w2             : chr  NA NA NA NA ...
-##  $ tram_id_w3             : chr  NA NA NA NA ...
 ##  $ geometry               :sfc_POINT of length 30630; first list element:  &#39;XY&#39; num  NA NA
 ##  - attr(*, &quot;sf_column&quot;)= chr &quot;geometry&quot;
 ##  - attr(*, &quot;agr&quot;)= Factor w/ 3 levels &quot;constant&quot;,&quot;aggregate&quot;,..: NA NA NA NA NA NA NA NA NA NA ...
-##   ..- attr(*, &quot;names&quot;)= chr [1:54] &quot;tram_id&quot; &quot;ethica_id&quot; &quot;device_id&quot; &quot;wave&quot; ...</code></pre>
-<div id="tram-id-look-up-table" class="section level3" number="1.4.1">
-<h3><span class="header-section-number">1.4.1</span> TRAM ID Look-up-table</h3>
-<p>Participants got a different ID for each wave, need to build the panel LUT</p>
-<pre class="r"><code># Reading the w1/w2 LUT
-.tram_lut_w1.2 &lt;- REM2.ema %&gt;%
-  select(starts_with(&quot;tram_id&quot;)) %&gt;%
-  unique()
-
-# and the w3 participants
-.tram_lut_w1.2.3 &lt;- REM3.ema %&gt;%
-  select(starts_with(&quot;tram_id&quot;)) %&gt;%
-  unique()
-
-# Creating the complete LUT w1/2/3 with no redundancy
-tram_lut_w1.2.3 &lt;- .tram_lut_w1.2 %&gt;%
-  left_join(select(.tram_lut_w1.2.3, !tram_id_w2), by=&quot;tram_id&quot;, na_matches = &quot;never&quot;) %&gt;%
-  left_join(select(.tram_lut_w1.2.3, !tram_id), by=&quot;tram_id_w2&quot;, na_matches = &quot;never&quot;) %&gt;%
-  mutate(tram_id_w3 = coalesce(tram_id_w3.x, tram_id_w3.y)) %&gt;%
-  select(!c(tram_id_w3.x, tram_id_w3.y))</code></pre>
-<pre class="r"><code># Populating the w1/2/3 IDs back into the EMA
-REM.ema &lt;- REM.ema %&gt;%
-  left_join(tram_lut_w1.2.3, by=&quot;tram_id&quot;, suffix = c(&quot;&quot;, &quot;.lut1&quot;), na_matches = &quot;never&quot;) %&gt;%
-  left_join(tram_lut_w1.2.3, by=&quot;tram_id_w2&quot;, suffix = c(&quot;&quot;, &quot;.lut2&quot;), na_matches = &quot;never&quot;) %&gt;%
-  left_join(tram_lut_w1.2.3, by=&quot;tram_id_w3&quot;, suffix = c(&quot;&quot;, &quot;.lut3&quot;), na_matches = &quot;never&quot;) %&gt;%
-  relocate(starts_with(&quot;tram_id&quot;)) %&gt;%
-  mutate(tram_id = coalesce(tram_id, tram_id.lut2, tram_id.lut3),
-         tram_id_w2 = coalesce(tram_id_w2.lut1, tram_id_w2, tram_id_w2.lut3),
-         tram_id_w3 = coalesce(tram_id_w3.lut1, tram_id_w3.lut2, tram_id_w3)) %&gt;%
-  select(!c(tram_id.lut2, tram_id.lut3, tram_id_w2.lut1, tram_id_w2.lut3, tram_id_w3.lut1, tram_id_w3.lut2))</code></pre>
+##   ..- attr(*, &quot;names&quot;)= chr [1:53] &quot;tram_id&quot; &quot;tram_id_w2&quot; &quot;tram_id_w3&quot; &quot;ethica_id&quot; ...</code></pre>
 </div>
 </div>
 </div>
