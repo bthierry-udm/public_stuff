@@ -256,7 +256,7 @@ div.tocify {
 <h1 class="title toc-ignore">BEI and equity paper analyses | FINAL | AOI
 ok | Hurdle models</h1>
 <h4 class="author">B. Thierry, Spherelab</h4>
-<h4 class="date">04 January, 2024</h4>
+<h4 class="date">15 January, 2024</h4>
 
 </div>
 
@@ -12860,7 +12860,12 @@ class="section level3" number="13.1.1">
 <h3><span class="header-section-number">13.1.1</span> Association
 between SES measures and cycling infrastructure in 2011</h3>
 <p>Rerunning the model, this time a simple OLS, not Hurdle model, see
-table 2 in paper</p>
+table 2 in paper.</p>
+<p><strong>NB: the OLS below is not filtering out the highways; yet,
+following reviewer #3’s comment, it has been decided to remove the
+highways from the denominator. See section <a
+href="#ols-without-highways">OLS without highways</a> for the updated
+OLS without highways</strong></p>
 <div id="ols-no-spatial-structure" class="section level4 tabset"
 number="13.1.1.1">
 <h4 class="tabset"><span class="header-section-number">13.1.1.1</span>
@@ -16798,6 +16803,1907 @@ gentrif_status_2016Non eligible:Bike_lane.by.street_eligible.2011ct
 </div>
 </div>
 </div>
+<div id="ols-without-highways" class="section level3" number="13.2.3">
+<h3><span class="header-section-number">13.2.3</span> OLS without
+highways</h3>
+<div
+id="association-between-ses-measures-and-cycling-infrastructure-in-2011-2"
+class="section level4" number="13.2.3.1">
+<h4><span class="header-section-number">13.2.3.1</span> Association
+between SES measures and cycling infrastructure in 2011</h4>
+<p>Rerunning the model, this time a simple OLS, not Hurdle model, see
+table 2 in paper. <strong>No highway in denominator, to harmonize
+settings with hurdle models</strong></p>
+<div id="ols-no-spatial-structure-2" class="section level5 tabset"
+number="13.2.3.1.1">
+<h5 class="tabset"><span class="header-section-number">13.2.3.1.1</span>
+OLS, no spatial structure</h5>
+<div id="material-deprivation-pampalon-4" class="section level6"
+number="13.2.3.1.1.1">
+<h6><span class="header-section-number">13.2.3.1.1.1</span> Material
+deprivation (Pampalon)</h6>
+<pre class="r"><code>f &lt;- Bike_lane_total.hm.2011ct ~ wSCOREMAT.2011.Q + offset(log(street_eligible_length.hm))
+
+# Count model (Poisson)
+clean_bei.cnt &lt;- bei_df_aoi2 %&gt;%
+  tidy_df(CT16, f)
+
+res.lmm.ols &lt;- fitme(Bike_lane_total.hm.2011ct ~ wSCOREMAT.2011.Q + offset(log(street_eligible_length.hm)),
+                 data = clean_bei.cnt$df,
+                 family = Poisson())
+smy.ols &lt;- summary(res.lmm.ols, details = c(p_value=&quot;Wald&quot;))</code></pre>
+<pre><code>## formula: Bike_lane_total.hm.2011ct ~ wSCOREMAT.2011.Q + offset(log(street_eligible_length.hm))
+## Estimation of fixed effects by ML.
+## family: poisson( link = log ) 
+##  ------------ Fixed effects (beta) ------------
+##                  Estimate Cond. SE t-value p-value
+## (Intercept)       -1.9772 0.023035  -85.84       0
+## wSCOREMAT.2011.Q  -0.1212 0.007947  -15.25       0
+##  ------------- Likelihood values  -------------
+##                         logLik
+## logL               : -4862.249</code></pre>
+<pre class="r"><code>ci.lmm.ols &lt;- confint(res.lmm.ols, &#39;wSCOREMAT.2011.Q&#39;)</code></pre>
+<pre><code>## lower wSCOREMAT.2011.Q upper wSCOREMAT.2011.Q 
+##             -0.1368293             -0.1056763</code></pre>
+<pre class="r"><code># transformed coef
+smy.ols.bt &lt;- data.frame(smy.ols$beta_table)
+round(exp(res.lmm.ols[[&quot;fixef&quot;]]), 3) %&gt;% 
+  data.frame(fixef = ., p.value = round(smy.ols.bt$p.value, 3)) %&gt;%
+  knitr::kable(caption=&quot;OLS transformed coeffs&quot;)%&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS transformed coeffs
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+fixef
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:right;">
+0.138
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+wSCOREMAT.2011.Q
+</td>
+<td style="text-align:right;">
+0.886
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>round(exp(ci.lmm.ols$interval), 3)%&gt;%
+  data.frame(wSCOREMAT.2011.Q = ., row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;OLS confidence interval&quot;) %&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS confidence interval
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+lower
+</th>
+<th style="text-align:right;">
+upper
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+wSCOREMAT.2011.Q
+</td>
+<td style="text-align:right;">
+0.872
+</td>
+<td style="text-align:right;">
+0.9
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="visble-minority-4" class="section level6"
+number="13.2.3.1.1.2">
+<h6><span class="header-section-number">13.2.3.1.1.2</span> Visble
+minority</h6>
+<pre class="r"><code>f &lt;- Bike_lane_total.hm.2011ct ~ vis_minority_2011.Q + offset(log(street_eligible_length.hm))
+
+# Count model (Poisson)
+clean_bei.cnt &lt;- bei_df_aoi2 %&gt;%
+  tidy_df(CT16, f)
+
+res.lmm.ols &lt;- fitme(Bike_lane_total.hm.2011ct ~ vis_minority_2011.Q + offset(log(street_eligible_length.hm)),
+                 data = clean_bei.cnt$df,
+                 family = Poisson())
+smy.ols &lt;- summary(res.lmm.ols, details = c(p_value=&quot;Wald&quot;))</code></pre>
+<pre><code>## formula: Bike_lane_total.hm.2011ct ~ vis_minority_2011.Q + offset(log(street_eligible_length.hm))
+## Estimation of fixed effects by ML.
+## family: poisson( link = log ) 
+##  ------------ Fixed effects (beta) ------------
+##                     Estimate Cond. SE t-value p-value
+## (Intercept)          -1.9482 0.023251  -83.79       0
+## vis_minority_2011.Q  -0.1319 0.007805  -16.90       0
+##  ------------- Likelihood values  -------------
+##                         logLik
+## logL               : -4756.468</code></pre>
+<pre class="r"><code>ci.lmm.ols &lt;- confint(res.lmm.ols, &#39;vis_minority_2011.Q&#39;)</code></pre>
+<pre><code>## lower vis_minority_2011.Q upper vis_minority_2011.Q 
+##                -0.1472433                -0.1166458</code></pre>
+<pre class="r"><code># transformed coef
+smy.ols.bt &lt;- data.frame(smy.ols$beta_table)
+round(exp(res.lmm.ols[[&quot;fixef&quot;]]), 3) %&gt;% 
+  data.frame(fixef = ., p.value = round(smy.ols.bt$p.value, 3)) %&gt;%
+  knitr::kable(caption=&quot;OLS transformed coeffs&quot;)%&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS transformed coeffs
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+fixef
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:right;">
+0.143
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+vis_minority_2011.Q
+</td>
+<td style="text-align:right;">
+0.876
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>round(exp(ci.lmm.ols$interval), 3)%&gt;%
+  data.frame(vis_minority_2011.Q = ., row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;OLS confidence interval&quot;)%&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS confidence interval
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+lower
+</th>
+<th style="text-align:right;">
+upper
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+vis_minority_2011.Q
+</td>
+<td style="text-align:right;">
+0.863
+</td>
+<td style="text-align:right;">
+0.89
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="gentrification-7" class="section level6" number="13.2.3.1.1.3">
+<h6><span class="header-section-number">13.2.3.1.1.3</span>
+Gentrification</h6>
+<pre class="r"><code>f &lt;- Bike_lane_total.hm.2011ct ~ gentrif_status_2016 + offset(log(street_eligible_length.hm))
+
+# Count model (Poisson)
+clean_bei.cnt &lt;- bei_df_aoi2 %&gt;%
+  tidy_df(CT16, f)
+
+res.lmm.ols &lt;- fitme(Bike_lane_total.hm.2011ct ~ gentrif_status_2016 + offset(log(street_eligible_length.hm)),
+                 data = clean_bei.cnt$df,
+                 family = Poisson())
+smy.ols &lt;- summary(res.lmm.ols, details = c(p_value=&quot;Wald&quot;))</code></pre>
+<pre><code>## formula: Bike_lane_total.hm.2011ct ~ gentrif_status_2016 + offset(log(street_eligible_length.hm))
+## Estimation of fixed effects by ML.
+## family: poisson( link = log ) 
+##  ------------ Fixed effects (beta) ------------
+##                                 Estimate Cond. SE  t-value   p-value
+## (Intercept)                      -2.4881  0.02303 -108.024 0.0000000
+## gentrif_status_2016Gentrified     0.1181  0.03473    3.402 0.0006693
+## gentrif_status_2016Non eligible   0.2572  0.02667    9.643 0.0000000
+##  ------------- Likelihood values  -------------
+##                         logLik
+## logL               : -4850.104</code></pre>
+<pre class="r"><code># transformed coef
+smy.ols.bt &lt;- data.frame(smy.ols$beta_table)
+round(exp(res.lmm.ols[[&quot;fixef&quot;]]), 3) %&gt;% 
+  data.frame(fixef = ., p.value = round(smy.ols.bt$p.value, 3)) %&gt;%
+  knitr::kable(caption=&quot;OLS transformed coeffs&quot;)%&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS transformed coeffs
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+fixef
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:right;">
+0.083
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Gentrified
+</td>
+<td style="text-align:right;">
+1.125
+</td>
+<td style="text-align:right;">
+0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Non eligible
+</td>
+<td style="text-align:right;">
+1.293
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>varfixef.ols &lt;- names(res.lmm.ols[[&#39;fixef&#39;]])
+ci.1.lmm.ols &lt;- confint(res.lmm.ols, varfixef.ols[2])</code></pre>
+<pre><code>## lower gentrif_status_2016Gentrified upper gentrif_status_2016Gentrified 
+##                          0.04997712                          0.18612980</code></pre>
+<pre class="r"><code>ci.2.lmm.ols &lt;- confint(res.lmm.ols, varfixef.ols[3])</code></pre>
+<pre><code>## lower gentrif_status_2016Non eligible upper gentrif_status_2016Non eligible 
+##                             0.2051288                             0.3096783</code></pre>
+<pre class="r"><code>.ci.exp &lt;- rbind(ci.1.lmm.ols$interval, ci.2.lmm.ols$interval) %&gt;% 
+  exp() %&gt;% round(., 3) %&gt;%
+  data.frame(., row.names = varfixef.ols[2:3])
+names(.ci.exp) &lt;- c(&quot;lower&quot;, &quot;upper&quot;)
+knitr::kable(.ci.exp, caption=&quot;OLS model confidence interval&quot;)%&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS model confidence interval
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+lower
+</th>
+<th style="text-align:right;">
+upper
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Gentrified
+</td>
+<td style="text-align:right;">
+1.051
+</td>
+<td style="text-align:right;">
+1.205
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Non eligible
+</td>
+<td style="text-align:right;">
+1.228
+</td>
+<td style="text-align:right;">
+1.363
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="ols-with-spatial-structure-2" class="section level5 tabset"
+number="13.2.3.1.2">
+<h5 class="tabset"><span class="header-section-number">13.2.3.1.2</span>
+OLS, with spatial structure</h5>
+<div id="material-deprivation-pampalon-5" class="section level6"
+number="13.2.3.1.2.1">
+<h6><span class="header-section-number">13.2.3.1.2.1</span> Material
+deprivation (Pampalon)</h6>
+<pre class="r"><code>f &lt;- Bike_lane_total.hm.2011ct ~ wSCOREMAT.2011.Q + offset(log(street_eligible_length.hm))
+
+# Count model (Poisson)
+clean_bei.cnt &lt;- bei_df_aoi2 %&gt;%
+  tidy_df(CT16, f)
+
+res.lmm.ols &lt;- fitme(Bike_lane_total.hm.2011ct ~ wSCOREMAT.2011.Q + offset(log(street_eligible_length.hm)) + adjacency(1|ct_no),
+                 data = clean_bei.cnt$df, adjMatrix = clean_bei.cnt$nbmatx,
+                 family = Poisson())</code></pre>
+<pre><code>## Warning in .sym_checked(adjMatrix, &quot;adjMatrix&quot;): Forcing colnames(mMatrix) &lt;-
+## rownames(mMatrix) before calling isSymmetric().</code></pre>
+<pre class="r"><code>smy.ols &lt;- summary(res.lmm.ols, details = c(p_value=&quot;Wald&quot;))</code></pre>
+<pre><code>## formula: Bike_lane_total.hm.2011ct ~ wSCOREMAT.2011.Q + offset(log(street_eligible_length.hm)) + 
+##     adjacency(1 | ct_no)
+## Estimation of corrPars and lambda by ML (p_v approximation of logL).
+## Estimation of fixed effects by ML (p_v approximation of logL).
+## Estimation of lambda by &#39;outer&#39; ML, maximizing logL.
+## family: poisson( link = log ) 
+##  ------------ Fixed effects (beta) ------------
+##                  Estimate Cond. SE t-value   p-value
+## (Intercept)       -2.3458  0.19268 -12.175 0.0000000
+## wSCOREMAT.2011.Q  -0.1693  0.05077  -3.336 0.0008507
+##  --------------- Random effects ---------------
+## Family: gaussian( link = identity ) 
+##                    --- Correlation parameters:
+##     1.rho 
+## 0.1367629 
+##            --- Variance parameters (&#39;lambda&#39;):
+## lambda = var(u) for u ~ Gaussian; 
+##    ct_no  :  1.572  
+## # of obs: 673; # of groups: ct_no, 673 
+##  ------------- Likelihood values  -------------
+##                         logLik
+## logL       (p_v(h)): -2179.744</code></pre>
+<pre class="r"><code>ci.lmm.ols &lt;- confint(res.lmm.ols, &#39;wSCOREMAT.2011.Q&#39;)</code></pre>
+<pre><code>## Warning in .sym_checked(adjMatrix, &quot;adjMatrix&quot;): Forcing colnames(mMatrix) &lt;-
+## rownames(mMatrix) before calling isSymmetric().</code></pre>
+<pre><code>## lower wSCOREMAT.2011.Q upper wSCOREMAT.2011.Q 
+##            -0.27048075            -0.06944092</code></pre>
+<pre class="r"><code># transformed coef
+smy.ols.bt &lt;- data.frame(smy.ols$beta_table)
+round(exp(res.lmm.ols[[&quot;fixef&quot;]]), 3) %&gt;% 
+  data.frame(fixef = ., p.value = round(smy.ols.bt$p.value, 3)) %&gt;%
+  knitr::kable(caption=&quot;OLS transformed coeffs&quot;)%&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS transformed coeffs
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+fixef
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:right;">
+0.096
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+wSCOREMAT.2011.Q
+</td>
+<td style="text-align:right;">
+0.844
+</td>
+<td style="text-align:right;">
+0.001
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>round(exp(ci.lmm.ols$interval), 3)%&gt;%
+  data.frame(wSCOREMAT.2011.Q = ., row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;OLS confidence interval&quot;)%&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS confidence interval
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+lower
+</th>
+<th style="text-align:right;">
+upper
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+wSCOREMAT.2011.Q
+</td>
+<td style="text-align:right;">
+0.763
+</td>
+<td style="text-align:right;">
+0.933
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="visble-minority-5" class="section level6"
+number="13.2.3.1.2.2">
+<h6><span class="header-section-number">13.2.3.1.2.2</span> Visble
+minority</h6>
+<pre class="r"><code>f &lt;- Bike_lane_total.hm.2011ct ~ vis_minority_2011.Q + offset(log(street_eligible_length.hm))
+
+# Count model (Poisson)
+clean_bei.cnt &lt;- bei_df_aoi2 %&gt;%
+  tidy_df(CT16, f)
+
+res.lmm.ols &lt;- fitme(Bike_lane_total.hm.2011ct ~ vis_minority_2011.Q + offset(log(street_eligible_length.hm)) + adjacency(1|ct_no),
+                 data = clean_bei.cnt$df, adjMatrix = clean_bei.cnt$nbmatx,
+                 family = Poisson())</code></pre>
+<pre><code>## Warning in .sym_checked(adjMatrix, &quot;adjMatrix&quot;): Forcing colnames(mMatrix) &lt;-
+## rownames(mMatrix) before calling isSymmetric().</code></pre>
+<pre class="r"><code>smy.ols &lt;- summary(res.lmm.ols, details = c(p_value=&quot;Wald&quot;))</code></pre>
+<pre><code>## formula: Bike_lane_total.hm.2011ct ~ vis_minority_2011.Q + offset(log(street_eligible_length.hm)) + 
+##     adjacency(1 | ct_no)
+## Estimation of corrPars and lambda by ML (p_v approximation of logL).
+## Estimation of fixed effects by ML (p_v approximation of logL).
+## Estimation of lambda by &#39;outer&#39; ML, maximizing logL.
+## family: poisson( link = log ) 
+##  ------------ Fixed effects (beta) ------------
+##                     Estimate Cond. SE t-value p-value
+## (Intercept)          -2.4841  0.18677 -13.301  0.0000
+## vis_minority_2011.Q  -0.1393  0.05174  -2.692  0.0071
+##  --------------- Random effects ---------------
+## Family: gaussian( link = identity ) 
+##                    --- Correlation parameters:
+##     1.rho 
+## 0.1361019 
+##            --- Variance parameters (&#39;lambda&#39;):
+## lambda = var(u) for u ~ Gaussian; 
+##    ct_no  :  1.583  
+## # of obs: 673; # of groups: ct_no, 673 
+##  ------------- Likelihood values  -------------
+##                         logLik
+## logL       (p_v(h)): -2178.507</code></pre>
+<pre class="r"><code>ci.lmm.ols &lt;- confint(res.lmm.ols, &#39;vis_minority_2011.Q&#39;)</code></pre>
+<pre><code>## Warning in .sym_checked(adjMatrix, &quot;adjMatrix&quot;): Forcing colnames(mMatrix) &lt;-
+## rownames(mMatrix) before calling isSymmetric().</code></pre>
+<pre><code>## lower vis_minority_2011.Q upper vis_minority_2011.Q 
+##               -0.24228431               -0.03700242</code></pre>
+<pre class="r"><code># transformed coef
+smy.ols.bt &lt;- data.frame(smy.ols$beta_table)
+round(exp(res.lmm.ols[[&quot;fixef&quot;]]), 3) %&gt;% 
+  data.frame(fixef = ., p.value = round(smy.ols.bt$p.value, 3)) %&gt;%
+  knitr::kable(caption=&quot;OLS transformed coeffs&quot;)%&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS transformed coeffs
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+fixef
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:right;">
+0.083
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+vis_minority_2011.Q
+</td>
+<td style="text-align:right;">
+0.870
+</td>
+<td style="text-align:right;">
+0.007
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>round(exp(ci.lmm.ols$interval), 3)%&gt;%
+  data.frame(vis_minority_2011.Q = ., row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;OLS confidence interval&quot;)%&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS confidence interval
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+lower
+</th>
+<th style="text-align:right;">
+upper
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+vis_minority_2011.Q
+</td>
+<td style="text-align:right;">
+0.785
+</td>
+<td style="text-align:right;">
+0.964
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="gentrification-8" class="section level6" number="13.2.3.1.2.3">
+<h6><span class="header-section-number">13.2.3.1.2.3</span>
+Gentrification</h6>
+<pre class="r"><code>f &lt;- Bike_lane_total.hm.2011ct ~ gentrif_status_2016 + offset(log(street_eligible_length.hm))
+
+# Count model (Poisson)
+clean_bei.cnt &lt;- bei_df_aoi2 %&gt;%
+  tidy_df(CT16, f)
+
+res.lmm.ols &lt;- fitme(Bike_lane_total.hm.2011ct ~ gentrif_status_2016 + offset(log(street_eligible_length.hm)) + adjacency(1|ct_no),
+                 data = clean_bei.cnt$df, adjMatrix = clean_bei.cnt$nbmatx,
+                 family = Poisson())</code></pre>
+<pre><code>## Warning in .sym_checked(adjMatrix, &quot;adjMatrix&quot;): Forcing colnames(mMatrix) &lt;-
+## rownames(mMatrix) before calling isSymmetric().</code></pre>
+<pre class="r"><code>smy.ols &lt;- summary(res.lmm.ols, details = c(p_value=&quot;Wald&quot;))</code></pre>
+<pre><code>## formula: Bike_lane_total.hm.2011ct ~ gentrif_status_2016 + offset(log(street_eligible_length.hm)) + 
+##     adjacency(1 | ct_no)
+## Estimation of corrPars and lambda by ML (p_v approximation of logL).
+## Estimation of fixed effects by ML (p_v approximation of logL).
+## Estimation of lambda by &#39;outer&#39; ML, maximizing logL.
+## family: poisson( link = log ) 
+##  ------------ Fixed effects (beta) ------------
+##                                   Estimate Cond. SE    t-value p-value
+## (Intercept)                     -2.9483567   0.1487 -19.828522  0.0000
+## gentrif_status_2016Gentrified    0.0002249   0.1501   0.001498  0.9988
+## gentrif_status_2016Non eligible  0.1450739   0.1568   0.925478  0.3547
+##  --------------- Random effects ---------------
+## Family: gaussian( link = identity ) 
+##                    --- Correlation parameters:
+##     1.rho 
+## 0.1364749 
+##            --- Variance parameters (&#39;lambda&#39;):
+## lambda = var(u) for u ~ Gaussian; 
+##    ct_no  :  1.604  
+## # of obs: 673; # of groups: ct_no, 673 
+##  ------------- Likelihood values  -------------
+##                        logLik
+## logL       (p_v(h)): -2181.55</code></pre>
+<pre class="r"><code># transformed coef
+smy.ols.bt &lt;- data.frame(smy.ols$beta_table)
+round(exp(res.lmm.ols[[&quot;fixef&quot;]]), 3) %&gt;% 
+  data.frame(fixef = ., p.value = round(smy.ols.bt$p.value, 3)) %&gt;%
+  knitr::kable(caption=&quot;OLS transformed coeffs&quot;)%&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS transformed coeffs
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+fixef
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:right;">
+0.052
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Gentrified
+</td>
+<td style="text-align:right;">
+1.000
+</td>
+<td style="text-align:right;">
+0.999
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Non eligible
+</td>
+<td style="text-align:right;">
+1.156
+</td>
+<td style="text-align:right;">
+0.355
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>varfixef.ols &lt;- names(res.lmm.ols[[&#39;fixef&#39;]])
+ci.1.lmm.ols &lt;- confint(res.lmm.ols, varfixef.ols[2])</code></pre>
+<pre><code>## Warning in .sym_checked(adjMatrix, &quot;adjMatrix&quot;): Forcing colnames(mMatrix) &lt;-
+## rownames(mMatrix) before calling isSymmetric().</code></pre>
+<pre><code>## lower gentrif_status_2016Gentrified upper gentrif_status_2016Gentrified 
+##                          -0.2971364                           0.2973160</code></pre>
+<pre class="r"><code>ci.2.lmm.ols &lt;- confint(res.lmm.ols, varfixef.ols[3])</code></pre>
+<pre><code>## Warning in .sym_checked(adjMatrix, &quot;adjMatrix&quot;): Forcing colnames(mMatrix) &lt;-
+## rownames(mMatrix) before calling isSymmetric().</code></pre>
+<pre><code>## lower gentrif_status_2016Non eligible upper gentrif_status_2016Non eligible 
+##                            -0.1651487                             0.4570724</code></pre>
+<pre class="r"><code>.ci.exp &lt;- rbind(ci.1.lmm.ols$interval, ci.2.lmm.ols$interval) %&gt;% 
+  exp() %&gt;% round(., 3) %&gt;%
+  data.frame(., row.names = varfixef.ols[2:3])
+names(.ci.exp) &lt;- c(&quot;lower&quot;, &quot;upper&quot;)
+knitr::kable(.ci.exp, caption=&quot;OLS model confidence interval&quot;)%&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS model confidence interval
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+lower
+</th>
+<th style="text-align:right;">
+upper
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Gentrified
+</td>
+<td style="text-align:right;">
+0.743
+</td>
+<td style="text-align:right;">
+1.346
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Non eligible
+</td>
+<td style="text-align:right;">
+0.848
+</td>
+<td style="text-align:right;">
+1.579
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="cycling-infrastructure-change-between-2011-and-2016-2"
+class="section level4" number="13.2.3.2">
+<h4><span class="header-section-number">13.2.3.2</span> Cycling
+infrastructure change between 2011 and 2016</h4>
+<p>Rerunning the model, this time a simple OLS, not Hurdle model, see
+table 3 in paper</p>
+<div id="ols-no-spatial-structure-3" class="section level5 tabset"
+number="13.2.3.2.1">
+<h5 class="tabset"><span class="header-section-number">13.2.3.2.1</span>
+OLS, no spatial structure</h5>
+<div id="material-deprivation-pampalon-6" class="section level6"
+number="13.2.3.2.1.1">
+<h6><span class="header-section-number">13.2.3.2.1.1</span> Material
+deprivation (Pampalon)</h6>
+<pre class="r"><code>f &lt;- Bike_lane_total.hm.2016ct ~ wSCOREMAT.2011.Q * Bike_lane.by.street.2011ct + offset(log(street_eligible_length.hm))
+
+# Count model (Poisson)
+clean_bei.cnt &lt;- bei_df_aoi2 %&gt;%
+  tidy_df(CT16, f)
+
+res.lmm.ols &lt;- fitme(Bike_lane_total.hm.2016ct ~ wSCOREMAT.2011.Q * Bike_lane.by.street.2011ct + offset(log(street_eligible_length.hm)),
+                 data = clean_bei.cnt$df,
+                 family = Poisson())
+smy.ols &lt;- summary(res.lmm.ols, details = c(p_value=&quot;Wald&quot;))</code></pre>
+<pre><code>## formula: Bike_lane_total.hm.2016ct ~ wSCOREMAT.2011.Q * Bike_lane.by.street.2011ct + 
+##     offset(log(street_eligible_length.hm))
+## Estimation of fixed effects by ML.
+## family: poisson( link = log ) 
+##  ------------ Fixed effects (beta) ------------
+##                                             Estimate  Cond. SE t-value
+## (Intercept)                                 -2.49501 0.0345772 -72.158
+## wSCOREMAT.2011.Q                            -0.09135 0.0113482  -8.050
+## Bike_lane.by.street.2011ct                   0.04431 0.0017018  26.039
+## wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct  0.00440 0.0005962   7.379
+##                                               p-value
+## (Intercept)                                 0.000e+00
+## wSCOREMAT.2011.Q                            7.772e-16
+## Bike_lane.by.street.2011ct                  0.000e+00
+## wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct 1.591e-13
+##  ------------- Likelihood values  -------------
+##                         logLik
+## logL               : -2835.853</code></pre>
+<pre class="r"><code>ci.lmm.ols &lt;- confint(res.lmm.ols, &#39;wSCOREMAT.2011.Q&#39;)</code></pre>
+<pre><code>## lower wSCOREMAT.2011.Q upper wSCOREMAT.2011.Q 
+##             -0.1136072             -0.0691232</code></pre>
+<pre class="r"><code>ci.lmm.ols.i &lt;- confint(res.lmm.ols, &#39;wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct&#39;)</code></pre>
+<pre><code>## lower wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct 
+##                                       0.003228737 
+## upper wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct 
+##                                       0.005565700</code></pre>
+<pre class="r"><code># transformed coef
+smy.ols.bt &lt;- data.frame(smy.ols$beta_table)
+round(exp(res.lmm.ols[[&quot;fixef&quot;]]), 3) %&gt;% 
+  data.frame(fixef = ., p.value = round(smy.ols.bt$p.value, 3)) %&gt;%
+  knitr::kable(caption=&quot;OLS transformed coeffs&quot;)%&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS transformed coeffs
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+fixef
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:right;">
+0.082
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+wSCOREMAT.2011.Q
+</td>
+<td style="text-align:right;">
+0.913
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Bike_lane.by.street.2011ct
+</td>
+<td style="text-align:right;">
+1.045
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct
+</td>
+<td style="text-align:right;">
+1.004
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>data.frame(wSCOREMAT.2011.Q = round(exp(ci.lmm.ols$interval), 3),
+           `wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct` = round(exp(ci.lmm.ols.i$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;OLS confidence interval&quot;)%&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS confidence interval
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+lower
+</th>
+<th style="text-align:right;">
+upper
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+wSCOREMAT.2011.Q
+</td>
+<td style="text-align:right;">
+0.893
+</td>
+<td style="text-align:right;">
+0.933
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+wSCOREMAT.2011.Q.Bike_lane.by.street.2011ct
+</td>
+<td style="text-align:right;">
+1.003
+</td>
+<td style="text-align:right;">
+1.006
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="visble-minority-6" class="section level6"
+number="13.2.3.2.1.2">
+<h6><span class="header-section-number">13.2.3.2.1.2</span> Visble
+minority</h6>
+<pre class="r"><code>f &lt;- Bike_lane_total.hm.2016ct ~ vis_minority_2011.Q * Bike_lane.by.street.2011ct + offset(log(street_eligible_length.hm))
+
+# Count model (Poisson)
+clean_bei.cnt &lt;- bei_df_aoi2 %&gt;%
+  tidy_df(CT16, f)
+
+res.lmm.ols &lt;- fitme(Bike_lane_total.hm.2016ct ~ vis_minority_2011.Q * Bike_lane.by.street.2011ct + offset(log(street_eligible_length.hm)),
+                 data = clean_bei.cnt$df,
+                 family = Poisson())
+smy.ols &lt;- summary(res.lmm.ols, details = c(p_value=&quot;Wald&quot;))</code></pre>
+<pre><code>## formula: Bike_lane_total.hm.2016ct ~ vis_minority_2011.Q * Bike_lane.by.street.2011ct + 
+##     offset(log(street_eligible_length.hm))
+## Estimation of fixed effects by ML.
+## family: poisson( link = log ) 
+##  ------------ Fixed effects (beta) ------------
+##                                                 Estimate  Cond. SE t-value
+## (Intercept)                                    -2.622628 0.0362446 -72.359
+## vis_minority_2011.Q                            -0.046911 0.0111919  -4.192
+## Bike_lane.by.street.2011ct                      0.048199 0.0018601  25.912
+## vis_minority_2011.Q:Bike_lane.by.street.2011ct  0.003296 0.0006295   5.236
+##                                                 p-value
+## (Intercept)                                    0.00e+00
+## vis_minority_2011.Q                            2.77e-05
+## Bike_lane.by.street.2011ct                     0.00e+00
+## vis_minority_2011.Q:Bike_lane.by.street.2011ct 1.64e-07
+##  ------------- Likelihood values  -------------
+##                         logLik
+## logL               : -2846.915</code></pre>
+<pre class="r"><code>ci.lmm.ols &lt;- confint(res.lmm.ols, &#39;vis_minority_2011.Q&#39;)</code></pre>
+<pre><code>## lower vis_minority_2011.Q upper vis_minority_2011.Q 
+##               -0.06884901               -0.02497765</code></pre>
+<pre class="r"><code>ci.lmm.ols.i &lt;- confint(res.lmm.ols, &#39;vis_minority_2011.Q:Bike_lane.by.street.2011ct&#39;)</code></pre>
+<pre><code>## lower vis_minority_2011.Q:Bike_lane.by.street.2011ct 
+##                                          0.002059529 
+## upper vis_minority_2011.Q:Bike_lane.by.street.2011ct 
+##                                          0.004526944</code></pre>
+<pre class="r"><code># transformed coef
+smy.ols.bt &lt;- data.frame(smy.ols$beta_table)
+round(exp(res.lmm.ols[[&quot;fixef&quot;]]), 3) %&gt;% 
+  data.frame(fixef = ., p.value = round(smy.ols.bt$p.value, 3)) %&gt;%
+  knitr::kable(caption=&quot;OLS transformed coeffs&quot;)%&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS transformed coeffs
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+fixef
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:right;">
+0.073
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+vis_minority_2011.Q
+</td>
+<td style="text-align:right;">
+0.954
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Bike_lane.by.street.2011ct
+</td>
+<td style="text-align:right;">
+1.049
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+vis_minority_2011.Q:Bike_lane.by.street.2011ct
+</td>
+<td style="text-align:right;">
+1.003
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>data.frame(vis_minority_2011.Q = round(exp(ci.lmm.ols$interval), 3),
+           `vis_minority_2011.Q:Bike_lane.by.street.2011ct` = round(exp(ci.lmm.ols.i$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;OLS confidence interval&quot;)%&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS confidence interval
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+lower
+</th>
+<th style="text-align:right;">
+upper
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+vis_minority_2011.Q
+</td>
+<td style="text-align:right;">
+0.933
+</td>
+<td style="text-align:right;">
+0.975
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+vis_minority_2011.Q.Bike_lane.by.street.2011ct
+</td>
+<td style="text-align:right;">
+1.002
+</td>
+<td style="text-align:right;">
+1.005
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="gentrification-9" class="section level6" number="13.2.3.2.1.3">
+<h6><span class="header-section-number">13.2.3.2.1.3</span>
+Gentrification</h6>
+<pre class="r"><code>f &lt;- Bike_lane_total.hm.2016ct ~ gentrif_status_2016 * Bike_lane.by.street.2011ct + offset(log(street_eligible_length.hm))
+
+# Count model (Poisson)
+clean_bei.cnt &lt;- bei_df_aoi2 %&gt;%
+  tidy_df(CT16, f)
+
+res.lmm.ols &lt;- fitme(Bike_lane_total.hm.2016ct ~ gentrif_status_2016 * Bike_lane.by.street.2011ct + offset(log(street_eligible_length.hm)),
+                 data = clean_bei.cnt$df,
+                 family = Poisson())
+smy.ols &lt;- summary(res.lmm.ols, details = c(p_value=&quot;Wald&quot;))</code></pre>
+<pre><code>## formula: Bike_lane_total.hm.2016ct ~ gentrif_status_2016 * Bike_lane.by.street.2011ct + 
+##     offset(log(street_eligible_length.hm))
+## Estimation of fixed effects by ML.
+## family: poisson( link = log ) 
+##  ------------ Fixed effects (beta) ------------
+##                                                             Estimate Cond. SE
+## (Intercept)                                                -2.793483 0.030399
+## gentrif_status_2016Gentrified                               0.205327 0.046371
+## gentrif_status_2016Non eligible                            -0.001680 0.037251
+## Bike_lane.by.street.2011ct                                  0.059349 0.001789
+## gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct   -0.008237 0.002669
+## gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct -0.001570 0.002114
+##                                                             t-value   p-value
+## (Intercept)                                                -91.8945 0.000e+00
+## gentrif_status_2016Gentrified                                4.4279 9.517e-06
+## gentrif_status_2016Non eligible                             -0.0451 9.640e-01
+## Bike_lane.by.street.2011ct                                  33.1791 0.000e+00
+## gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct    -3.0861 2.028e-03
+## gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct  -0.7426 4.577e-01
+##  ------------- Likelihood values  -------------
+##                         logLik
+## logL               : -2845.262</code></pre>
+<pre class="r"><code># transformed coef
+smy.ols.bt &lt;- data.frame(smy.ols$beta_table)
+round(exp(res.lmm.ols[[&quot;fixef&quot;]]), 3) %&gt;% 
+  data.frame(fixef = ., p.value = round(smy.ols.bt$p.value, 3)) %&gt;%
+  knitr::kable(caption=&quot;OLS transformed coeffs&quot;)%&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS transformed coeffs
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+fixef
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:right;">
+0.061
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Gentrified
+</td>
+<td style="text-align:right;">
+1.228
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Non eligible
+</td>
+<td style="text-align:right;">
+0.998
+</td>
+<td style="text-align:right;">
+0.964
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Bike_lane.by.street.2011ct
+</td>
+<td style="text-align:right;">
+1.061
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct
+</td>
+<td style="text-align:right;">
+0.992
+</td>
+<td style="text-align:right;">
+0.002
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct
+</td>
+<td style="text-align:right;">
+0.998
+</td>
+<td style="text-align:right;">
+0.458
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>varfixef.ols &lt;- names(res.lmm.ols[[&#39;fixef&#39;]])
+ci.1.lmm.ols &lt;- confint(res.lmm.ols, varfixef.ols[2])</code></pre>
+<pre><code>## lower gentrif_status_2016Gentrified upper gentrif_status_2016Gentrified 
+##                           0.1143118                           0.2960930</code></pre>
+<pre class="r"><code>ci.2.lmm.ols &lt;- confint(res.lmm.ols, varfixef.ols[3])</code></pre>
+<pre><code>## lower gentrif_status_2016Non eligible upper gentrif_status_2016Non eligible 
+##                           -0.07453995                            0.07148752</code></pre>
+<pre class="r"><code>ci.3.lmm.ols &lt;- confint(res.lmm.ols, varfixef.ols[5])</code></pre>
+<pre><code>## lower gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct 
+##                                                   -0.013468974 
+## upper gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct 
+##                                                   -0.003005501</code></pre>
+<pre class="r"><code>ci.4.lmm.ols &lt;- confint(res.lmm.ols, varfixef.ols[6])</code></pre>
+<pre><code>## lower gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct 
+##                                                     -0.005692082 
+## upper gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct 
+##                                                      0.002594069</code></pre>
+<pre class="r"><code>.ci.exp &lt;- rbind(ci.1.lmm.ols$interval, ci.2.lmm.ols$interval, ci.3.lmm.ols$interval, ci.4.lmm.ols$interval) %&gt;% 
+  exp() %&gt;% round(., 3) %&gt;%
+  data.frame(., row.names = c(varfixef.ols[2:3], varfixef.ols[5:6]))
+names(.ci.exp) &lt;- c(&quot;lower&quot;, &quot;upper&quot;)
+knitr::kable(.ci.exp, caption=&quot;OLS model confidence interval&quot;)%&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS model confidence interval
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+lower
+</th>
+<th style="text-align:right;">
+upper
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Gentrified
+</td>
+<td style="text-align:right;">
+1.121
+</td>
+<td style="text-align:right;">
+1.345
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Non eligible
+</td>
+<td style="text-align:right;">
+0.928
+</td>
+<td style="text-align:right;">
+1.074
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct
+</td>
+<td style="text-align:right;">
+0.987
+</td>
+<td style="text-align:right;">
+0.997
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct
+</td>
+<td style="text-align:right;">
+0.994
+</td>
+<td style="text-align:right;">
+1.003
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="ols-with-spatial-structure-3" class="section level5 tabset"
+number="13.2.3.2.2">
+<h5 class="tabset"><span class="header-section-number">13.2.3.2.2</span>
+OLS, with spatial structure</h5>
+<div id="material-deprivation-pampalon-7" class="section level6"
+number="13.2.3.2.2.1">
+<h6><span class="header-section-number">13.2.3.2.2.1</span> Material
+deprivation (Pampalon)</h6>
+<pre class="r"><code>f &lt;- Bike_lane_total.hm.2016ct ~ wSCOREMAT.2011.Q * Bike_lane.by.street.2011ct + offset(log(street_eligible_length.hm))
+
+# Count model (Poisson)
+clean_bei.cnt &lt;- bei_df_aoi2 %&gt;%
+  tidy_df(CT16, f)
+
+res.lmm.ols &lt;- fitme(Bike_lane_total.hm.2016ct ~ wSCOREMAT.2011.Q * Bike_lane.by.street.2011ct + offset(log(street_eligible_length.hm)) + adjacency(1|ct_no),
+                 data = clean_bei.cnt$df, adjMatrix = clean_bei.cnt$nbmatx,
+                 family = Poisson())</code></pre>
+<pre><code>## Warning in .sym_checked(adjMatrix, &quot;adjMatrix&quot;): Forcing colnames(mMatrix) &lt;-
+## rownames(mMatrix) before calling isSymmetric().</code></pre>
+<pre class="r"><code>smy.ols &lt;- summary(res.lmm.ols, details = c(p_value=&quot;Wald&quot;))</code></pre>
+<pre><code>## formula: Bike_lane_total.hm.2016ct ~ wSCOREMAT.2011.Q * Bike_lane.by.street.2011ct + 
+##     offset(log(street_eligible_length.hm)) + adjacency(1 | ct_no)
+## Estimation of corrPars and lambda by ML (p_v approximation of logL).
+## Estimation of fixed effects by ML (p_v approximation of logL).
+## Estimation of lambda by &#39;outer&#39; ML, maximizing logL.
+## family: poisson( link = log ) 
+##  ------------ Fixed effects (beta) ------------
+##                                              Estimate Cond. SE t-value p-value
+## (Intercept)                                 -2.937839 0.115201 -25.502 0.00000
+## wSCOREMAT.2011.Q                            -0.053959 0.031212  -1.729 0.08384
+## Bike_lane.by.street.2011ct                   0.068329 0.006298  10.850 0.00000
+## wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct  0.002196 0.001942   1.131 0.25800
+##  --------------- Random effects ---------------
+## Family: gaussian( link = identity ) 
+##                    --- Correlation parameters:
+##     1.rho 
+## 0.1370415 
+##            --- Variance parameters (&#39;lambda&#39;):
+## lambda = var(u) for u ~ Gaussian; 
+##    ct_no  :  0.3053  
+## # of obs: 673; # of groups: ct_no, 673 
+##  ------------- Likelihood values  -------------
+##                         logLik
+## logL       (p_v(h)): -2199.325</code></pre>
+<pre class="r"><code>ci.lmm.ols &lt;- confint(res.lmm.ols, &#39;wSCOREMAT.2011.Q&#39;)</code></pre>
+<pre><code>## Warning in .sym_checked(adjMatrix, &quot;adjMatrix&quot;): Forcing colnames(mMatrix) &lt;-
+## rownames(mMatrix) before calling isSymmetric().</code></pre>
+<pre><code>## lower wSCOREMAT.2011.Q upper wSCOREMAT.2011.Q 
+##           -0.115466215            0.007443816</code></pre>
+<pre class="r"><code>ci.lmm.ols.i &lt;- confint(res.lmm.ols, &#39;wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct&#39;)</code></pre>
+<pre><code>## Warning in .sym_checked(adjMatrix, &quot;adjMatrix&quot;): Forcing colnames(mMatrix) &lt;-
+## rownames(mMatrix) before calling isSymmetric().</code></pre>
+<pre><code>## lower wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct 
+##                                      -0.001631402 
+## upper wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct 
+##                                       0.006017651</code></pre>
+<pre class="r"><code># transformed coef
+smy.ols.bt &lt;- data.frame(smy.ols$beta_table)
+round(exp(res.lmm.ols[[&quot;fixef&quot;]]), 3) %&gt;% 
+  data.frame(fixef = ., p.value = round(smy.ols.bt$p.value, 3)) %&gt;%
+  knitr::kable(caption=&quot;OLS transformed coeffs&quot;)%&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS transformed coeffs
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+fixef
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:right;">
+0.053
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+wSCOREMAT.2011.Q
+</td>
+<td style="text-align:right;">
+0.947
+</td>
+<td style="text-align:right;">
+0.084
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Bike_lane.by.street.2011ct
+</td>
+<td style="text-align:right;">
+1.071
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct
+</td>
+<td style="text-align:right;">
+1.002
+</td>
+<td style="text-align:right;">
+0.258
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>data.frame(wSCOREMAT.2011.Q = round(exp(ci.lmm.ols$interval), 3),
+           `wSCOREMAT.2011.Q:Bike_lane.by.street.2011ct` = round(exp(ci.lmm.ols.i$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;OLS confidence interval&quot;)%&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS confidence interval
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+lower
+</th>
+<th style="text-align:right;">
+upper
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+wSCOREMAT.2011.Q
+</td>
+<td style="text-align:right;">
+0.891
+</td>
+<td style="text-align:right;">
+1.007
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+wSCOREMAT.2011.Q.Bike_lane.by.street.2011ct
+</td>
+<td style="text-align:right;">
+0.998
+</td>
+<td style="text-align:right;">
+1.006
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="visble-minority-7" class="section level6"
+number="13.2.3.2.2.2">
+<h6><span class="header-section-number">13.2.3.2.2.2</span> Visble
+minority</h6>
+<pre class="r"><code>f &lt;- Bike_lane_total.hm.2016ct ~ vis_minority_2011.Q * Bike_lane.by.street.2011ct + offset(log(street_eligible_length.hm))
+
+# Count model (Poisson)
+clean_bei.cnt &lt;- bei_df_aoi2 %&gt;%
+  tidy_df(CT16, f)
+
+res.lmm.ols &lt;- fitme(Bike_lane_total.hm.2016ct ~ vis_minority_2011.Q * Bike_lane.by.street.2011ct + offset(log(street_eligible_length.hm)) + adjacency(1|ct_no),
+                 data = clean_bei.cnt$df, adjMatrix = clean_bei.cnt$nbmatx,
+                 family = Poisson())</code></pre>
+<pre><code>## Warning in .sym_checked(adjMatrix, &quot;adjMatrix&quot;): Forcing colnames(mMatrix) &lt;-
+## rownames(mMatrix) before calling isSymmetric().</code></pre>
+<pre class="r"><code>smy.ols &lt;- summary(res.lmm.ols, details = c(p_value=&quot;Wald&quot;))</code></pre>
+<pre><code>## formula: Bike_lane_total.hm.2016ct ~ vis_minority_2011.Q * Bike_lane.by.street.2011ct + 
+##     offset(log(street_eligible_length.hm)) + adjacency(1 | ct_no)
+## Estimation of corrPars and lambda by ML (p_v approximation of logL).
+## Estimation of fixed effects by ML (p_v approximation of logL).
+## Estimation of lambda by &#39;outer&#39; ML, maximizing logL.
+## family: poisson( link = log ) 
+##  ------------ Fixed effects (beta) ------------
+##                                                Estimate Cond. SE t-value
+## (Intercept)                                    -2.84929 0.114431 -24.900
+## vis_minority_2011.Q                            -0.08427 0.031935  -2.639
+## Bike_lane.by.street.2011ct                      0.06213 0.006520   9.529
+## vis_minority_2011.Q:Bike_lane.by.street.2011ct  0.00459 0.002032   2.259
+##                                                 p-value
+## (Intercept)                                    0.000000
+## vis_minority_2011.Q                            0.008316
+## Bike_lane.by.street.2011ct                     0.000000
+## vis_minority_2011.Q:Bike_lane.by.street.2011ct 0.023880
+##  --------------- Random effects ---------------
+## Family: gaussian( link = identity ) 
+##                    --- Correlation parameters:
+##     1.rho 
+## 0.1370458 
+##            --- Variance parameters (&#39;lambda&#39;):
+## lambda = var(u) for u ~ Gaussian; 
+##    ct_no  :  0.3039  
+## # of obs: 673; # of groups: ct_no, 673 
+##  ------------- Likelihood values  -------------
+##                         logLik
+## logL       (p_v(h)): -2193.823</code></pre>
+<pre class="r"><code>ci.lmm.ols &lt;- confint(res.lmm.ols, &#39;vis_minority_2011.Q&#39;)</code></pre>
+<pre><code>## Warning in .sym_checked(adjMatrix, &quot;adjMatrix&quot;): Forcing colnames(mMatrix) &lt;-
+## rownames(mMatrix) before calling isSymmetric().</code></pre>
+<pre><code>## lower vis_minority_2011.Q upper vis_minority_2011.Q 
+##               -0.14753550               -0.02144825</code></pre>
+<pre class="r"><code>ci.lmm.ols.i &lt;- confint(res.lmm.ols, &#39;vis_minority_2011.Q:Bike_lane.by.street.2011ct&#39;)</code></pre>
+<pre><code>## Warning in .sym_checked(adjMatrix, &quot;adjMatrix&quot;): Forcing colnames(mMatrix) &lt;-
+## rownames(mMatrix) before calling isSymmetric().</code></pre>
+<pre><code>## lower vis_minority_2011.Q:Bike_lane.by.street.2011ct 
+##                                          0.000596610 
+## upper vis_minority_2011.Q:Bike_lane.by.street.2011ct 
+##                                          0.008608725</code></pre>
+<pre class="r"><code># transformed coef
+smy.ols.bt &lt;- data.frame(smy.ols$beta_table)
+round(exp(res.lmm.ols[[&quot;fixef&quot;]]), 3) %&gt;% 
+  data.frame(fixef = ., p.value = round(smy.ols.bt$p.value, 3)) %&gt;%
+  knitr::kable(caption=&quot;OLS transformed coeffs&quot;)%&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS transformed coeffs
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+fixef
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:right;">
+0.058
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+vis_minority_2011.Q
+</td>
+<td style="text-align:right;">
+0.919
+</td>
+<td style="text-align:right;">
+0.008
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Bike_lane.by.street.2011ct
+</td>
+<td style="text-align:right;">
+1.064
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+vis_minority_2011.Q:Bike_lane.by.street.2011ct
+</td>
+<td style="text-align:right;">
+1.005
+</td>
+<td style="text-align:right;">
+0.024
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>data.frame(vis_minority_2011.Q = round(exp(ci.lmm.ols$interval), 3),
+           `vis_minority_2011.Q:Bike_lane.by.street.2011ct` = round(exp(ci.lmm.ols.i$interval), 3),
+           row.names = c(&#39;lower&#39;, &#39;upper&#39;)) %&gt;% t() %&gt;%
+  knitr::kable(caption=&quot;OLS confidence interval&quot;)%&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS confidence interval
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+lower
+</th>
+<th style="text-align:right;">
+upper
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+vis_minority_2011.Q
+</td>
+<td style="text-align:right;">
+0.863
+</td>
+<td style="text-align:right;">
+0.979
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+vis_minority_2011.Q.Bike_lane.by.street.2011ct
+</td>
+<td style="text-align:right;">
+1.001
+</td>
+<td style="text-align:right;">
+1.009
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="gentrification-10" class="section level6"
+number="13.2.3.2.2.3">
+<h6><span class="header-section-number">13.2.3.2.2.3</span>
+Gentrification</h6>
+<pre class="r"><code>f &lt;- Bike_lane_total.hm.2016ct ~ gentrif_status_2016 * Bike_lane.by.street.2011ct + offset(log(street_eligible_length.hm))
+
+# Count model (Poisson)
+clean_bei.cnt &lt;- bei_df_aoi2 %&gt;%
+  tidy_df(CT16, f)
+
+res.lmm.ols &lt;- fitme(Bike_lane_total.hm.2016ct ~ gentrif_status_2016 * Bike_lane.by.street.2011ct + offset(log(street_eligible_length.hm)) + adjacency(1|ct_no),
+                 data = clean_bei.cnt$df, adjMatrix = clean_bei.cnt$nbmatx,
+                 family = Poisson())</code></pre>
+<pre><code>## Warning in .sym_checked(adjMatrix, &quot;adjMatrix&quot;): Forcing colnames(mMatrix) &lt;-
+## rownames(mMatrix) before calling isSymmetric().</code></pre>
+<pre class="r"><code>smy.ols &lt;- summary(res.lmm.ols, details = c(p_value=&quot;Wald&quot;))</code></pre>
+<pre><code>## formula: Bike_lane_total.hm.2016ct ~ gentrif_status_2016 * Bike_lane.by.street.2011ct + 
+##     offset(log(street_eligible_length.hm)) + adjacency(1 | ct_no)
+## Estimation of corrPars and lambda by ML (p_v approximation of logL).
+## Estimation of fixed effects by ML (p_v approximation of logL).
+## Estimation of lambda by &#39;outer&#39; ML, maximizing logL.
+## family: poisson( link = log ) 
+##  ------------ Fixed effects (beta) ------------
+##                                                             Estimate Cond. SE
+## (Intercept)                                                -3.016647 0.085553
+## gentrif_status_2016Gentrified                               0.001234 0.099555
+## gentrif_status_2016Non eligible                            -0.232682 0.101533
+## Bike_lane.by.street.2011ct                                  0.072418 0.004818
+## gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct   -0.003354 0.006717
+## gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct  0.012312 0.006782
+##                                                             t-value p-value
+## (Intercept)                                                -35.2606 0.00000
+## gentrif_status_2016Gentrified                                0.0124 0.99011
+## gentrif_status_2016Non eligible                             -2.2917 0.02192
+## Bike_lane.by.street.2011ct                                  15.0296 0.00000
+## gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct    -0.4994 0.61752
+## gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct   1.8155 0.06945
+##  --------------- Random effects ---------------
+## Family: gaussian( link = identity ) 
+##                    --- Correlation parameters:
+##     1.rho 
+## 0.1372941 
+##            --- Variance parameters (&#39;lambda&#39;):
+## lambda = var(u) for u ~ Gaussian; 
+##    ct_no  :  0.3001  
+## # of obs: 673; # of groups: ct_no, 673 
+##  ------------- Likelihood values  -------------
+##                         logLik
+## logL       (p_v(h)): -2193.798</code></pre>
+<pre class="r"><code># transformed coef
+smy.ols.bt &lt;- data.frame(smy.ols$beta_table)
+round(exp(res.lmm.ols[[&quot;fixef&quot;]]), 3) %&gt;% 
+  data.frame(fixef = ., p.value = round(smy.ols.bt$p.value, 3)) %&gt;%
+  knitr::kable(caption=&quot;OLS transformed coeffs&quot;)%&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS transformed coeffs
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+fixef
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:right;">
+0.049
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Gentrified
+</td>
+<td style="text-align:right;">
+1.001
+</td>
+<td style="text-align:right;">
+0.990
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Non eligible
+</td>
+<td style="text-align:right;">
+0.792
+</td>
+<td style="text-align:right;">
+0.022
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Bike_lane.by.street.2011ct
+</td>
+<td style="text-align:right;">
+1.075
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct
+</td>
+<td style="text-align:right;">
+0.997
+</td>
+<td style="text-align:right;">
+0.618
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct
+</td>
+<td style="text-align:right;">
+1.012
+</td>
+<td style="text-align:right;">
+0.069
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>varfixef.ols &lt;- names(res.lmm.ols[[&#39;fixef&#39;]])
+ci.1.lmm.ols &lt;- confint(res.lmm.ols, varfixef.ols[2])</code></pre>
+<pre><code>## Warning in .sym_checked(adjMatrix, &quot;adjMatrix&quot;): Forcing colnames(mMatrix) &lt;-
+## rownames(mMatrix) before calling isSymmetric().</code></pre>
+<pre><code>## lower gentrif_status_2016Gentrified upper gentrif_status_2016Gentrified 
+##                          -0.1957644                           0.1968705</code></pre>
+<pre class="r"><code>ci.2.lmm.ols &lt;- confint(res.lmm.ols, varfixef.ols[3])</code></pre>
+<pre><code>## Warning in .sym_checked(adjMatrix, &quot;adjMatrix&quot;): Forcing colnames(mMatrix) &lt;-
+## rownames(mMatrix) before calling isSymmetric().</code></pre>
+<pre><code>## lower gentrif_status_2016Non eligible upper gentrif_status_2016Non eligible 
+##                           -0.43299311                           -0.03314692</code></pre>
+<pre class="r"><code>ci.3.lmm.ols &lt;- confint(res.lmm.ols, varfixef.ols[5])</code></pre>
+<pre><code>## Warning in .sym_checked(adjMatrix, &quot;adjMatrix&quot;): Forcing colnames(mMatrix) &lt;-
+## rownames(mMatrix) before calling isSymmetric().</code></pre>
+<pre><code>## lower gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct 
+##                                                   -0.016554757 
+## upper gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct 
+##                                                    0.009904665</code></pre>
+<pre class="r"><code>ci.4.lmm.ols &lt;- confint(res.lmm.ols, varfixef.ols[6])</code></pre>
+<pre><code>## Warning in .sym_checked(adjMatrix, &quot;adjMatrix&quot;): Forcing colnames(mMatrix) &lt;-
+## rownames(mMatrix) before calling isSymmetric().</code></pre>
+<pre><code>## lower gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct 
+##                                                     -0.001012217 
+## upper gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct 
+##                                                      0.025703010</code></pre>
+<pre class="r"><code>.ci.exp &lt;- rbind(ci.1.lmm.ols$interval, ci.2.lmm.ols$interval, ci.3.lmm.ols$interval, ci.4.lmm.ols$interval) %&gt;% 
+  exp() %&gt;% round(., 3) %&gt;%
+  data.frame(., row.names = c(varfixef.ols[2:3], varfixef.ols[5:6]))
+names(.ci.exp) &lt;- c(&quot;lower&quot;, &quot;upper&quot;)
+knitr::kable(.ci.exp, caption=&quot;OLS model confidence interval&quot;)%&gt;%
+  kableExtra::kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+OLS model confidence interval
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+lower
+</th>
+<th style="text-align:right;">
+upper
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Gentrified
+</td>
+<td style="text-align:right;">
+0.822
+</td>
+<td style="text-align:right;">
+1.218
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Non eligible
+</td>
+<td style="text-align:right;">
+0.649
+</td>
+<td style="text-align:right;">
+0.967
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Gentrified:Bike_lane.by.street.2011ct
+</td>
+<td style="text-align:right;">
+0.984
+</td>
+<td style="text-align:right;">
+1.010
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gentrif_status_2016Non eligible:Bike_lane.by.street.2011ct
+</td>
+<td style="text-align:right;">
+0.999
+</td>
+<td style="text-align:right;">
+1.026
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div id="annexes" class="section level1" number="14">
@@ -16821,13 +18727,12 @@ gentrif_status_2016Non eligible:Bike_lane.by.street_eligible.2011ct
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-##  [1] e1071_1.7-14      cancensus_0.5.6   rcompanion_2.4.34 stringr_1.5.1    
-##  [5] DHARMa_0.4.6      stargazer_5.2.3   spaMM_4.4.16      spatialreg_1.3-1 
-##  [9] spdep_1.3-1       spData_2.3.0      lme4_1.1-35.1     Matrix_1.6-4     
-## [13] cowplot_1.1.2     biscale_1.0.0     openxlsx_4.2.5.2  RPostgres_1.4.6  
-## [17] DBI_1.2.0         ggspatial_1.1.9   ggmap_4.0.0       ggplot2_3.4.4    
-## [21] stars_0.6-4       abind_1.4-5       sf_1.0-15         tidyr_1.3.0      
-## [25] dplyr_1.1.4      
+##  [1] cancensus_0.5.6   rcompanion_2.4.34 stringr_1.5.1     DHARMa_0.4.6     
+##  [5] stargazer_5.2.3   spaMM_4.4.16      spatialreg_1.3-1  spdep_1.3-1      
+##  [9] spData_2.3.0      lme4_1.1-35.1     Matrix_1.6-4      cowplot_1.1.2    
+## [13] biscale_1.0.0     openxlsx_4.2.5.2  RPostgres_1.4.6   DBI_1.2.0        
+## [17] ggspatial_1.1.9   ggmap_4.0.0       ggplot2_3.4.4     stars_0.6-4      
+## [21] abind_1.4-5       sf_1.0-15         tidyr_1.3.0       dplyr_1.1.4      
 ## 
 ## loaded via a namespace (and not attached):
 ##   [1] RColorBrewer_1.1-3  libcoin_1.0-10      rstudioapi_0.15.0  
@@ -16868,8 +18773,8 @@ gentrif_status_2016Non eligible:Bike_lane.by.street_eligible.2011ct
 ## [106] parallel_4.3.2      readr_2.1.4         blob_1.2.4         
 ## [109] jpeg_0.1-10         bitops_1.0-7        viridisLite_0.4.2  
 ## [112] mvtnorm_1.2-4       slam_0.1-50         scales_1.3.0       
-## [115] purrr_1.0.2         crayon_1.5.2        rlang_1.1.2        
-## [118] rvest_1.0.3         multcomp_1.4-25</code></pre>
+## [115] e1071_1.7-14        purrr_1.0.2         crayon_1.5.2       
+## [118] rlang_1.1.2         rvest_1.0.3         multcomp_1.4-25</code></pre>
 </div>
 
 
